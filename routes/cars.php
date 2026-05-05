@@ -16,6 +16,7 @@ use App\Http\Controllers\CarInspectionPaymentController;
 use App\Http\Controllers\CarInspectionFieldValueController;
 use App\Http\Controllers\CarInspectorController;
 use App\Http\Controllers\CarReservationController;
+use App\Http\Controllers\Admin\ManualExaminationController;
 
 // Cars System Routes
 Route::prefix("admin")
@@ -632,6 +633,20 @@ Route::prefix("admin")
                             "setRefunded",
                         ])->name("set-refunded");
                     });
+            });
+
+        // Manual Examinations
+        Route::prefix("manual-examinations")
+            ->name("manual-examinations.")
+            ->group(function () {
+                Route::get("/", [
+                    ManualExaminationController::class,
+                    "index",
+                ])->name("index");
+                Route::get("/{manualExamination}", [
+                    ManualExaminationController::class,
+                    "show",
+                ])->name("show");
             });
 
         // Car Inspection Field Values Management

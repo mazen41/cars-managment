@@ -38,6 +38,11 @@ Route::group(['prefix' => 'v2/inspector', 'middleware' => ['app_language']], fun
         Route::get('inspections', 'App\Http\Controllers\Api\V2\Inspector\InspectorInspectionController@index');
         Route::get('inspections/{inspection}', 'App\Http\Controllers\Api\V2\Inspector\InspectorInspectionController@show');
 
+        // Manual examination routes
+        Route::get('manual-examinations', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@index');
+        Route::post('manual-examinations', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@store');
+        Route::get('manual-examinations/{manualExamination}', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@show');
+
         // Inspection status management routes
         Route::put('inspections/{inspection}/start', 'App\Http\Controllers\Api\V2\Inspector\InspectorInspectionController@start');
         Route::put('inspections/{inspection}/complete', 'App\Http\Controllers\Api\V2\Inspector\InspectorInspectionController@complete');

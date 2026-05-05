@@ -23,6 +23,8 @@ class CarInspection extends Model
         "requested_by",
         "inspection_number",
         "status",
+        "is_manual",
+        "delivered_to_inspector",
         "scheduled_at",
         "started_at",
         "completed_at",
@@ -39,6 +41,8 @@ class CarInspection extends Model
         "inspection_type_id" => "integer",
         "inspector_id" => "integer",
         "requested_by" => "integer",
+        "is_manual" => "boolean",
+        "delivered_to_inspector" => "boolean",
         "scheduled_at" => "datetime",
         "started_at" => "datetime",
         "completed_at" => "datetime",
@@ -540,7 +544,7 @@ class CarInspection extends Model
     /**
      * Generate inspection summary
      */
-    protected function generateSummary()
+    public function generateSummary()
     {
         $sections = $this->inspectionType->sections()->with("fields")->get();
         $summary = [];

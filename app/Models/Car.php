@@ -17,6 +17,7 @@ class Car extends Model
 
     protected $fillable = [
         "vin",
+        "plate_number",
         "description",
         "model_id",
         "brand_id",
