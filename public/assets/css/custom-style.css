@@ -1,0 +1,44 @@
+/*your custom css goes here*/
+.nav-tabs-custom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Style the tabs */
+.nav-tabs {
+    border: none;
+    background-color: #f8f9fa;
+    border-radius: 50px !important;
+    padding: 5px;
+    margin-bottom: 20px;
+}
+
+.nav-tabs .nav-item {
+    margin: 0 5px;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px !important;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: var(--primary) !important;
+    color: white !important;
+    border: none;
+}
+
+.tab-content {
+    width: 100%;
+}
+

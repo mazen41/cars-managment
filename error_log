@@ -1,0 +1,8 @@
+[01-Oct-2025 14:20:42 UTC] PHP Warning:  require(/home/masafdco/samh.aljubahi.com/vendor/composer/../../app/Http/Helpers.php): Failed to open stream: No such file or directory in /home/masafdco/samh.aljubahi.com/vendor/composer/autoload_real.php on line 41
+[01-Oct-2025 14:20:42 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/masafdco/samh.aljubahi.com/vendor/composer/../../app/Http/Helpers.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/masafdco/samh.aljubahi.com/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/masafdco/samh.aljubahi.com/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/masafdco/samh.aljubahi.com/vendor/autoload.php(22): ComposerAutoloaderInit9ba91b337641acdb48ac625f9d199173::getLoader()
+#2 /home/masafdco/samh.aljubahi.com/index.php(26): require('/home/masafdco/...')
+#3 {main}
+  thrown in /home/masafdco/samh.aljubahi.com/vendor/composer/autoload_real.php on line 41

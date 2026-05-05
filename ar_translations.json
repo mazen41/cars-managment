@@ -1,0 +1,622 @@
+[
+    {
+        "lang": "ar",
+        "lang_key": "3_once_you_have_downloaded_and_filled_the_skeleton_file_upload_it_in_the_form_below_and_submit",
+        "lang_value": "3. بمجرد تنزيل ملف الهيكل وتعبئته، قم بتحميله في النموذج أدناه وأرسله."
+    },
+    {
+        "lang": "ar",
+        "lang_key": "area_wise_flat_shipping_cost_calulation_fixed_rate_for_each_area_if_customers_purchase_multiple_products_from_one_seller_shipping_cost_is_calculated_by_the_customer_shipping_area_to_configure_area_wise_shipping_cost_go_to_",
+        "lang_value": "حساب تكلفة الشحن الثابتة حسب المنطقة: سعر ثابت لكل منطقة. إذا اشترى العملاء منتجات متعددة من بائع واحد، تُحسب تكلفة الشحن بناءً على منطقة شحن العميل. لتهيئة تكلفة الشحن حسب المنطقة، انتقل إلى "
+    },
+    {
+        "lang": "ar",
+        "lang_key": "invalid_payment_type_wallet_system_auction_invoice_not_found",
+        "lang_value": "نوع الدفع غير صالح: نظام المحفظة، فاتورة المزاد غير موجودة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "this_product_page_route_is_deprecated_please_use_the_api_endpoints_to_fetch_product_details",
+        "lang_value": "مسار صفحة المنتج هذا قديم. يرجى استخدام نقاط نهاية API لجلب تفاصيل المنتج."
+    },
+    {
+        "lang": "ar",
+        "lang_key": "file_has_been_inserted_successfully",
+        "lang_value": "تم إدراج الملف بنجاح"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "shop_info_updated_successfully",
+        "lang_value": "تم تحديث معلومات المتجر بنجاح"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "message_send_successfully",
+        "lang_value": "تم إرسال الرسالة بنجاح"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "payment_info_updated_successfully",
+        "lang_value": "تم تحديث معلومات الدفع بنجاح"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "insurance_deposit_received",
+        "lang_value": "تم استلام وديعة التأمين"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "an_insurance_deposit_has_been_paid_for_auction_participation",
+        "lang_value": "تم دفع وديعة تأمين للمشاركة في المزاد."
+    },
+    {
+        "lang": "ar",
+        "lang_key": "deposit_amount",
+        "lang_value": "مبلغ الوديعة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "view_auction",
+        "lang_value": "عرض المزاد"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "the_bidder_is_now_eligible_to_participate_in_the_auction",
+        "lang_value": "المزايد مؤهل الآن للمشاركة في المزاد."
+    },
+    {
+        "lang": "ar",
+        "lang_key": "received",
+        "lang_value": "مستلم"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "this_product_is_not_available_with_this_variant",
+        "lang_value": "هذا المنتج غير متوفر بهذا الخيار."
+    },
+    {
+        "lang": "ar",
+        "lang_key": "test_payment",
+        "lang_value": "دفع تجريبي"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "use_only_in_development",
+        "lang_value": "للاستخدام في بيئة التطوير فقط"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "warning_this_will_add_a_new_payment_method_that_will_always_process_the_payments",
+        "lang_value": "تحذير: سيؤدي هذا إلى إضافة طريقة دفع جديدة ستعالج المدفوعات دائمًا"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "test_code_verification",
+        "lang_value": "التحقق من الرمز التجريبي"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "warning_this_will_make_the_generated_otp_code_123456",
+        "lang_value": "تحذير: سيجعل هذا رمز OTP المُولَّد هو 123456"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "your_phone_is_now_verified",
+        "lang_value": "تم التحقق من رقم هاتفك الآن"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "email_is_already_used",
+        "lang_value": "البريد الإلكتروني مستخدم بالفعل"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "view_cars",
+        "lang_value": "عرض السيارات"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "edit_cars",
+        "lang_value": "تعديل السيارات"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "cars_can_not_be_deleted",
+        "lang_value": "لا يمكن حذف السيارات"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "cars_updated_successfully",
+        "lang_value": "تم تحديث السيارات بنجاح"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "this_action_can_not_be_undone",
+        "lang_value": "لا يمكن التراجع عن هذا الإجراء"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "admin_warehouse",
+        "lang_value": "مستودع المشرف"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "car_marked_as_sold_successfully",
+        "lang_value": "تم تحديد السيارة كمباعة بنجاح"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "car_sold",
+        "lang_value": "تم بيع السيارة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "reservation_completed_successfully",
+        "lang_value": "تم إتمام الحجز بنجاح"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "listing_request_submitted",
+        "lang_value": "تم تقديم طلب الإدراج"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "on_time",
+        "lang_value": "في الوقت المحدد"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "measurement_point_has_been_deleted_successfully",
+        "lang_value": "تم حذف نقطة القياس بنجاح"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "measurement_point_has_been_updated_successfully",
+        "lang_value": "تم تحديث نقطة القياس بنجاح"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "size_chart_has_been_updated_successfully",
+        "lang_value": "تم تحديث جدول المقاسات بنجاح"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "you_already_followed_this_seller",
+        "lang_value": "لقد تابعت هذا البائع بالفعل"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "new_offer_received",
+        "lang_value": "تم استلام عرض جديد"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "new_offer_of",
+        "lang_value": "عرض جديد بقيمة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "on",
+        "lang_value": "على"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "new_offer_submitted",
+        "lang_value": "تم تقديم عرض جديد"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "a_new_offer_has_been_submitted_for_review",
+        "lang_value": "تم تقديم عرض جديد للمراجعة."
+    },
+    {
+        "lang": "ar",
+        "lang_key": "new_offer",
+        "lang_value": "عرض جديد"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "section",
+        "lang_value": "قسم"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "manage_features",
+        "lang_value": "إدارة الميزات"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "car_feature_sections",
+        "lang_value": "أقسام ميزات السيارة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "features_count",
+        "lang_value": "عدد الميزات"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "search_sections",
+        "lang_value": "البحث في الأقسام"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "add_new_car_feature_section",
+        "lang_value": "إضافة قسم ميزات سيارة جديد"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "car_feature_section_information",
+        "lang_value": "معلومات قسم ميزات السيارة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "feature_section",
+        "lang_value": "قسم الميزات"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "reservation_deleted",
+        "lang_value": "تم حذف الحجز"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "congratulations_you_won",
+        "lang_value": "تهانينا! لقد فزت"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "please_complete_payment",
+        "lang_value": "يرجى إتمام الدفع."
+    },
+    {
+        "lang": "ar",
+        "lang_key": "you_won",
+        "lang_value": "لقد فزت!"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "payment_successful_using_wallet",
+        "lang_value": "تم الدفع بنجاح باستخدام المحفظة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "high_value_bid_alert",
+        "lang_value": "تنبيه عرض سعر مرتفع"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "a_highvalue_bid_has_been_placed_that_requires_attention",
+        "lang_value": "تم تقديم عرض سعر مرتفع يستدعي الانتباه."
+    },
+    {
+        "lang": "ar",
+        "lang_key": "previous_bid",
+        "lang_value": "العرض السابق"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "increase",
+        "lang_value": "زيادة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "please_monitor_this_auction_for_any_suspicious_activity",
+        "lang_value": "يرجى مراقبة هذا المزاد بحثًا عن أي نشاط مشبوه."
+    },
+    {
+        "lang": "ar",
+        "lang_key": "high_bid_of",
+        "lang_value": "عرض سعر مرتفع بقيمة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "expires_at",
+        "lang_value": "ينتهي في"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "not_eligible",
+        "lang_value": "غير مؤهل"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "cannot_delete_section_with_features",
+        "lang_value": "لا يمكن حذف قسم يحتوي على ميزات"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "edit_car_feature_section",
+        "lang_value": "تعديل قسم ميزات السيارة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "car_delivered_to_inspector",
+        "lang_value": "تم تسليم السيارة إلى المفتش"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "extension_time_added",
+        "lang_value": "تم إضافة وقت تمديد"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "item_duration",
+        "lang_value": "مدة العنصر"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "there_were",
+        "lang_value": "كان هناك"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "timer_extensions_across",
+        "lang_value": "تمديدات للمؤقت عبر"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "items_adding_approximately",
+        "lang_value": "عناصر، مما أضاف ما يقارب"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "to_the_total_duration",
+        "lang_value": "إلى المدة الإجمالية."
+    },
+    {
+        "lang": "ar",
+        "lang_key": "has_been_sold_for",
+        "lang_value": "تم بيعه بسعر"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "seller_response",
+        "lang_value": "رد البائع"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "responded_at",
+        "lang_value": "تم الرد في"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "your_offer_of",
+        "lang_value": "عرضك بقيمة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "has_been_accepted_please_complete_payment",
+        "lang_value": "تم قبوله! يرجى إتمام الدفع."
+    },
+    {
+        "lang": "ar",
+        "lang_key": "has_been_accepted",
+        "lang_value": "تم قبوله!"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "you_have_been_outbid_on",
+        "lang_value": "تم تجاوز عرضك على"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "place_a_higher_bid_now",
+        "lang_value": "قدّم عرضًا أعلى الآن!"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "you_have_been_outbid",
+        "lang_value": "تم تجاوز عرضك"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "process_auction",
+        "lang_value": "معالجة المزاد"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "invoice_generation_and_notifications_will_be_processed_automatically",
+        "lang_value": "سيتم معالجة إنشاء الفواتير والإشعارات تلقائيًا."
+    },
+    {
+        "lang": "ar",
+        "lang_key": "auction_insurance_deposit",
+        "lang_value": "وديعة تأمين المزاد"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "only_draft_rooms_can_be_edited",
+        "lang_value": "يمكن تعديل الغرف المسودة فقط"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "view_offer",
+        "lang_value": "عرض العرض"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "monitor_the_sellers_response_to_this_offer",
+        "lang_value": "راقب رد البائع على هذا العرض."
+    },
+    {
+        "lang": "ar",
+        "lang_key": "car_reservation_payment",
+        "lang_value": "دفع حجز السيارة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "car_inspection_payment",
+        "lang_value": "دفع فحص السيارة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "response",
+        "lang_value": "الرد"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "timestamps",
+        "lang_value": "الطوابع الزمنية"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "offer_id",
+        "lang_value": "معرّف العرض"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "offers_expired",
+        "lang_value": "العروض منتهية الصلاحية"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "expired_count",
+        "lang_value": "عدد المنتهية"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "car_reservation_payment_received",
+        "lang_value": "تم استلام دفع حجز السيارة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "payment_of",
+        "lang_value": "دفعة بقيمة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "reservation_by",
+        "lang_value": "حجز بواسطة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "received_via",
+        "lang_value": "تم الاستلام عبر"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "products_count",
+        "lang_value": "عدد المنتجات"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "updated_successfully",
+        "lang_value": "تم التحديث بنجاح"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "car_inspection_payment_received",
+        "lang_value": "تم استلام دفع فحص السيارة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "inspection_by",
+        "lang_value": "فحص بواسطة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "item_added_to_wishlist",
+        "lang_value": "تمت إضافة العنصر إلى قائمة الرغبات"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "item_removed_from_wishlist",
+        "lang_value": "تمت إزالة العنصر من قائمة الرغبات"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "if_enabled_this_will_make_the_inspections_inspector_selected_by_the_admin",
+        "lang_value": "إذا تم التفعيل، سيتم اختيار مفتش الفحص من قِبل المشرف"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "moderation_status_changed",
+        "lang_value": "تم تغيير حالة الإشراف"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "moderation_status_changed_to",
+        "lang_value": "تم تغيير حالة الإشراف إلى"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "new_car_added",
+        "lang_value": "تمت إضافة سيارة جديدة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "new_car_added_by",
+        "lang_value": "تمت إضافة سيارة جديدة بواسطة"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "failed_to_load_notifications",
+        "lang_value": "فشل تحميل الإشعارات"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "notification_not_found",
+        "lang_value": "الإشعار غير موجود"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "select_subcategory",
+        "lang_value": "اختر الفئة الفرعية"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "select_main_category_first",
+        "lang_value": "اختر الفئة الرئيسية أولاً"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "item_already_in_wishlist",
+        "lang_value": "العنصر موجود بالفعل في قائمة الرغبات"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "item_not_found",
+        "lang_value": "العنصر غير موجود"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "you_have_not_purchased_this_product_or_it_is_not_delivered_yet",
+        "lang_value": "لم تقم بشراء هذا المنتج أو لم يتم تسليمه بعد."
+    },
+    {
+        "lang": "ar",
+        "lang_key": "you_cannot_review_this_shop",
+        "lang_value": "لا يمكنك تقييم هذا المتجر."
+    },
+    {
+        "lang": "ar",
+        "lang_key": "review_submitted_successfully",
+        "lang_value": "تم تقديم التقييم بنجاح"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "all_reviews",
+        "lang_value": "جميع التقييمات"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "current_image",
+        "lang_value": "الصورة الحالية"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "delte_inspection",
+        "lang_value": "حذف الفحص"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "cart_item_not_found",
+        "lang_value": "عنصر السلة غير موجود"
+    },
+    {
+        "lang": "ar",
+        "lang_key": "item_not_in_wishlist",
+        "lang_value": "العنصر غير موجود في قائمة الرغبات"
+    }
+]

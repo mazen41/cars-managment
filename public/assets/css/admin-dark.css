@@ -1,0 +1,226 @@
+[data-bs-theme=dark] {
+  --primary: #ffc54c !important;
+  --soft-primary: rgba(0, 99, 186, 0.15) !important;
+  --bb-body-color: #b0b3b8 !important;
+  --bb-body-color-rgb: 176, 179, 184 !important;
+  --bb-muted: #72767d !important;
+  --bb-body-bg: #171717 !important;
+  --bb-body-bg-rgb: 23, 23, 23 !important;
+  --bb-emphasis-color: #ffffff !important;
+  --bb-emphasis-color-rgb: 255, 255, 255 !important;
+  --bb-bg-forms: #1d1d1d !important;
+  --bb-bg-surface: #222222 !important;
+  --bb-bg-surface-dark: #1a1a1a !important;
+  --bb-bg-surface-secondary: #292929 !important;
+  --bb-bg-surface-tertiary: #202020 !important;
+  --bb-link-color: #4a90e2 !important;
+  --bb-link-hover-color: #357ab8 !important;
+  --bb-active-bg: #292929 !important;
+  --bb-disabled-color: #555 !important;
+  --bb-border-color: #333 !important;
+  --bb-border-color-translucent: rgba(255, 255, 255, 0.1) !important;
+  --bb-border-dark-color: #444 !important;
+  --bb-border-active-color: #555 !important;
+  --bb-btn-color: #1d1d1d !important;
+  --bb-code-color: #e0e0e0 !important;
+  --bb-code-bg: #252525 !important;
+  --bb-primary-lt: #1f3a52 !important;
+  --bb-primary-lt-rgb: 31, 58, 82 !important;
+  --bb-secondary-lt: #2c3e50 !important;
+  --bb-secondary-lt-rgb: 44, 62, 80 !important;
+  --bb-success-lt: #20603c !important;
+  --bb-success-lt-rgb: 32, 96, 60 !important;
+  --bb-info-lt: #205a87 !important;
+  --bb-info-lt-rgb: 32, 90, 135 !important;
+  --bb-warning-lt: #775c28 !important;
+  --bb-warning-lt-rgb: 119, 92, 40 !important;
+  --bb-danger-lt: #7a1f32 !important;
+  --bb-danger-lt-rgb: 122, 31, 50 !important;
+  --bb-light-lt: #3a3a3a !important;
+  --bb-light-lt-rgb: 58, 58, 58 !important;
+  --bb-dark-lt: #121212 !important;
+  --bb-dark-lt-rgb: 18, 18, 18 !important;
+  --bb-muted-lt: #3c3c3c !important;
+  --bb-muted-lt-rgb: 60, 60, 60 !important;
+  --bb-blue-lt: #204e82 !important;
+  --bb-blue-lt-rgb: 32, 78, 130 !important;
+  --bb-azure-lt: #1e4e66 !important;
+  --bb-azure-lt-rgb: 30, 78, 102 !important;
+  --bb-indigo-lt: #2c2b5d !important;
+  --bb-indigo-lt-rgb: 44, 43, 93 !important;
+  --bb-purple-lt: #4c3675 !important;
+  --bb-purple-lt-rgb: 76, 54, 117 !important;
+  --bb-pink-lt: #75395e !important;
+  --bb-pink-lt-rgb: 117, 57, 94 !important;
+  --bb-red-lt: #84202f !important;
+  --bb-red-lt-rgb: 132, 32, 47 !important;
+  --bb-orange-lt: #87592c !important;
+  --bb-orange-lt-rgb: 135, 89, 44 !important;
+  --bb-yellow-lt: #9a8a3c !important;
+  --bb-yellow-lt-rgb: 154, 138, 60 !important;
+  --bb-lime-lt: #4a7040 !important;
+  --bb-lime-lt-rgb: 74, 112, 64 !important;
+  --bb-green-lt: #1c5938 !important;
+  --bb-green-lt-rgb: 28, 89, 56 !important;
+  --bb-teal-lt: #1e6052 !important;
+  --bb-teal-lt-rgb: 30, 96, 82 !important;
+  --bb-cyan-lt: #1e5c6f !important;
+  --bb-cyan-lt-rgb: 30, 92, 111 !important;
+  --bb-x-lt: #1c2833 !important;
+  --bb-x-lt-rgb: 28, 40, 51 !important;
+  --bb-facebook-lt: #1d3557 !important;
+  --bb-facebook-lt-rgb: 29, 53, 87 !important;
+  --bb-twitter-lt: #1c5e87 !important;
+  --bb-twitter-lt-rgb: 28, 94, 135 !important;
+  --bb-linkedin-lt: #1c4865 !important;
+  --bb-linkedin-lt-rgb: 28, 72, 101 !important;
+  --bb-google-lt: #632a42 !important;
+  --bb-google-lt-rgb: 99, 42, 66 !important;
+  --bb-youtube-lt: #7b1f2c !important;
+  --bb-youtube-lt-rgb: 123, 31, 44 !important;
+  --bb-vimeo-lt: #18688e !important;
+  --bb-vimeo-lt-rgb: 24, 104, 142 !important;
+  --bb-dribbble-lt: #6a3a62 !important;
+  --bb-dribbble-lt-rgb: 106, 58, 98 !important;
+  --bb-github-lt: #262c38 !important;
+  --bb-github-lt-rgb: 38, 44, 56 !important;
+  --bb-instagram-lt: #703456 !important;
+  --bb-instagram-lt-rgb: 112, 52, 86 !important;
+  --bb-pinterest-lt: #5e293b !important;
+  --bb-pinterest-lt-rgb: 94, 41, 59 !important;
+  --bb-vk-lt: #374e68 !important;
+  --bb-vk-lt-rgb: 55, 78, 104 !important;
+  --bb-rss-lt: #887736 !important;
+  --bb-rss-lt-rgb: 136, 119, 54 !important;
+  --bb-flickr-lt: #193a66 !important;
+  --bb-flickr-lt-rgb: 25, 58, 102 !important;
+  --bb-bitbucket-lt: #173459 !important;
+  --bb-bitbucket-lt-rgb: 23, 52, 89 !important;
+  --bb-tabler-lt: #1f3a52 !important;
+  --bb-tabler-lt-rgb: 31, 58, 82 !important;
+  --bb-navbar-bg: var(--bb-bg-surface) !important;
+  --bb-icon-color: var(--primary-color) !important;
+  --soft-dark: #e3e3e3c5;
+}
+[data-bs-theme=dark] .nav-tabs .nav-link.active {
+    background:  linear-gradient(90deg, rgba(97,97,97,0.19662125103947825) 0%, rgba(135,147,250,0.19662125103947825) 100%) !important;
+}
+
+[data-bs-theme=dark] .form-control{
+    background-color: var(--bb-bg-surface) !important;
+    color: var(--bb-body-color) !important;
+    border: 1px solid var(--bb-border-color) !important;
+    border-radius: 5px !important;
+}
+
+[data-bs-theme=dark] .aiz-side-nav-list .aiz-side-nav-link:hover,
+[data-bs-theme=dark] .aiz-side-nav-list .aiz-side-nav-link.level-2-active,
+[data-bs-theme=dark] .aiz-side-nav-list .aiz-side-nav-link.level-3-active,
+[data-bs-theme=dark] .aiz-side-nav-list .aiz-side-nav-link.active {
+    color: #fff;
+    background: linear-gradient(90deg, rgba(97,97,97,0.19662125103947825) 0%, rgba(135,147,250,0.19662125103947825) 100%);
+}
+
+[data-bs-theme=dark] .modal-content{
+    background-color: var(--bb-bg-surface) !important;
+    color: var(--bb-body-color) !important;
+    border-radius: 10px !important;
+    border-color: var(--bb-border-color) !important;
+}
+
+[data-bs-theme=dark] .modal-content .modal-header {
+    border-bottom: 1px solid var(--bb-border-color) !important;
+}
+
+[data-bs-theme=dark] .modal-content .modal-footer {
+    border-top: 1px solid var(--bb-border-color) !important;
+}
+
+[data-bs-theme=dark] .dropdown-menu {
+    background-color: var(--bb-bg-surface) !important;
+    color: var(--bb-body-color) !important;
+    border: 1px solid var(--bb-border-color) !important;
+    border-radius: 5px !important;
+}
+
+[data-bs-theme=dark] .dropdown-item {
+    color: var(--bb-body-color) !important;
+    background-color: var(--bb-active-bg) !important;
+}
+
+[data-bs-theme=dark] .card .card-header, [data-bs-theme=dark] .card,
+[data-bs-theme=dark] .bootstrap-select .dropdown-toggle,
+[data-bs-theme=dark] .input-group-text {
+    border-color: var(--bb-border-color-translucent) !important;
+}
+
+[data-bs-theme=dark] .tagify__input::before{
+    color: var(--bb-body-color) !important;
+}
+
+[data-bs-theme=dark] .uppy-Dashboard-inner{
+    background-color: var(--bb-bg-surface) !important;
+}
+[data-bs-theme=dark] .uppy-Root{
+    color: var(--bb-body-color) !important;
+}
+[data-bs-theme=dark] .table{
+    color: var(--bb-body-color) !important;
+}
+[data-bs-theme=dark] .hummingbird-treeview label{
+    background-color: var(--bb-bg-surface) !important;
+    color: var(--bb-body-color) !important;
+}
+
+[data-bs-theme=dark] .aiz-table td, .aiz-table th{
+    border-top: 1px solid var(--bb-border-color-translucent);
+}
+[data-bs-theme=dark] .aiz-table thead th{
+    border-bottom: 1px solid var(--bb-border-color-translucent);
+}
+[data-bs-theme=dark] .nav-tabs{
+    background-color: var(--bb-bg-surface) !important;
+}
+[data-bs-theme=dark] .lds-ellipsis div{
+   background: var(--bb-body-color) !important;
+}
+
+[data-bs-theme=dark] .btn-outline-secondary, [data-bs-theme=dark] .btn-border{
+    color: var(--bb-body-color) !important;
+}
+[data-bs-theme=dark] .page-link{
+    color: var(--bb-body-color);
+    background: var(--bb-body-bg);
+    border-color: var(--bb-border-color-translucent);
+}
+[data-bs-theme=dark] .pagination .page-link, .page-item.disabled .page-link{
+    color: var(--bb-body-color);
+}
+
+[data-bs-theme=dark] .aiz-switch input:empty ~ span:before{
+    background-color: #4a4c4e;
+}
+[data-bs-theme=dark] .list-group-item{
+    background-color: var(--bb-bg-surface) !important;
+    color: var(--bb-body-color) !important;
+    border: 1px solid var(--bb-border-color-translucent) !important;
+}
+[data-bs-theme=dark] .input-group-text {
+    background-color: var(--bb-bg-surface) !important;
+    color: var(--bb-body-color) !important;
+    border: 1px solid var(--bb-border-color-translucent) !important;
+}
+[data-bs-theme] .bg-light{
+    background-color: var(--bb-bg-surface) !important;
+}
+[data-bs-theme=dark] .card {
+    -webkit-box-shadow: 0 0 13px 0 rgba(104, 104, 104, 0.05);
+    box-shadow: 0 0 13px 0 rgba(99, 99, 99, 0.05);
+    background-color: var(--bb-bg-surface);
+    margin-bottom: 20px;
+    border-color: var(--bb-border-color-translucent);
+}
+[data-bs-theme=dark] [data-selected="true"] .aiz-uploader-select {
+    border-color: var(--primary) !important;
+    background: rgba(0, 123, 255, 0.05);
+}
