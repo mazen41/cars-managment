@@ -39,3 +39,4 @@ build.zip
 /docs
 /.kiro
 .phpunit.result.cache
+config/firebase-auth.json
