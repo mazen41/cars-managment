@@ -39,5 +39,6 @@ class VerifyCsrfToken extends Middleware
         '/import-data',
         '/api/v2/inspector/*',
         'api/*',
+        'admin/manual-examinations*',
     ];
 }

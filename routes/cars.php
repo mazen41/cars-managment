@@ -782,3 +782,15 @@ Route::prefix("admin")
             "getCities",
         ])->name("get-cities");
     });
+Route::prefix('v2')->group(function () {
+    Route::middleware('auth:sanctum')->prefix('inspector')->group(function () {
+        Route::post('/manual-examinations', [ManualExaminationController::class, 'store']);
+        Route::get('/manual-examinations', [ManualExaminationController::class, 'index']);
+        Route::get('/manual-examinations/{id}', [ManualExaminationController::class, 'show']);
+    });
+
+    // Inspection types (no prefix mismatch)
+    Route::middleware('auth:sanctum')->prefix('cars')->group(function () {
+        Route::get('/inspection-types', [CarInspectionTypeController::class, 'apiIndex']);
+    });
+});
