@@ -223,6 +223,27 @@ class CarController extends Controller
     }
 
     /**
+     * Get active car colors for create/edit forms.
+     */
+    public function colors(): JsonResponse
+    {
+        $colors = CarColor::with("translations")
+            ->active()
+            ->orderBy("name")
+            ->get(["id", "name", "hex_code"])
+            ->map(fn ($color) => [
+                "id" => $color->id,
+                "name" => $color->getTranslation("name"),
+                "hex_code" => $color->hex_code,
+            ])
+            ->values();
+
+        return response()->json([
+            "colors" => $colors,
+        ]);
+    }
+
+    /**
      * Get a specific car by ID
      */
     public function show(Request $request, Car $car): JsonResponse

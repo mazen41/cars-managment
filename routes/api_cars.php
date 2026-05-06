@@ -116,6 +116,11 @@ Route::prefix("v2/cars")
             "tree",
         ])->name("categories.tree");
 
+        // Colors
+        Route::get("/colors", [CarController::class, "colors"])->name(
+            "colors.api",
+        );
+
         //Features
         Route::get("/features", [CarFeatureController::class, "index"])->name(
             "features.api",

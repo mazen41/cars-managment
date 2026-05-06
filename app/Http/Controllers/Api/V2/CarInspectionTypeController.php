@@ -18,7 +18,10 @@ class CarInspectionTypeController extends Controller
 
     public function index(): ResourceCollection
     {
-        $inspectionTypes = CarInspectionType::with(['sections'])->active()->get();
+        $inspectionTypes = CarInspectionType::with(['sections.fields'])
+            ->active()
+            ->ordered()
+            ->get();
         return new CarInspectionTypeCollection($inspectionTypes);
     }
 }

@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Api\V2\Inspector;
 use App\Enums\CarModerationStatusEnum;
 use App\Enums\CarStatusEnum;
 use App\Models\Car;
-use App\Models\CarCustomField;
-use App\Models\CarCustomFieldValue;
 use App\Models\CarInspection;
 use App\Models\CarInspectionFieldValue;
 use App\Models\CarInspectionType;
@@ -100,7 +98,7 @@ class ManualExaminationController extends BaseInspectorController
             ], 404);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'car.vin' => 'required|min:17|max:17|unique:cars,vin',
             'car.plate_number' => 'nullable|string|max:255',
             'car.description' => 'required|string|min:10',
@@ -140,14 +138,14 @@ class ManualExaminationController extends BaseInspectorController
         ]);
 
         try {
-            $manualExamination = DB::transaction(function () use ($request, $inspector) {
-                $inspectionTypeId = $request->inspection_type_id ?: $this->getDefaultInspectionTypeId();
+            $manualExamination = DB::transaction(function () use ($request, $validated, $inspector) {
+                $inspectionTypeId = $validated['inspection_type_id'] ?? $this->getDefaultInspectionTypeId();
 
                 if (!$inspectionTypeId) {
                     throw new \Exception('No active inspection type found');
                 }
 
-                $carData = $request->input('car');
+                $carData = $validated['car'];
                 $carData['user_id'] = $request->user()->id;
                 $carData['moderation_status'] = CarModerationStatusEnum::PENDING;
                 $carData['car_status'] = CarStatusEnum::AVAILABLE;
@@ -181,23 +179,6 @@ class ManualExaminationController extends BaseInspectorController
                     $car->features()->sync($carData['features']);
                 }
 
-                foreach ($carData['custom_fields'] ?? [] as $customFieldData) {
-                    $field = CarCustomField::find($customFieldData['field_id']);
-                    $value = $customFieldData['value'] ?? null;
-
-                    if ($field && $field->type === CarCustomField::TYPE_CHECKBOX && is_array($value)) {
-                        $value = json_encode($value);
-                    }
-
-                    if ($field && (!empty($value) || $field->required)) {
-                        CarCustomFieldValue::create([
-                            'car_id' => $car->id,
-                            'custom_field_id' => $field->id,
-                            'value' => $value,
-                        ]);
-                    }
-                }
-
                 $inspection = CarInspection::create([
                     'car_id' => $car->id,
                     'inspection_type_id' => $inspectionTypeId,
@@ -208,14 +189,14 @@ class ManualExaminationController extends BaseInspectorController
                     'delivered_to_inspector' => true,
                     'started_at' => now(),
                     'completed_at' => now(),
-                    'total_score' => $request->total_score,
-                    'overall_condition' => $request->overall_condition,
-                    'inspector_notes' => $request->inspector_notes,
-                    'recommendations' => $request->recommendations,
+                    'total_score' => $validated['total_score'] ?? null,
+                    'overall_condition' => $validated['overall_condition'] ?? null,
+                    'inspector_notes' => $validated['inspector_notes'] ?? null,
+                    'recommendations' => $validated['recommendations'] ?? null,
                 ]);
 
-                foreach ($request->field_values as $fieldData) {
-                    $fieldValue = CarInspectionFieldValue::create([
+                foreach ($validated['field_values'] as $fieldData) {
+                    CarInspectionFieldValue::create([
                         'inspection_id' => $inspection->id,
                         'field_id' => $fieldData['field_id'],
                         'value' => $fieldData['value'] ?? null,
@@ -224,18 +205,7 @@ class ManualExaminationController extends BaseInspectorController
                         'is_flagged' => $fieldData['is_flagged'] ?? false,
                         'flag_reason' => $fieldData['flag_reason'] ?? null,
                     ]);
-
-                    if ($fieldValue->field && is_array($fieldValue->value)) {
-                        $fieldValue->setValue($fieldValue->value)->save();
-                    }
                 }
-
-                if (!$inspection->fresh()->is_complete) {
-                    throw new \Exception('All required inspection fields must be completed');
-                }
-
-                $inspection->summary = $inspection->generateSummary();
-                $inspection->save();
 
                 return $inspection->fresh([
                     'car.brand',
@@ -252,10 +222,11 @@ class ManualExaminationController extends BaseInspectorController
                 'data' => $this->transformDetail($manualExamination),
                 'message' => 'Manual examination created successfully',
             ], 201, [], JSON_UNESCAPED_UNICODE);
+
         } catch (\Exception $e) {
             return response()->json([
                 'error' => [
-                    'message' => 'Failed to create manual examination: ' . $e->getMessage(),
+                    'message' => 'Database Error: ' . $e->getMessage(),
                     'code' => 'MANUAL_EXAMINATION_CREATE_FAILED',
                 ],
             ], 422);

@@ -24,9 +24,23 @@ class CarInspectionTypeCollection extends ResourceCollection
                     "formatted_price" => single_price($type->price),
                     "sections" => $type->sections->map(function ($section) {
                         return [
+                            "id" => $section->id,
                             "name" => $section->name,
+                            "description" => $section->description,
+                            "order" => $section->sort_order,
+                            "fields" => $section->fields->map(function ($field) {
+                                return [
+                                    "id" => $field->id,
+                                    "name" => $field->name,
+                                    "description" => $field->description,
+                                    "type" => $field->field_type,
+                                    "is_required" => $field->is_required,
+                                    "options" => $field->field_options,
+                                    "order" => $field->sort_order,
+                                ];
+                            })->values(),
                         ];
-                    })
+                    })->values()
                 ];
             })
         ];
