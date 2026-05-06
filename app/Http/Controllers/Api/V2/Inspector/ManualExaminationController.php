@@ -150,6 +150,7 @@ class ManualExaminationController extends BaseInspectorController
                 $carData['moderation_status'] = CarModerationStatusEnum::PENDING;
                 $carData['car_status'] = CarStatusEnum::AVAILABLE;
 
+                // Create the Car
                 $car = Car::create(collect($carData)->only([
                     'vin',
                     'plate_number',
@@ -213,7 +214,6 @@ class ManualExaminationController extends BaseInspectorController
                     'car.category',
                     'car.color',
                     'inspectionType.sections.fields',
-                    'fieldValues.field.section',
                     'requester',
                 ]);
             });
@@ -355,8 +355,6 @@ class ManualExaminationController extends BaseInspectorController
                 'description' => $section->description,
                 'order' => $section->order,
                 'fields' => $section->fields->map(function ($field) use ($inspection) {
-                    $fieldValue = $inspection->fieldValues->firstWhere('field_id', $field->id);
-
                     return [
                         'id' => $field->id,
                         'name' => $field->name,
@@ -365,13 +363,6 @@ class ManualExaminationController extends BaseInspectorController
                         'is_required' => $field->is_required,
                         'options' => $field->field_options,
                         'order' => $field->sort_order,
-                        'value' => $fieldValue?->formatted_value,
-                        'raw_value' => $fieldValue?->value,
-                        'score' => $fieldValue?->score,
-                        'notes' => $fieldValue?->notes,
-                        'is_flagged' => $fieldValue?->is_flagged ?? false,
-                        'flag_reason' => $fieldValue?->flag_reason,
-                        'photos' => $fieldValue?->file_attachments ?? [],
                     ];
                 })->values(),
             ];
