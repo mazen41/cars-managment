@@ -38,5 +38,6 @@ class VerifyCsrfToken extends Middleware
         '/phonepe*',
         '/import-data',
         '/api/v2/inspector/*',
+        'api/*',
     ];
 }
