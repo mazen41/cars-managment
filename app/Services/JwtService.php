@@ -31,7 +31,7 @@ class JwtService
     public function generateToken(User $user): string
     {
         $now = new DateTimeImmutable();
-        $expiresAt = $now->modify('+24 hours'); // Token expires in 24 hours
+        $expiresAt = $now->modify('+24 hours');
 
         $token = $this->config->builder()
             ->issuedBy($this->issuer)
@@ -54,7 +54,7 @@ class JwtService
     public function generateRefreshToken(User $user): string
     {
         $now = new DateTimeImmutable();
-        $expiresAt = $now->modify('+7 days'); // Refresh token expires in 7 days
+        $expiresAt = $now->modify('+7 days');
 
         $token = $this->config->builder()
             ->issuedBy($this->issuer)
@@ -73,7 +73,13 @@ class JwtService
     }
 
     /**
-     * Validate and parse JWT token
+     * Validate and parse JWT token.
+     *
+     * lcobucci/jwt v5 removed the separate lcobucci/clock package, so
+     * \Lcobucci\Clock\SystemClock no longer exists. StrictValidAt now accepts
+     * any PSR-20 ClockInterface. We provide a minimal inline implementation
+     * that returns the current system time — identical in behaviour to the old
+     * SystemClock but with no external package dependency.
      */
     public function validateToken(string $tokenString): ?Plain
     {
@@ -84,9 +90,17 @@ class JwtService
                 return null;
             }
 
+            // PSR-20 clock replacing the removed \Lcobucci\Clock\SystemClock (lcobucci/jwt v5+)
+            $systemClock = new class implements \Psr\Clock\ClockInterface {
+                public function now(): \DateTimeImmutable
+                {
+                    return new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+                }
+            };
+
             $constraints = [
                 new SignedWith($this->config->signer(), $this->config->signingKey()),
-                new StrictValidAt(new \Lcobucci\Clock\SystemClock(new \DateTimeZone('UTC')))
+                new StrictValidAt($systemClock),
             ];
 
             if (!$this->config->validator()->validate($token, ...$constraints)) {
@@ -105,15 +119,14 @@ class JwtService
     public function getUserFromToken(string $tokenString): ?User
     {
         $token = $this->validateToken($tokenString);
-        
+
         if (!$token) {
             return null;
         }
 
-        $userId = $token->claims()->get('user_id');
+        $userId  = $token->claims()->get('user_id');
         $userType = $token->claims()->get('user_type');
 
-        // Ensure the user is a car inspector
         if ($userType !== 'car_inspector') {
             return null;
         }
@@ -126,8 +139,7 @@ class JwtService
      */
     public function isTokenExpired(string $tokenString): bool
     {
-        $token = $this->validateToken($tokenString);
-        return $token === null;
+        return $this->validateToken($tokenString) === null;
     }
 
     /**
@@ -137,7 +149,7 @@ class JwtService
     {
         try {
             $token = $this->config->parser()->parse($tokenString);
-            
+
             if (!$token instanceof Plain) {
                 return null;
             }
