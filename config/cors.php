@@ -7,18 +7,17 @@ return [
     | Cross-Origin Resource Sharing (CORS) Configuration
     |--------------------------------------------------------------------------
     |
-    | Here you may configure your settings for cross-origin resource sharing
-    | or "CORS". This determines what cross-origin operations may execute
-    | in web browsers. You are free to adjust these settings as needed.
-    |
-    | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+    | This API uses JWT Bearer token authentication (not Sanctum cookie/session).
+    | Therefore:
+    |   - supports_credentials is FALSE  (no cookies involved)
+    |   - sanctum/csrf-cookie is NOT listed (not needed for JWT auth)
+    |   - X-XSRF-TOKEN is NOT required (no CSRF in a Bearer-token flow)
     |
     */
 
     'paths' => [
         'api/*',
-        'sanctum/csrf-cookie',
-        'api/v2/inspector/*',
+        // 'sanctum/csrf-cookie' intentionally omitted: JWT Bearer auth, no cookie/CSRF flow
     ],
 
     'allowed_methods' => ['*'],
@@ -30,23 +29,21 @@ return [
         'http://127.0.0.1:3001',
         'http://dashboard.samh.test',
         'http://dashboard-dev.samh.test',
-        'https://inspector.samh.store'
+        'https://inspector.samh.store',
     ],
 
     'allowed_origins_patterns' => [
-        // You can use patterns like 'https://*.yourdomain.com'
-        '*.samh.test'
+        '*.samh.test',
     ],
 
     'allowed_headers' => [
         'Accept',
-        'Authorization',
+        'Authorization',    // JWT Bearer token
         'Content-Type',
         'X-Requested-With',
-        'X-CSRF-TOKEN',
         'X-Socket-ID',
-        'System-Key',
-        'App-Language'
+        'System-Key',       // custom app key header
+        'App-Language',     // locale header
     ],
 
     'exposed_headers' => [
@@ -55,6 +52,9 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true,
+    // FALSE: JWT auth does not use cookies. Setting this to true would require
+    // supports_credentials on the frontend too, and would re-introduce the need
+    // for CSRF tokens. Keep false for a clean JWT-only setup.
+    'supports_credentials' => false,
 
 ];

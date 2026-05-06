@@ -16,20 +16,26 @@ class VerifyCsrfToken extends Middleware
     /**
      * The URIs that should be excluded from CSRF verification.
      *
+     * The inspector API (and all other API routes) use JWT Bearer token auth,
+     * not session/cookie auth, so CSRF protection is irrelevant and must be
+     * excluded to avoid false-positive 419 CSRF mismatch errors.
+     *
      * @var array
      */
     protected $except = [
+        // All API routes: JWT Bearer auth, no session/cookie involved
+        'api/*',
+        '/api/*',
+
+        // Payment gateway callbacks (third-party POST-backs, no CSRF token possible)
         '/sslcommerz*',
         '/config_content',
         '/paytm*',
         '/payhere*',
         '/stripe*',
-        '/api/v2/stripe*',
         '/iyzico*',
         '/payfast*',
-        'api/v2/payfast*',
         '/bkash*',
-        'api/v2/bkash*',
         '/aamarpay*',
         '/mock_payments',
         '/apple-callback',
@@ -37,8 +43,5 @@ class VerifyCsrfToken extends Middleware
         '/rozer*',
         '/phonepe*',
         '/import-data',
-        '/api/v2/inspector/*',
-        'api/*',
-        'admin/manual-examinations*',
     ];
 }

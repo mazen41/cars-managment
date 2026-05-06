@@ -53,7 +53,11 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            // EnsureFrontendRequestsAreStateful removed: inspector API uses custom JWT Bearer tokens,
+            // not Sanctum cookie/session auth. Keeping this caused CSRF token mismatch errors because
+            // Sanctum would detect the matching origin and try to start a stateful session that the
+            // JWT-only frontend never supports (no csrf-cookie fetch, no X-XSRF-TOKEN header).
+            // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\CheckForMaintenanceMode::class,
