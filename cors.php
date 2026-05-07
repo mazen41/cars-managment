@@ -30,8 +30,6 @@ return [
         'http://dashboard.samh.test',
         'http://dashboard-dev.samh.test',
         'https://inspector.samh.store',
-        'https://samh.store',
-        'https://www.samh.store',
     ],
 
     'allowed_origins_patterns' => [
