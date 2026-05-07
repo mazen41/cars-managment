@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 use App\Services\ImageUploadService;
+use PDF;
 
 class InspectorInspectionController extends BaseInspectorController
 {
@@ -61,6 +62,9 @@ class InspectorInspectionController extends BaseInspectorController
             'requester:id,name,email,phone'
         ])
         ->where('inspector_id', $inspector->id)
+        ->where(function ($manualQuery) {
+            $manualQuery->where('is_manual', false)->orWhereNull('is_manual');
+        })
         ->deliveredToInspector();
 
         // Apply filters
@@ -393,7 +397,7 @@ class InspectorInspectionController extends BaseInspectorController
             ], 404);
         }
 
-        if (!$inspection->is_editable) {
+        if (!$inspection->is_editable && !$inspection->is_manual) {
             return response()->json([
                 'error' => [
                     'message' => 'Inspection is not editable in current status: ' . $inspection->status_display,
@@ -485,7 +489,7 @@ class InspectorInspectionController extends BaseInspectorController
             ], 404);
         }
 
-        if (!$inspection->is_editable) {
+        if (!$inspection->is_editable && !$inspection->is_manual) {
             return response()->json([
                 'error' => [
                     'message' => 'Inspection is not editable in current status: ' . $inspection->status_display,
@@ -571,7 +575,7 @@ class InspectorInspectionController extends BaseInspectorController
             ], 404);
         }
 
-        if (!$inspection->is_editable) {
+        if (!$inspection->is_editable && !$inspection->is_manual) {
             return response()->json([
                 'error' => [
                     'message' => 'Inspection is not editable in current status: ' . $inspection->status_display,
@@ -736,6 +740,84 @@ class InspectorInspectionController extends BaseInspectorController
                 ]
             ], 422);
         }
+    }
+
+    public function downloadPdf(Request $request, int $inspectionId)
+    {
+        $inspector = $request->user()->carInspector;
+
+        if (!$inspector) {
+            return response()->json([
+                'error' => [
+                    'message' => 'Inspector profile not found',
+                    'code' => 'INSPECTOR_NOT_FOUND'
+                ]
+            ], 404);
+        }
+
+        $inspection = CarInspection::with($this->pdfRelations())
+            ->where('inspector_id', $inspector->id)
+            ->find($inspectionId);
+
+        if (!$inspection) {
+            return response()->json([
+                'error' => [
+                    'message' => 'Inspection not found or not assigned to you',
+                    'code' => 'INSPECTION_NOT_FOUND'
+                ]
+            ], 404);
+        }
+
+        $options = get_pdf_options();
+        $pdf = PDF::loadView('backend.cars.inspections.pdf-report', [
+            'carInspection' => $inspection,
+            'sectionData' => $this->buildSectionData($inspection),
+            'font_family' => $options['font_family'],
+            'direction' => $options['direction'],
+            'text_align' => $options['text_align'],
+            'not_text_align' => $options['not_text_align'],
+        ]);
+
+        return $pdf->download('inspection-report-' . $inspection->inspection_number . '.pdf');
+    }
+
+    private function pdfRelations(): array
+    {
+        return [
+            'car.brand',
+            'car.model',
+            'car.category',
+            'car.color',
+            'car.country',
+            'car.state',
+            'car.city',
+            'inspectionType.sections.fields',
+            'inspector',
+            'requester',
+            'fieldValues.field.section',
+        ];
+    }
+
+    private function buildSectionData(CarInspection $inspection): array
+    {
+        $sectionData = [];
+
+        foreach ($inspection->inspectionType->sections as $section) {
+            $sectionData[$section->id] = [
+                'section' => $section,
+                'fields' => [],
+                'completion' => $inspection->getSectionCompletion($section->id),
+            ];
+
+            foreach ($section->fields as $field) {
+                $sectionData[$section->id]['fields'][] = [
+                    'field' => $field,
+                    'value' => $inspection->fieldValues->where('field_id', $field->id)->first(),
+                ];
+            }
+        }
+
+        return $sectionData;
     }
 
     /**

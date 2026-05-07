@@ -135,6 +135,19 @@ class ManualExaminationController extends BaseInspectorController
             'overall_condition' => ['nullable', 'string', Rule::in(array_keys(CarInspection::CONDITIONS))],
             'inspector_notes' => 'nullable|string|max:2000',
             'recommendations' => 'nullable|string|max:2000',
+            'photo_front'          => 'nullable|image|max:5120',
+            'photo_back'           => 'nullable|image|max:5120',
+            'photo_left'           => 'nullable|image|max:5120',
+            'photo_right'          => 'nullable|image|max:5120',
+            'photo_interior_front' => 'nullable|image|max:5120',
+            'photo_interior_back'  => 'nullable|image|max:5120',
+            'photo_engine'         => 'nullable|image|max:5120',
+            'photo_trunk'          => 'nullable|image|max:5120',
+            'photo_odometer'       => 'nullable|image|max:5120',
+            'photo_dashboard'      => 'nullable|image|max:5120',
+            'photo_vin_plate'      => 'nullable|image|max:5120',
+            'photo_tires'          => 'nullable|image|max:5120',
+            'photo_undercarriage'  => 'nullable|image|max:5120',
         ]);
 
         try {
@@ -180,21 +193,34 @@ class ManualExaminationController extends BaseInspectorController
                     $car->features()->sync($carData['features']);
                 }
 
-                $inspection = CarInspection::create([
+                $inspectionData = [
                     'car_id' => $car->id,
                     'inspection_type_id' => $inspectionTypeId,
                     'inspector_id' => $inspector->id,
                     'requested_by' => $request->user()->id,
-                    'status' => CarInspection::STATUS_COMPLETED,
+                    'status' => CarInspection::STATUS_PENDING,
                     'is_manual' => true,
                     'delivered_to_inspector' => true,
                     'started_at' => now(),
-                    'completed_at' => now(),
                     'total_score' => $validated['total_score'] ?? null,
                     'overall_condition' => $validated['overall_condition'] ?? null,
                     'inspector_notes' => $validated['inspector_notes'] ?? null,
                     'recommendations' => $validated['recommendations'] ?? null,
-                ]);
+                ];
+
+                $photoFields = [
+                    'photo_front', 'photo_back', 'photo_left', 'photo_right',
+                    'photo_interior_front', 'photo_interior_back', 'photo_engine',
+                    'photo_trunk', 'photo_odometer', 'photo_dashboard',
+                    'photo_vin_plate', 'photo_tires', 'photo_undercarriage',
+                ];
+                foreach ($photoFields as $field) {
+                    if ($request->hasFile($field)) {
+                        $inspectionData[$field] = $request->file($field)->store('car-inspections/photos', 'public');
+                    }
+                }
+
+                $inspection = CarInspection::create($inspectionData);
 
                 foreach ($validated['field_values'] as $fieldData) {
                     CarInspectionFieldValue::create([

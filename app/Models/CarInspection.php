@@ -34,6 +34,19 @@ class CarInspection extends Model
         "recommendations",
         "summary",
         "metadata",
+        "photo_front",
+        "photo_back",
+        "photo_left",
+        "photo_right",
+        "photo_interior_front",
+        "photo_interior_back",
+        "photo_engine",
+        "photo_trunk",
+        "photo_odometer",
+        "photo_dashboard",
+        "photo_vin_plate",
+        "photo_tires",
+        "photo_undercarriage",
     ];
 
     protected $casts = [

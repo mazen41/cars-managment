@@ -647,6 +647,14 @@ Route::prefix("admin")
                     ManualExaminationController::class,
                     "show",
                 ])->name("show");
+                Route::get("/{manualExamination}/schedule", [
+                    ManualExaminationController::class,
+                    "schedule",
+                ])->name("schedule");
+                Route::post("/{manualExamination}/schedule", [
+                    ManualExaminationController::class,
+                    "updateSchedule",
+                ])->name("update-schedule");
             });
 
         // Car Inspection Field Values Management

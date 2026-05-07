@@ -36,11 +36,14 @@ Route::group(['prefix' => 'v2/inspector', 'middleware' => ['app_language']], fun
 
         // Inspection management routes
         Route::get('inspections', 'App\Http\Controllers\Api\V2\Inspector\InspectorInspectionController@index');
+        Route::get('inspections/{inspection}/download-pdf', 'App\Http\Controllers\Api\V2\Inspector\InspectorInspectionController@downloadPdf');
         Route::get('inspections/{inspection}', 'App\Http\Controllers\Api\V2\Inspector\InspectorInspectionController@show');
 
         // Manual examination routes
         Route::get('manual-examinations', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@index');
         Route::post('manual-examinations', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@store');
+        Route::post('manual-examinations/{manualExamination}/vehicle-photos', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@uploadVehiclePhotos');
+        Route::get('manual-examinations/{manualExamination}/download-pdf', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@downloadPdf');
         Route::get('manual-examinations/{manualExamination}', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@show');
 
         // Inspection status management routes

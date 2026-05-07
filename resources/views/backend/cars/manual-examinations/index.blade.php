@@ -77,6 +77,13 @@
                         <td>{{ $manualExamination->created_at?->format('Y-m-d H:i') }}</td>
                         <td>{!! $manualExamination->status_badge !!}</td>
                         <td class="text-right">
+                            @if($manualExamination->status === 'pending')
+                                <a class="btn btn-soft-warning btn-icon btn-circle btn-sm"
+                                   href="{{ route('admin.manual-examinations.schedule', $manualExamination->id) }}"
+                                   title="{{ translate('Schedule') }}">
+                                    <i class="las la-calendar"></i>
+                                </a>
+                            @endif
                             <a class="btn btn-soft-primary btn-icon btn-circle btn-sm" href="{{ route('admin.manual-examinations.show', $manualExamination->id) }}" title="{{ translate('View') }}">
                                 <i class="las la-eye"></i>
                             </a>
