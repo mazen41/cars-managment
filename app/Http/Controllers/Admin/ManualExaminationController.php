@@ -106,4 +106,31 @@ class ManualExaminationController extends Controller
 
         return view('backend.cars.manual-examinations.show', compact('manualExamination', 'sectionData'));
     }
+
+    public function schedule(CarInspection $manualExamination)
+    {
+        abort_unless($manualExamination->is_manual, 404);
+
+        $inspectors = CarInspector::active()->get();
+
+        return view('backend.cars.manual-examinations.schedule', compact('manualExamination', 'inspectors'));
+    }
+
+    public function updateSchedule(Request $request, CarInspection $manualExamination)
+    {
+        abort_unless($manualExamination->is_manual, 404);
+
+        $request->validate([
+            'inspector_id' => 'required|exists:car_inspectors,id',
+            'scheduled_at' => 'nullable|date',
+        ]);
+
+        $manualExamination->update([
+            'inspector_id'  => $request->inspector_id,
+            'scheduled_at'  => $request->scheduled_at,
+        ]);
+
+        flash(translate('Examination scheduled successfully'))->success();
+        return redirect()->route('admin.manual-examinations.index');
+    }
 }
