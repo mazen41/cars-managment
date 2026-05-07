@@ -199,10 +199,11 @@ class ManualExaminationController extends BaseInspectorController
                     'inspection_type_id' => $inspectionTypeId,
                     'inspector_id' => $inspector->id,
                     'requested_by' => $request->user()->id,
-                    'status' => CarInspection::STATUS_PENDING,
+                    'status' => CarInspection::STATUS_COMPLETED,
                     'is_manual' => true,
                     'delivered_to_inspector' => true,
                     'started_at' => now(),
+                    'completed_at' => now(),
                     'total_score' => $validated['total_score'] ?? null,
                     'overall_condition' => $validated['overall_condition'] ?? null,
                     'inspector_notes' => $validated['inspector_notes'] ?? null,
@@ -360,6 +361,76 @@ class ManualExaminationController extends BaseInspectorController
         ], 200);
     }
 
+    public function uploadSectionPhotos(Request $request, int $manualExaminationId): JsonResponse
+    {
+        $inspector = $request->user()->carInspector;
+
+        if (!$inspector) {
+            return response()->json([
+                'error' => [
+                    'message' => 'Inspector profile not found',
+                    'code' => 'INSPECTOR_NOT_FOUND'
+                ]
+            ], 404);
+        }
+
+        $manualExamination = CarInspection::with('inspectionType.sections')
+            ->where('inspector_id', $inspector->id)
+            ->where('is_manual', true)
+            ->find($manualExaminationId);
+
+        if (!$manualExamination) {
+            return response()->json([
+                'error' => [
+                    'message' => 'Manual examination not found',
+                    'code' => 'MANUAL_EXAMINATION_NOT_FOUND'
+                ]
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'section_id' => 'required|integer',
+            'photos' => 'required|array|min:1|max:15',
+            'photos.*' => 'required|image|max:5120',
+        ]);
+
+        $allowedSectionIds = $manualExamination->inspectionType?->sections?->pluck('id')->all() ?? [];
+
+        if (!in_array((int) $validated['section_id'], array_map('intval', $allowedSectionIds), true)) {
+            return response()->json([
+                'error' => [
+                    'message' => 'Invalid section for this inspection type',
+                    'code' => 'INVALID_SECTION_ID',
+                ],
+            ], 422);
+        }
+
+        $metadata = $manualExamination->metadata ?? [];
+        $metadata['section_photos'] ??= [];
+
+        $sectionKey = (string) $validated['section_id'];
+        $metadata['section_photos'][$sectionKey] ??= [];
+
+        $stored = [];
+
+        foreach ($request->file('photos') as $file) {
+            $path = $file->store('car-inspections/section-photos', 'public');
+            $stored[] = ['path' => $path];
+            $metadata['section_photos'][$sectionKey][] = ['path' => $path];
+        }
+
+        $manualExamination->metadata = $metadata;
+        $manualExamination->save();
+
+        return response()->json([
+            'message' => 'Section photos uploaded successfully',
+            'data' => [
+                'section_id' => (int) $validated['section_id'],
+                'uploaded' => $stored,
+            ],
+        ], 200);
+    }
+
     public function downloadPdf(Request $request, int $manualExaminationId)
     {
         $inspector = $request->user()->carInspector;
@@ -499,13 +570,33 @@ class ManualExaminationController extends BaseInspectorController
         $data['inspector_notes'] = $inspection->inspector_notes;
         $data['recommendations'] = $inspection->recommendations;
         $data['summary'] = $inspection->summary;
+        $data['metadata'] = $inspection->metadata ?? [];
         $data['sections'] = $inspection->inspectionType?->sections?->map(function ($section) use ($inspection) {
+            $sectionPhotosRaw = (($inspection->metadata ?? [])['section_photos'] ?? [])[(string) $section->id] ?? [];
+
             return [
                 'id' => $section->id,
                 'name' => $section->name,
                 'description' => $section->description,
                 'order' => $section->order,
+                'section_photos' => collect($sectionPhotosRaw)
+                    ->map(function ($item) {
+                        $path = $item['path'] ?? null;
+                        if (!$path) {
+                            return null;
+                        }
+
+                        return [
+                            'path' => $path,
+                            'url' => \Illuminate\Support\Facades\Storage::disk('public')->url($path),
+                        ];
+                    })
+                    ->filter()
+                    ->values()
+                    ->all(),
                 'fields' => $section->fields->map(function ($field) use ($inspection) {
+                    $fieldValue = $inspection->fieldValues->firstWhere('field_id', $field->id);
+
                     return [
                         'id' => $field->id,
                         'name' => $field->name,
@@ -514,6 +605,13 @@ class ManualExaminationController extends BaseInspectorController
                         'is_required' => $field->is_required,
                         'options' => $field->field_options,
                         'order' => $field->sort_order,
+                        'value' => $fieldValue?->value,
+                        'raw_value' => $fieldValue?->value,
+                        'score' => $fieldValue?->score,
+                        'notes' => $fieldValue?->notes,
+                        'is_flagged' => $fieldValue?->is_flagged ?? false,
+                        'flag_reason' => $fieldValue?->flag_reason,
+                        'photos' => $fieldValue?->file_attachments ?? [],
                     ];
                 })->values(),
             ];

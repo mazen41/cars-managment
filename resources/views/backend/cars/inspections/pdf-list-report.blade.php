@@ -163,6 +163,8 @@
     @php
         $sectionData = $sectionDataByInspection[$carInspection->id] ?? [];
         $car = $carInspection->car;
+        $sectionPhotosMap = ($carInspection->metadata ?? [])['section_photos'] ?? [];
+
         $images = collect();
         if (!empty($car?->main_photo)) {
             $images->push(['url' => uploaded_asset($car->main_photo), 'name' => translate('Main photo')]);
@@ -170,6 +172,46 @@
         foreach (array_filter(explode(',', (string) $car?->photos)) as $photoId) {
             $images->push(['url' => uploaded_asset(trim($photoId)), 'name' => translate('Vehicle photo')]);
         }
+
+        $manualSlotLabels = [
+            'photo_front' => translate('Front view'),
+            'photo_back' => translate('Rear view'),
+            'photo_left' => translate('Left side'),
+            'photo_right' => translate('Right side'),
+            'photo_interior_front' => translate('Interior front'),
+            'photo_interior_back' => translate('Interior rear'),
+            'photo_engine' => translate('Engine'),
+            'photo_trunk' => translate('Trunk'),
+            'photo_odometer' => translate('Odometer'),
+            'photo_dashboard' => translate('Dashboard'),
+            'photo_vin_plate' => translate('VIN plate'),
+            'photo_tires' => translate('Tires'),
+            'photo_undercarriage' => translate('Undercarriage'),
+        ];
+
+        foreach ($manualSlotLabels as $column => $label) {
+            $stored = $carInspection->{$column} ?? null;
+            if (!empty($stored)) {
+                $images->push(['url' => $stored, 'name' => $label, 'is_disk_path' => true]);
+            }
+        }
+
+        foreach ($sectionPhotosMap as $sectionId => $items) {
+            $sectionModel = $carInspection->inspectionType?->sections?->firstWhere('id', (int) $sectionId);
+            $sectionLabel = $sectionModel->name ?? translate('Inspection section');
+
+            foreach ($items as $item) {
+                $path = $item['path'] ?? null;
+                if (!empty($path)) {
+                    $images->push([
+                        'url' => $path,
+                        'name' => $sectionLabel,
+                        'is_disk_path' => true,
+                    ]);
+                }
+            }
+        }
+
         foreach ($carInspection->fieldValues as $fieldValue) {
             foreach (($fieldValue->file_attachments ?? []) as $attachment) {
                 if (!empty($attachment['url'])) {
@@ -193,8 +235,12 @@
 
     <div class="report">
         <div class="hero">
-            @if(uploaded_asset(get_setting('site_icon')))
-                <img class="logo" src="{{ uploaded_asset(get_setting('site_icon')) }}" alt="{{ get_setting('site_name') }}">
+            @php
+                $__heroLogo = uploaded_asset(get_setting('site_icon'));
+                $__heroLogoPdf = $__heroLogo ? pdf_safe_image_src($__heroLogo) : '';
+            @endphp
+            @if($__heroLogoPdf !== '')
+                <img class="logo" src="{{ $__heroLogoPdf }}" alt="{{ get_setting('site_name') }}">
             @endif
             <h1>{{ translate('Vehicle Examination Report') }}</h1>
             <table class="meta">
@@ -299,8 +345,15 @@
                     @foreach($images->chunk(3) as $row)
                         <tr>
                             @foreach($row as $image)
+                                @php
+                                    $src = pdf_safe_image_src($image['url']);
+                                @endphp
                                 <td>
-                                    <img src="{{ $image['url'] }}" alt="{{ $image['name'] }}">
+                                    @if($src !== '')
+                                        <img src="{{ $src }}" alt="{{ $image['name'] }}">
+                                    @else
+                                        <span class="caption muted">{{ translate('Image unavailable') }}</span>
+                                    @endif
                                     <div class="caption">{{ $image['name'] }}</div>
                                 </td>
                             @endforeach

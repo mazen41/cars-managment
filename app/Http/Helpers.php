@@ -2893,6 +2893,70 @@ function get_pdf_options(){
    return $result;
    }
 
+if (!function_exists('pdf_binary_to_data_uri')) {
+    function pdf_binary_to_data_uri(string $absolutePath): string
+    {
+        if (!file_exists($absolutePath) || !is_readable($absolutePath)) {
+            return '';
+        }
+        $mime = mime_content_type($absolutePath);
+        $mime = ($mime !== false && $mime !== '') ? $mime : 'image/jpeg';
+        $binary = file_get_contents($absolutePath);
+
+        return 'data:' . $mime . ';base64,' . base64_encode($binary ?: '');
+    }
+}
+
+if (!function_exists('pdf_safe_image_src')) {
+    /**
+     * Resolve an image URL or storage-relative path into a Dompdf-friendly data URI where possible.
+     */
+    function pdf_safe_image_src($rawUrlOrPath): string
+    {
+        if ($rawUrlOrPath === null || $rawUrlOrPath === '') {
+            return '';
+        }
+
+        if (strpos($rawUrlOrPath, 'data:') === 0) {
+            return $rawUrlOrPath;
+        }
+
+        if (!preg_match('#^https?://#i', $rawUrlOrPath)) {
+            $candidates = [
+                storage_path('app/public/' . ltrim((string) $rawUrlOrPath, '/')),
+                public_path('storage/' . ltrim((string) $rawUrlOrPath, '/')),
+                public_path(ltrim((string) $rawUrlOrPath, '/')),
+            ];
+            foreach ($candidates as $file) {
+                if ($file && file_exists($file) && is_readable($file)) {
+                    return pdf_binary_to_data_uri($file);
+                }
+            }
+
+            return '';
+        }
+
+        // Full URL produced by helpers (often includes /public/... or /storage/...)
+        $pathOnly = preg_replace('#^https?://[^/]+/#i', '', (string) $rawUrlOrPath);
+
+        if (preg_match('#^public/(.+)$#', $pathOnly, $m)) {
+            $pub = public_path($m[1]);
+            if (file_exists($pub) && is_readable($pub)) {
+                return pdf_binary_to_data_uri($pub);
+            }
+        }
+
+        if (preg_match('#(?:^|/)storage/(.+)$#', $pathOnly, $m)) {
+            $stor = storage_path('app/public/' . $m[1]);
+            if (file_exists($stor) && is_readable($stor)) {
+                return pdf_binary_to_data_uri($stor);
+            }
+        }
+
+        return $rawUrlOrPath;
+    }
+}
+
 if(!function_exists('generateVerificationCode')) {
     function generateVerificationCode(): int {
         return get_setting('test_otp_code')
