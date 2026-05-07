@@ -304,6 +304,61 @@ class ManualExaminationController extends BaseInspectorController
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 
+    public function uploadVehiclePhotos(Request $request, int $manualExaminationId): JsonResponse
+    {
+        $inspector = $request->user()->carInspector;
+
+        if (!$inspector) {
+            return response()->json([
+                'error' => [
+                    'message' => 'Inspector profile not found',
+                    'code' => 'INSPECTOR_NOT_FOUND'
+                ]
+            ], 404);
+        }
+
+        $manualExamination = CarInspection::where('inspector_id', $inspector->id)
+            ->where('is_manual', true)
+            ->find($manualExaminationId);
+
+        if (!$manualExamination) {
+            return response()->json([
+                'error' => [
+                    'message' => 'Manual examination not found',
+                    'code' => 'MANUAL_EXAMINATION_NOT_FOUND'
+                ]
+            ], 404);
+        }
+
+        $request->validate([
+            'photos'   => 'required|array|min:1',
+            'photos.*' => 'required|image|max:5120',
+        ]);
+
+        $photoFields = [
+            'photo_front', 'photo_back', 'photo_left', 'photo_right',
+            'photo_interior_front', 'photo_interior_back', 'photo_engine',
+            'photo_trunk', 'photo_odometer', 'photo_dashboard',
+            'photo_vin_plate', 'photo_tires', 'photo_undercarriage',
+        ];
+
+        $updates = [];
+        foreach ($request->file('photos') as $index => $file) {
+            $field = $photoFields[$index] ?? null;
+            if (!$field) break;
+            $updates[$field] = $file->store('car-inspections/photos', 'public');
+        }
+
+        if (!empty($updates)) {
+            $manualExamination->update($updates);
+        }
+
+        return response()->json([
+            'message' => 'Vehicle photos uploaded successfully',
+            'data'    => $updates,
+        ], 200);
+    }
+
     private function getDefaultInspectionTypeId(): ?int
     {
         return CarInspectionType::where('is_active', true)
