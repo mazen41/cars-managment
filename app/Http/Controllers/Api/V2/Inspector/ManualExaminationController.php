@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use PDF;
 
 class ManualExaminationController extends BaseInspectorController
 {
@@ -357,6 +358,75 @@ class ManualExaminationController extends BaseInspectorController
             'message' => 'Vehicle photos uploaded successfully',
             'data'    => $updates,
         ], 200);
+    }
+
+    public function downloadPdf(Request $request, int $manualExaminationId)
+    {
+        $inspector = $request->user()->carInspector;
+
+        if (!$inspector) {
+            return response()->json([
+                'error' => [
+                    'message' => 'Inspector profile not found',
+                    'code' => 'INSPECTOR_NOT_FOUND'
+                ]
+            ], 404);
+        }
+
+        $manualExamination = CarInspection::where('inspector_id', $inspector->id)
+            ->where('is_manual', true)
+            ->find($manualExaminationId);
+
+        if (!$manualExamination) {
+            return response()->json([
+                'error' => [
+                    'message' => 'Manual examination not found',
+                    'code' => 'MANUAL_EXAMINATION_NOT_FOUND'
+                ]
+            ], 404);
+        }
+
+        $manualExamination->load([
+            'car.brand',
+            'car.model',
+            'car.category',
+            'car.color',
+            'inspectionType.sections.fields',
+            'inspector.user',
+            'requester',
+            'fieldValues.field.section',
+        ]);
+
+        $sectionData = [];
+        if ($manualExamination->inspectionType) {
+            foreach ($manualExamination->inspectionType->sections as $section) {
+                $sectionData[$section->id] = [
+                    'section'    => $section,
+                    'fields'     => [],
+                    'completion' => $manualExamination->getSectionCompletion($section->id),
+                ];
+                foreach ($section->fields as $field) {
+                    $sectionData[$section->id]['fields'][] = [
+                        'field' => $field,
+                        'value' => $manualExamination->fieldValues->where('field_id', $field->id)->first(),
+                    ];
+                }
+            }
+        }
+
+        $options = get_pdf_options();
+        $pdf = PDF::loadView('backend.cars.inspections.pdf-report', [
+            'carInspection' => $manualExamination,
+            'sectionData'   => $sectionData,
+            'font_family'   => $options['font_family'],
+            'direction'     => $options['direction'],
+            'text_align'    => $options['text_align'],
+            'not_text_align' => $options['not_text_align'],
+        ]);
+
+        $filename = 'manual-examination-report-' . $manualExamination->inspection_number . '.pdf';
+
+        return $pdf->download($filename);
     }
 
     private function getDefaultInspectionTypeId(): ?int
