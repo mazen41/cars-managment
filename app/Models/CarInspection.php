@@ -253,6 +253,24 @@ class CarInspection extends Model
             ]);
     }
     /**
+     * Scope to get manually created examinations.
+     */
+    public function scopeManual($query)
+    {
+        return $query->where('is_manual', true);
+    }
+
+    /**
+     * Scope to get regular inspections and hide manual examinations.
+     */
+    public function scopeRegular($query)
+    {
+        return $query->where(function ($manualQuery) {
+            $manualQuery->where('is_manual', false)->orWhereNull('is_manual');
+        });
+    }
+
+    /**
      * Scope to get by delivery to inspector flag
      */
 

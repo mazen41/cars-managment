@@ -419,7 +419,7 @@ class CarInspectionController extends Controller
             "inspector",
             "requester",
             "payment",
-        ]);
+        ])->regular();
 
         // Search functionality
         if ($request->has("search") && !empty($request->search)) {
@@ -619,6 +619,8 @@ class CarInspectionController extends Controller
      */
     public function show(CarInspection $carInspection)
     {
+        abort_if($carInspection->is_manual, 404);
+
         $carInspection->load([
             "car.brand",
             "car.model",

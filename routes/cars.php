@@ -643,6 +643,10 @@ Route::prefix("admin")
                     ManualExaminationController::class,
                     "index",
                 ])->name("index");
+                Route::get("/{manualExamination}/photos/{encodedPath}", [
+                    ManualExaminationController::class,
+                    "photo",
+                ])->name("photo");
                 Route::get("/{manualExamination}", [
                     ManualExaminationController::class,
                     "show",

@@ -40,7 +40,7 @@ class CarInspectionController extends Controller
         try {
             $user = auth('api')->user();
 
-            $inspectionsQuery = CarInspection::query();
+            $inspectionsQuery = CarInspection::regular();
             if($request->filled('inspection_type_id')) {
                $inspectionsQuery->where('inspection_type_id', $request->inspection_type_id);
             }
@@ -74,6 +74,13 @@ class CarInspectionController extends Controller
     public function show(CarInspection $carInspection)
     {
         try {
+            if ($carInspection->is_manual) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Inspection not found'
+                ], 404);
+            }
+
             if ($carInspection->status !== CarInspection::STATUS_COMPLETED) {
                 return response()->json([
                     'success' => false,
