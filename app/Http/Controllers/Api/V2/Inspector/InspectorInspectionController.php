@@ -54,7 +54,7 @@ class InspectorInspectionController extends BaseInspectorController
         ]);
 
         $query = CarInspection::with([
-            'car:id,vin,brand_id,model_id,manufacture_year,fuel_type,transmission',
+            'car:id,vin,brand_id,model_id,color_id,manufacture_year,fuel_type,transmission,milage',
             'car.brand:id,name',
             'car.model:id,name',
             'car.color:id,name',
@@ -85,7 +85,7 @@ class InspectorInspectionController extends BaseInspectorController
         if ($request->has('car_type')) {
             $query->whereHas('car', function ($carQuery) use ($request) {
                 $carQuery->where('fuel_type', 'like', '%' . $request->car_type . '%')
-                    ->orWhere('transmission_type', 'like', '%' . $request->car_type . '%');
+                    ->orWhere('transmission', 'like', '%' . $request->car_type . '%');
             });
         }
 
@@ -742,14 +742,6 @@ class InspectorInspectionController extends BaseInspectorController
         }
     }
 
-<<<<<<< HEAD
-    public function downloadPdf(CarInspection $carInspection)
-{
-    if ($carInspection->status !== CarInspection::STATUS_COMPLETED) {
-        return redirect()
-            ->back()
-            ->with('error', 'PDF report is only available for completed inspections');
-=======
     public function downloadPdf(Request $request, int $inspectionId)
     {
         $inspector = $request->user()->carInspector;
@@ -802,57 +794,7 @@ class InspectorInspectionController extends BaseInspectorController
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             ]
         );
->>>>>>> 91532fa79a0d007d475a27afa45e444952297547
     }
-
-    $carInspection->load([
-        'car.brand',
-        'car.model',
-        'car.category',
-        'inspectionType.sections.fields',
-        'inspector',
-        'requester',
-        'fieldValues.field.section',
-    ]);
-
-    $sectionData = [];
-    foreach ($carInspection->inspectionType->sections as $section) {
-        $sectionData[$section->id] = [
-            'section'    => $section,
-            'fields'     => [],
-            'completion' => $carInspection->getSectionCompletion($section->id),
-        ];
-        foreach ($section->fields as $field) {
-            $sectionData[$section->id]['fields'][] = [
-                'field' => $field,
-                'value' => $carInspection->fieldValues->where('field_id', $field->id)->first(),
-            ];
-        }
-    }
-
-    $options = get_pdf_options();
-    $pdf = PDF::loadView('backend.cars.inspections.pdf-report', [
-        'carInspection'  => $carInspection,
-        'sectionData'    => $sectionData,
-        'font_family'    => $options['font_family'],
-        'direction'      => $options['direction'],
-        'text_align'     => $options['text_align'],
-        'not_text_align' => $options['not_text_align'],
-    ]);
-
-    $filename = 'inspection-report-' . $carInspection->inspection_number . '.pdf';
-
-    return response()->streamDownload(
-        function () use ($pdf) {
-            echo $pdf->output();
-        },
-        $filename,
-        [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]
-    );
-}
 
     private function pdfRelations(): array
     {
@@ -898,6 +840,10 @@ class InspectorInspectionController extends BaseInspectorController
      */
     private function transformInspection(CarInspection $inspection): array
     {
+        $car = $inspection->car;
+        $inspectionType = $inspection->inspectionType;
+        $requester = $inspection->requester;
+
         return [
             'id' => $inspection->id,
             'inspection_number' => $inspection->inspection_number,
@@ -907,36 +853,59 @@ class InspectorInspectionController extends BaseInspectorController
             'started_at' => $inspection->started_at?->toISOString(),
             'completed_at' => $inspection->completed_at?->toISOString(),
             'is_overdue' => $inspection->is_overdue,
-            'completion_percentage' => $inspection->completion_percentage,
+            'completion_percentage' => $this->getCompletionPercentage($inspection),
             'duration' => $inspection->formatted_duration,
             'car' => [
-                'id' => $inspection->car->id,
-                'vin'   => $inspection->car->vin,
-                'name' => $inspection->car->car_name,
-                'brand' => $inspection->car->brand?->name,
-                'model' => $inspection->car->model?->name,
-                'year' => $inspection->car->year,
-                'fuel_type' => $inspection->car->fuel_type,
-                'transmission_type' => $inspection->car->transmission_type
+                'id' => $car?->id,
+                'vin' => $car?->vin,
+                'name' => $this->getCarName($car),
+                'brand' => $car?->brand?->name,
+                'model' => $car?->model?->name,
+                'year' => $car?->manufacture_year,
+                'fuel_type' => $car?->fuel_type,
+                'transmission_type' => $car?->transmission,
             ],
             'inspection_type' => [
-                'id' => $inspection->inspectionType->id,
-                'name' => $inspection->inspectionType->name,
-                'price' => $inspection->inspectionType->price
+                'id' => $inspectionType?->id,
+                'name' => $inspectionType?->name,
+                'price' => $inspectionType?->price,
             ],
             'customer' => [
-                'id' => $inspection->requester->id,
-                'name' => $inspection->requester->name,
-                'email' => $inspection->requester->email,
-                'phone' => $inspection->requester->phone
+                'id' => $requester?->id,
+                'name' => $requester?->name,
+                'email' => $requester?->email,
+                'phone' => $requester?->phone,
             ],
             'actions' => [
                 'can_start' => $inspection->can_start,
                 'can_complete' => $inspection->can_complete,
                 'can_cancel' => $inspection->can_cancel,
-                'is_editable' => $inspection->is_editable
+                'is_editable' => $inspection->is_editable,
             ]
         ];
+    }
+
+    private function getCompletionPercentage(CarInspection $inspection): int|float
+    {
+        if (!$inspection->inspectionType) {
+            return 0;
+        }
+
+        return $inspection->completion_percentage;
+    }
+
+    private function getCarName($car): ?string
+    {
+        if (!$car) {
+            return null;
+        }
+
+        $brand = $car->brand?->name;
+        $model = $car->model?->name;
+        $year = $car->manufacture_year;
+        $color = $car->color?->getTranslation('name');
+
+        return trim(implode(' ', array_filter([$brand, $model, $year]))) . ($color ? " - {$color}" : '');
     }
 
     /**
