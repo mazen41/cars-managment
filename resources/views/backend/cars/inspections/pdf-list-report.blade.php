@@ -99,14 +99,10 @@
         .muted { color:#6b7280; }
 
         .feature-banner {
-            margin-top: 12px;
-            border: 1px solid #e5e7eb;
-            background: #fff;
-            border-radius: 10px;
-            padding: 8px;
+            margin-top: 20px;
             text-align: center;
         }
-        .feature-banner img { width: 100%; max-height: 125px; object-fit: contain; }
+        .feature-banner img { max-width: 200px; max-height: 150px; object-fit: contain; border-radius: 8px; border: 1px solid #e5e7eb; padding: 4px; background: #fff; }
 
         .online-card {
             margin-top: 14px;
@@ -242,11 +238,6 @@
                 </tr>
             </table>
 
-            @if($importantImageSrc !== '')
-                <div class="feature-banner">
-                    <img src="{{ $importantImageSrc }}" alt="Inspection reference visual">
-                </div>
-            @endif
         </div>
 
         <div class="section">
@@ -358,6 +349,12 @@
             <div class="label-title">{{ translate('View Report Online') }} / {{ translate('عرض التقرير الكامل') }}</div>
             <a href="{{ $reportUrl }}">{{ $reportUrl }}</a>
         </div>
+
+        @if($importantImageSrc !== '')
+            <div class="feature-banner">
+                <img src="{{ $importantImageSrc }}" alt="Inspection reference visual">
+            </div>
+        @endif
     </div>
 @empty
     <h1>{{ translate('Vehicle Examination Report') }}</h1>
