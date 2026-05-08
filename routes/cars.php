@@ -647,6 +647,10 @@ Route::prefix("admin")
                     ManualExaminationController::class,
                     "photo",
                 ])->name("photo");
+                Route::get("/{manualExamination}/download", [
+                    ManualExaminationController::class,
+                    "download",
+                ])->name("download");
                 Route::get("/{manualExamination}", [
                     ManualExaminationController::class,
                     "show",
@@ -795,10 +799,11 @@ Route::prefix("admin")
         ])->name("get-cities");
     });
 Route::prefix('v2')->group(function () {
-    Route::middleware('auth:sanctum')->prefix('inspector')->group(function () {
-        Route::post('/manual-examinations', [ManualExaminationController::class, 'store']);
-        Route::get('/manual-examinations', [ManualExaminationController::class, 'index']);
-        Route::get('/manual-examinations/{id}', [ManualExaminationController::class, 'show']);
+    Route::middleware(['auth:sanctum', 'manual_examinations.enabled'])->prefix('inspector')->group(function () {
+        Route::post('/manual-examinations', [\App\Http\Controllers\Api\V2\Inspector\ManualExaminationController::class, 'store']);
+        Route::get('/manual-examinations', [\App\Http\Controllers\Api\V2\Inspector\ManualExaminationController::class, 'index']);
+        Route::get('/manual-examinations/{id}/download', [\App\Http\Controllers\Api\V2\Inspector\ManualExaminationController::class, 'downloadPdf']);
+        Route::get('/manual-examinations/{id}', [\App\Http\Controllers\Api\V2\Inspector\ManualExaminationController::class, 'show']);
     });
 
     // Inspection types (no prefix mismatch)

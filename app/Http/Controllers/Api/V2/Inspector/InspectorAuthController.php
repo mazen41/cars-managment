@@ -101,6 +101,9 @@ class InspectorAuthController extends Controller
                             'certification_number' => $user->carInspector->certification_number,
                             'experience_years' => $user->carInspector->experience_years,
                             'image_url' => $user->carInspector->image_url,
+                            'permissions' => [
+                                'can_manual_examination' => $user->carInspector->canUseManualExaminations(),
+                            ],
                         ]
                     ]
                 ]
@@ -240,6 +243,17 @@ class InspectorAuthController extends Controller
                         'user_type' => $user->user_type,
                         'email_verified_at' => $user->email_verified_at,
                         'phone_verified_at' => $user->phone_verified_at,
+                        'inspector' => [
+                            'id' => $inspector->id,
+                            'shop_name' => $inspector->shop_name,
+                            'address' => $inspector->address,
+                            'phone' => $inspector->phone,
+                            'email' => $inspector->email,
+                            'is_active' => $inspector->is_active,
+                            'permissions' => [
+                                'can_manual_examination' => $inspector->canUseManualExaminations(),
+                            ],
+                        ],
                     ],
                     'inspector' => [
                         'id' => $inspector->id,
@@ -259,6 +273,9 @@ class InspectorAuthController extends Controller
                         'image_url' => $inspector->image_url,
                         'banner_image_url' => $inspector->banner_image_url,
                         'stats' => $inspector->stats,
+                        'permissions' => [
+                            'can_manual_examination' => $inspector->canUseManualExaminations(),
+                        ],
                         'country' => $inspector->country,
                         'state' => $inspector->state,
                         'city' => $inspector->city,

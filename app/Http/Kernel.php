@@ -100,6 +100,7 @@ class Kernel extends HttpKernel
         'web_app_activation' => \App\Http\Middleware\WebAppActivation::class,
         'inspector.auth' => \App\Http\Middleware\InspectorAuthMiddleware::class,
         'inspector.errors' => \App\Http\Middleware\InspectorApiErrorHandler::class,
+        'manual_examinations.enabled' => \App\Http\Middleware\EnsureManualExaminationPermission::class,
         'verified-seller' => \App\Http\Middleware\IsSellerVerified::class
     ];
 

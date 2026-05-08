@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CarInspection;
 use App\Models\CarInspector;
+use App\Services\ManualExaminationService;
 use Illuminate\Http\Request;
+use PDF;
 
 class ManualExaminationController extends Controller
 {
@@ -72,39 +74,30 @@ class ManualExaminationController extends Controller
     {
         abort_unless($manualExamination->is_manual, 404);
 
-        $manualExamination->load([
-            'car.brand',
-            'car.model',
-            'car.category',
-            'car.color',
-            'car.country',
-            'car.state',
-            'car.city',
-            'car.features.section',
-            'car.customFieldValues.customField.options',
-            'inspector.user',
-            'inspectionType.sections.fields',
-            'fieldValues.field.section',
-            'requester',
-        ]);
-
-        $sectionData = [];
-        foreach ($manualExamination->inspectionType->sections as $section) {
-            $sectionData[$section->id] = [
-                'section' => $section,
-                'fields' => [],
-                'completion' => $manualExamination->getSectionCompletion($section->id),
-            ];
-
-            foreach ($section->fields as $field) {
-                $sectionData[$section->id]['fields'][] = [
-                    'field' => $field,
-                    'value' => $manualExamination->fieldValues->where('field_id', $field->id)->first(),
-                ];
-            }
-        }
+        ['manualExamination' => $manualExamination, 'sectionData' => $sectionData] =
+            ManualExaminationService::getFullData((int) $manualExamination->id);
 
         return view('backend.cars.manual-examinations.show', compact('manualExamination', 'sectionData'));
+    }
+
+    public function download(CarInspection $manualExamination)
+    {
+        abort_unless($manualExamination->is_manual, 404);
+
+        ['manualExamination' => $manualExamination, 'sectionData' => $sectionData] =
+            ManualExaminationService::getFullData((int) $manualExamination->id);
+
+        $options = get_pdf_options();
+        $pdf = PDF::loadView('backend.cars.inspections.manual-pdf-report', [
+            'carInspection' => $manualExamination,
+            'sectionData' => $sectionData,
+            'font_family' => $options['font_family'],
+            'direction' => $options['direction'],
+            'text_align' => $options['text_align'],
+            'not_text_align' => $options['not_text_align'],
+        ]);
+
+        return $pdf->download('manual-examination-' . $manualExamination->id . '.pdf');
     }
 
     public function photo(CarInspection $manualExamination, string $encodedPath)

@@ -45,12 +45,15 @@ Route::group(['prefix' => 'v2/inspector', 'middleware' => ['app_language', 'insp
         Route::get('inspections/{inspection}/download-pdf', 'App\Http\Controllers\Api\V2\Inspector\InspectorInspectionController@downloadPdf');
 
         // Manual examination routes
-        Route::get('manual-examinations', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@index');
-        Route::post('manual-examinations', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@store');
-        Route::get('manual-examinations/{manualExamination}', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@show');
-        Route::post('manual-examinations/{manualExamination}/vehicle-photos', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@uploadVehiclePhotos');
-        Route::post('manual-examinations/{manualExamination}/section-photos', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@uploadSectionPhotos');
-        Route::get('manual-examinations/{manualExamination}/download-pdf', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@downloadPdf');
+        Route::middleware(['manual_examinations.enabled'])->group(function () {
+            Route::get('manual-examinations', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@index');
+            Route::post('manual-examinations', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@store');
+            Route::get('manual-examinations/{manualExamination}/download', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@downloadPdf');
+            Route::get('manual-examinations/{manualExamination}/download-pdf', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@downloadPdf');
+            Route::get('manual-examinations/{manualExamination}', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@show');
+            Route::post('manual-examinations/{manualExamination}/vehicle-photos', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@uploadVehiclePhotos');
+            Route::post('manual-examinations/{manualExamination}/section-photos', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@uploadSectionPhotos');
+        });
 
         // Inspection status management routes
         Route::put('inspections/{inspection}/start', 'App\Http\Controllers\Api\V2\Inspector\InspectorInspectionController@start');

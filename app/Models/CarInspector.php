@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class CarInspector extends Model
 {
@@ -94,6 +95,16 @@ class CarInspector extends Model
     public function inspections()
     {
         return $this->hasMany(CarInspection::class, "inspector_id");
+    }
+
+    public function manualExaminationPermission(): HasOne
+    {
+        return $this->hasOne(ManualExaminationPermission::class, 'center_id');
+    }
+
+    public function canUseManualExaminations(): bool
+    {
+        return $this->manualExaminationPermission?->can_manual_examination ?? true;
     }
 
     /**

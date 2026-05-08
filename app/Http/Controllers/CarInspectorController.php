@@ -118,6 +118,7 @@ class CarInspectorController extends Controller
             "banner_image" => "nullable|string",
             "working_hours" => "nullable|array",
             "services_offered" => "nullable|array",
+            "can_manual_examination" => "boolean",
         ]);
 
         if ($validator->fails()) {
@@ -165,6 +166,11 @@ class CarInspectorController extends Controller
                 "is_active" => true,
                 "admin_to_pay" => 0,
             ]);
+
+            $this->syncManualExaminationPermission(
+                $carInspector,
+                $request->boolean('can_manual_examination', true)
+            );
 
             DB::commit();
 
@@ -268,6 +274,7 @@ class CarInspectorController extends Controller
             "working_hours" => "nullable|array",
             "services_offered" => "nullable|array",
             "is_active" => "boolean",
+            "can_manual_examination" => "boolean",
         ]);
 
         if ($validator->fails()) {
@@ -311,6 +318,11 @@ class CarInspectorController extends Controller
                 "services_offered" => $request->services_offered,
                 "is_active" => $request->boolean("is_active"),
             ]);
+
+            $this->syncManualExaminationPermission(
+                $carInspector,
+                $request->boolean('can_manual_examination')
+            );
 
             DB::commit();
 
@@ -602,5 +614,33 @@ class CarInspectorController extends Controller
             ->get(["id", "name"]);
 
         return response()->json($cities);
+    }
+
+    private function syncManualExaminationPermission(CarInspector $carInspector, bool $enabled): void
+    {
+        $values = [
+            'can_manual_examination' => $enabled,
+        ];
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('permissions', 'name')) {
+            $values['name'] = 'center_' . $carInspector->id . '_manual_examination';
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('permissions', 'guard_name')) {
+            $values['guard_name'] = 'web';
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('permissions', 'updated_at')) {
+            $values['updated_at'] = now();
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('permissions', 'created_at')) {
+            $values['created_at'] = now();
+        }
+
+        DB::table('permissions')->updateOrInsert(
+            ['center_id' => $carInspector->id],
+            $values
+        );
     }
 }

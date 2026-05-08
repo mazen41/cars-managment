@@ -8,6 +8,7 @@ use App\Models\Car;
 use App\Models\CarInspection;
 use App\Models\CarInspectionFieldValue;
 use App\Models\CarInspectionType;
+use App\Services\ManualExaminationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -53,14 +54,7 @@ class ManualExaminationController extends BaseInspectorController
             'per_page' => 'sometimes|integer|min:1|max:100',
         ]);
 
-        $query = CarInspection::with([
-            'car.brand:id,name',
-            'car.model:id,name',
-            'inspectionType:id,name',
-        ])
-            ->where('inspector_id', $inspector->id)
-            ->where('is_manual', true)
-            ->latest();
+        $query = ManualExaminationService::queryForInspector($inspector->id)->latest();
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -284,32 +278,8 @@ class ManualExaminationController extends BaseInspectorController
             ], 404);
         }
 
-        $manualExamination = CarInspection::with([
-            'car.brand',
-            'car.model',
-            'car.category',
-            'car.color',
-            'car.country',
-            'car.state',
-            'car.city',
-            'car.features.section',
-            'car.customFieldValues.customField.options',
-            'inspectionType.sections.fields',
-            'fieldValues.field.section',
-            'requester:id,name,email,phone',
-        ])
-            ->where('inspector_id', $inspector->id)
-            ->where('is_manual', true)
-            ->find($manualExaminationId);
-
-        if (!$manualExamination) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Manual examination not found',
-                    'code' => 'MANUAL_EXAMINATION_NOT_FOUND'
-                ]
-            ], 404);
-        }
+        ['manualExamination' => $manualExamination] =
+            ManualExaminationService::getFullData($manualExaminationId, $inspector->id);
 
         return response()->json([
             'data' => $this->transformDetail($manualExamination),
@@ -454,49 +424,11 @@ class ManualExaminationController extends BaseInspectorController
         ], 404);
     }
 
-    $manualExamination = CarInspection::where('inspector_id', $inspector->id)
-        ->where('is_manual', true)
-        ->find($manualExaminationId);
-
-    if (!$manualExamination) {
-        return response()->json([
-            'error' => [
-                'message' => 'Manual examination not found',
-                'code'    => 'MANUAL_EXAMINATION_NOT_FOUND',
-            ]
-        ], 404);
-    }
-
-    $manualExamination->load([
-        'car.brand',
-        'car.model',
-        'car.category',
-        'car.color',
-        'inspectionType.sections.fields',
-        'inspector.user',
-        'requester',
-        'fieldValues.field.section',
-    ]);
-
-    $sectionData = [];
-    if ($manualExamination->inspectionType) {
-        foreach ($manualExamination->inspectionType->sections as $section) {
-            $sectionData[$section->id] = [
-                'section'    => $section,
-                'fields'     => [],
-                'completion' => $manualExamination->getSectionCompletion($section->id),
-            ];
-            foreach ($section->fields as $field) {
-                $sectionData[$section->id]['fields'][] = [
-                    'field' => $field,
-                    'value' => $manualExamination->fieldValues->where('field_id', $field->id)->first(),
-                ];
-            }
-        }
-    }
+    ['manualExamination' => $manualExamination, 'sectionData' => $sectionData] =
+        ManualExaminationService::getFullData($manualExaminationId, $inspector->id);
 
     $options = get_pdf_options();
-    $pdf = PDF::loadView('backend.cars.inspections.pdf-report', [
+    $pdf = PDF::loadView('backend.cars.inspections.manual-pdf-report', [
         'carInspection'  => $manualExamination,
         'sectionData'    => $sectionData,
         'font_family'    => $options['font_family'],
@@ -505,7 +437,7 @@ class ManualExaminationController extends BaseInspectorController
         'not_text_align' => $options['not_text_align'],
     ]);
 
-    $filename = 'manual-examination-report-' . $manualExamination->inspection_number . '.pdf';
+    $filename = 'manual-examination-' . $manualExamination->id . '.pdf';
 
     // ✅ streamDownload keeps the response inside Laravel's pipeline
     // so CORS middleware can attach Access-Control-Allow-Origin correctly.
@@ -563,6 +495,10 @@ class ManualExaminationController extends BaseInspectorController
             'transmission' => $inspection->car?->transmission,
             'fuel_type' => $inspection->car?->fuel_type,
             'price' => $inspection->car?->price,
+            'description' => $inspection->car?->description,
+            'location' => $inspection->car?->location,
+            'country' => $inspection->car?->country?->name,
+            'state' => $inspection->car?->state?->name,
             'city' => $inspection->car?->city?->name,
             'main_photo' => $inspection->car?->main_photo,
             'photos' => (function() use ($inspection) {
@@ -635,7 +571,7 @@ class ManualExaminationController extends BaseInspectorController
                 'description' => $section->description,
                 'order' => $section->order,
                 'section_photos' => collect($sectionPhotosRaw)
-                    ->map(function ($item) {
+                    ->map(function ($item) use ($inspection) {
                         $path = $item['path'] ?? null;
                         if (!$path) {
                             return null;
@@ -666,7 +602,17 @@ class ManualExaminationController extends BaseInspectorController
                         'notes' => $fieldValue?->notes,
                         'is_flagged' => $fieldValue?->is_flagged ?? false,
                         'flag_reason' => $fieldValue?->flag_reason,
-                        'photos' => $fieldValue?->file_attachments ?? [],
+                        'photos' => collect($fieldValue?->file_attachments ?? [])
+                            ->map(function ($attachment) use ($inspection) {
+                                $attachment = (array) $attachment;
+                                $path = $attachment['path'] ?? null;
+
+                                return array_merge($attachment, [
+                                    'url' => $attachment['url'] ?? ($path ? manual_examination_photo_url($inspection, $path) : null),
+                                ]);
+                            })
+                            ->values()
+                            ->all(),
                     ];
                 })->values(),
             ];

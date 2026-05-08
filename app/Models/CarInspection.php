@@ -728,6 +728,44 @@ class CarInspection extends Model
      */
     public function getReportUrlAttribute()
     {
+        if ($this->is_manual) {
+            return url('/manual-examinations/' . $this->id . '/download');
+        }
+
         return route('api.car-inspections.download-pdf', $this->id);
+    }
+
+    public function getImageUrlAttribute()
+    {
+        return manual_examination_photo_url($this, $this->photo_front);
+    }
+
+    public function getManualPhotoUrlsAttribute(): array
+    {
+        $photoFields = [
+            'photo_front',
+            'photo_back',
+            'photo_left',
+            'photo_right',
+            'photo_interior_front',
+            'photo_interior_back',
+            'photo_engine',
+            'photo_trunk',
+            'photo_odometer',
+            'photo_dashboard',
+            'photo_vin_plate',
+            'photo_tires',
+            'photo_undercarriage',
+        ];
+
+        $urls = [];
+
+        foreach ($photoFields as $field) {
+            if (!empty($this->{$field})) {
+                $urls[$field] = manual_examination_photo_url($this, $this->{$field});
+            }
+        }
+
+        return $urls;
     }
 }

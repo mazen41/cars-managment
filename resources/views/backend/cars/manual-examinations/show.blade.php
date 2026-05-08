@@ -91,6 +91,9 @@ $manualPhotoUrl = fn ($path) => manual_examination_photo_url($manualExamination,
             <div class="text-muted">{{ $manualExamination->inspection_number }}</div>
         </div>
         <div class="col-md-4 text-right">
+            <a href="{{ route('admin.manual-examinations.download', $manualExamination->id) }}" class="btn btn-primary">
+                <i class="las la-download mr-1"></i>{{ translate('Download PDF') }}
+            </a>
             <a href="{{ route('admin.manual-examinations.index') }}" class="btn btn-light">
                 <i class="las la-arrow-left mr-1"></i>{{ translate('Back') }}
             </a>

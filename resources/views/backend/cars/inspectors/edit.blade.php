@@ -100,6 +100,18 @@
                                     <small class="form-text text-muted">{{ translate('Active inspectors can receive new inspection assignments') }}</small>
                                 </div>
                             </div>
+
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="can_manual_examination">{{ translate('Manual Examinations') }}</label>
+                                <div class="col-md-9">
+                                    <input type="hidden" name="can_manual_examination" value="0">
+                                    <label class="aiz-switch aiz-switch-success mb-0">
+                                        <input type="checkbox" name="can_manual_examination" id="can_manual_examination" value="1" {{ old('can_manual_examination', $carInspector->canUseManualExaminations()) ? 'checked' : '' }}>
+                                        <span class="slider round"></span>
+                                    </label>
+                                    <small class="form-text text-muted">{{ translate('Allow this inspection center to access manual examination pages and APIs') }}</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

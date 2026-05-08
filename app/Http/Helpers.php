@@ -2934,7 +2934,7 @@ if (!function_exists('decode_inspection_photo_path')) {
 if (!function_exists('inspection_photo_file_candidates')) {
     function inspection_photo_file_candidates(?string $path): array
     {
-        $normalized = ltrim(str_replace('\\', '/', (string) $path), '/');
+        $normalized = normalize_public_storage_path($path);
 
         if ($normalized === '') {
             return [];
@@ -2955,6 +2955,38 @@ if (!function_exists('inspection_photo_file_candidates')) {
     }
 }
 
+if (!function_exists('normalize_public_storage_path')) {
+    function normalize_public_storage_path(?string $path): string
+    {
+        $normalized = ltrim(str_replace('\\', '/', (string) $path), '/');
+
+        if ($normalized === '') {
+            return '';
+        }
+
+        if (preg_match('#^https?://[^/]+/(.+)$#i', $normalized, $matches)) {
+            $normalized = $matches[1];
+        }
+
+        $normalized = preg_replace('#^(public/|storage/)+#', '', $normalized);
+
+        return ltrim($normalized ?? '', '/');
+    }
+}
+
+if (!function_exists('public_storage_url')) {
+    function public_storage_url(?string $path): ?string
+    {
+        $normalized = normalize_public_storage_path($path);
+
+        if ($normalized === '') {
+            return null;
+        }
+
+        return asset('storage/' . $normalized);
+    }
+}
+
 if (!function_exists('manual_examination_photo_url')) {
     function manual_examination_photo_url($manualExamination, ?string $path): ?string
     {
@@ -2966,16 +2998,7 @@ if (!function_exists('manual_examination_photo_url')) {
             return $path;
         }
 
-        $encodedPath = encode_inspection_photo_path($path);
-
-        if ($encodedPath === null || !$manualExamination) {
-            return null;
-        }
-
-        return route('api.inspector.manual-examinations.photo', [
-            'manualExamination' => $manualExamination instanceof \App\Models\CarInspection ? $manualExamination->id : $manualExamination,
-            'encodedPath' => $encodedPath,
-        ]);
+        return public_storage_url($path);
     }
 }
 
@@ -3007,10 +3030,13 @@ if (!function_exists('pdf_safe_image_src')) {
             return $rawUrlOrPath;
         }
 
+        $normalizedPath = normalize_public_storage_path((string) $rawUrlOrPath);
+
         if (!preg_match('#^https?://#i', $rawUrlOrPath)) {
             $candidates = [
-                storage_path('app/public/' . ltrim((string) $rawUrlOrPath, '/')),
-                public_path('storage/' . ltrim((string) $rawUrlOrPath, '/')),
+                storage_path('app/public/' . $normalizedPath),
+                storage_path('app/' . ltrim((string) $rawUrlOrPath, '/')),
+                public_path('storage/' . $normalizedPath),
                 public_path(ltrim((string) $rawUrlOrPath, '/')),
             ];
             foreach ($candidates as $file) {
