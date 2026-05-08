@@ -1,7 +1,7 @@
 <?php
 
 // Car Inspector API Routes
-Route::group(['prefix' => 'v2/inspector', 'middleware' => ['app_language']], function () {
+Route::group(['prefix' => 'v2/inspector', 'middleware' => ['app_language', 'inspector.errors']], function () {
     // Authentication routes (no middleware required)
     Route::post('login', 'App\Http\Controllers\Api\V2\Inspector\InspectorAuthController@login');
      // languages
