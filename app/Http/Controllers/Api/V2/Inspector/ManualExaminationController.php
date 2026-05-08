@@ -102,7 +102,6 @@ class ManualExaminationController extends BaseInspectorController
         $validated = $request->validate([
             'car.vin' => 'required|min:17|max:17|unique:cars,vin',
             'car.plate_number' => 'nullable|string|max:255',
-            'car.description' => 'required|string|min:10',
             'car.brand_id' => 'required|exists:car_brands,id',
             'car.model_id' => 'required|exists:car_models,id',
             'car.category_id' => 'nullable|exists:car_categories,id',
@@ -112,10 +111,7 @@ class ManualExaminationController extends BaseInspectorController
             'car.manufacture_year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
             'car.transmission' => 'required|string|max:255',
             'car.fuel_type' => 'required|string|max:255',
-            'car.location' => 'required|string|max:255',
             'car.price' => 'nullable|numeric|min:0|max:99999999.99',
-            'car.country_id' => 'required|exists:countries,id',
-            'car.state_id' => 'required|exists:states,id',
             'car.city_id' => 'nullable|exists:cities,id',
             'car.main_photo' => 'required|integer|min:0',
             'car.photos' => 'nullable',
@@ -165,10 +161,9 @@ class ManualExaminationController extends BaseInspectorController
                 $carData['car_status'] = CarStatusEnum::AVAILABLE;
 
                 // Create the Car
-                $car = Car::create(collect($carData)->only([
+                $car = Car::create(array_merge(['description' => ''], collect($carData)->only([
                     'vin',
                     'plate_number',
-                    'description',
                     'brand_id',
                     'model_id',
                     'category_id',
@@ -178,17 +173,14 @@ class ManualExaminationController extends BaseInspectorController
                     'manufacture_year',
                     'transmission',
                     'fuel_type',
-                    'location',
                     'price',
-                    'country_id',
-                    'state_id',
                     'city_id',
                     'main_photo',
                     'photos',
                     'user_id',
                     'moderation_status',
                     'car_status',
-                ])->toArray());
+                ])->toArray()));
 
                 if (!empty($carData['features'])) {
                     $car->features()->sync($carData['features']);
@@ -546,17 +538,13 @@ class ManualExaminationController extends BaseInspectorController
         $data = $this->transformListItem($inspection);
 
         $data['car'] = array_merge($data['car'], [
-            'description' => $inspection->car?->description,
             'category' => $inspection->car?->category?->getTranslation('name'),
             'color' => $inspection->car?->color?->getTranslation('name'),
             'condition' => $inspection->car?->condition,
             'milage' => $inspection->car?->milage,
             'transmission' => $inspection->car?->transmission,
             'fuel_type' => $inspection->car?->fuel_type,
-            'location' => $inspection->car?->location,
             'price' => $inspection->car?->price,
-            'country' => $inspection->car?->country?->name,
-            'state' => $inspection->car?->state?->name,
             'city' => $inspection->car?->city?->name,
             'main_photo' => $inspection->car?->main_photo,
             'photos' => $inspection->car?->photos,
