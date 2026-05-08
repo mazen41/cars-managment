@@ -40,7 +40,8 @@ class CarInspectionController extends Controller
             }
 
             // Get inspections for the car with related data
-            $inspections = CarInspection::where('car_id', $carId)
+            $inspections = CarInspection::regular()
+                ->where('car_id', $carId)
                 ->where('inspector_id', '!=', null)
                 ->with(['car', 'inspectionType', 'inspector', 'requester', 'payment'])
                 ->orderBy('created_at', 'desc')
@@ -73,6 +74,10 @@ class CarInspectionController extends Controller
             // Verify authentication
             if (!Auth::check()) {
                 return $this->unauthorizedResponse('Authentication required');
+            }
+
+            if ($carInspection->is_manual) {
+                return $this->notFoundResponse('Inspection not found');
             }
 
             // Load car relationship for ownership verification

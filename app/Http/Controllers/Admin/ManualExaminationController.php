@@ -22,7 +22,7 @@ class ManualExaminationController extends Controller
             'inspector.user',
             'inspectionType',
         ])
-            ->where('is_manual', true)
+            ->manual()
             ->latest();
 
         if ($request->filled('status')) {
@@ -105,6 +105,99 @@ class ManualExaminationController extends Controller
         }
 
         return view('backend.cars.manual-examinations.show', compact('manualExamination', 'sectionData'));
+    }
+
+    public function photo(CarInspection $manualExamination, string $encodedPath)
+    {
+        abort_unless($manualExamination->is_manual, 404);
+
+        $path = $this->decodePhotoPath($encodedPath);
+        abort_unless($path && $this->photoBelongsToManualExamination($manualExamination, $path), 404);
+
+        $candidates = [
+            storage_path('app/public/' . $path),
+            storage_path('app/' . $path),
+        ];
+
+        if (str_starts_with($path, 'public/')) {
+            $candidates[] = storage_path('app/' . $path);
+        }
+
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate) && is_readable($candidate)) {
+                return response()->file($candidate);
+            }
+        }
+
+        abort(404);
+    }
+
+    private function decodePhotoPath(string $encodedPath): ?string
+    {
+        $base64 = strtr($encodedPath, '-_', '+/');
+        $base64 .= str_repeat('=', (4 - strlen($base64) % 4) % 4);
+        $decoded = base64_decode($base64, true);
+
+        if ($decoded === false) {
+            return null;
+        }
+
+        $path = ltrim(str_replace('\\', '/', $decoded), '/');
+
+        if ($path === '' || str_contains($path, '../') || str_contains($path, '..\\')) {
+            return null;
+        }
+
+        return $path;
+    }
+
+    private function photoBelongsToManualExamination(CarInspection $manualExamination, string $path): bool
+    {
+        $allowedPaths = [];
+        $photoFields = [
+            'photo_front',
+            'photo_back',
+            'photo_left',
+            'photo_right',
+            'photo_interior_front',
+            'photo_interior_back',
+            'photo_engine',
+            'photo_trunk',
+            'photo_odometer',
+            'photo_dashboard',
+            'photo_vin_plate',
+            'photo_tires',
+            'photo_undercarriage',
+        ];
+
+        foreach ($photoFields as $field) {
+            if (!empty($manualExamination->{$field})) {
+                $allowedPaths[] = ltrim((string) $manualExamination->{$field}, '/');
+            }
+        }
+
+        foreach ((($manualExamination->metadata ?? [])['section_photos'] ?? []) as $sectionPhotos) {
+            if (!is_array($sectionPhotos)) {
+                continue;
+            }
+
+            foreach ($sectionPhotos as $sectionPhoto) {
+                if (!empty($sectionPhoto['path'])) {
+                    $allowedPaths[] = ltrim((string) $sectionPhoto['path'], '/');
+                }
+            }
+        }
+
+        $manualExamination->loadMissing('fieldValues');
+        foreach ($manualExamination->fieldValues as $fieldValue) {
+            foreach (($fieldValue->file_attachments ?? []) as $attachment) {
+                if (!empty($attachment['path'])) {
+                    $allowedPaths[] = ltrim((string) $attachment['path'], '/');
+                }
+            }
+        }
+
+        return in_array($path, array_unique($allowedPaths), true);
     }
 
     public function schedule(CarInspection $manualExamination)
