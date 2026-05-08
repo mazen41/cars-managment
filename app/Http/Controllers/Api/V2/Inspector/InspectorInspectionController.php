@@ -778,7 +778,22 @@ class InspectorInspectionController extends BaseInspectorController
             'not_text_align' => $options['not_text_align'],
         ]);
 
-        return $pdf->download('inspection-report-' . $inspection->inspection_number . '.pdf');
+        $filename = 'inspection-report-' . $inspection->inspection_number . '.pdf';
+
+        // streamDownload keeps the response inside Laravel's pipeline so the
+        // CORS middleware can attach Access-Control-Allow-Origin correctly.
+        // The DomPDF download()/stream() helpers can terminate before
+        // middleware headers are added, which breaks browser downloads.
+        return response()->streamDownload(
+            function () use ($pdf) {
+                echo $pdf->output();
+            },
+            $filename,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ]
+        );
     }
 
     private function pdfRelations(): array
