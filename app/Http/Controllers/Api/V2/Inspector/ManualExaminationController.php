@@ -547,7 +547,43 @@ class ManualExaminationController extends BaseInspectorController
             'price' => $inspection->car?->price,
             'city' => $inspection->car?->city?->name,
             'main_photo' => $inspection->car?->main_photo,
-            'photos' => $inspection->car?->photos,
+            'photos' => (function() use ($inspection) {
+                $photosList = [];
+                if ($inspection->car?->main_photo) {
+                    $url = uploaded_asset($inspection->car->main_photo);
+                    if ($url) $photosList[] = ['url' => $url, 'name' => 'Main photo'];
+                }
+                if ($inspection->car?->photos) {
+                    foreach (array_filter(explode(',', (string)$inspection->car->photos)) as $photoId) {
+                        $url = uploaded_asset(trim($photoId));
+                        if ($url) $photosList[] = ['url' => $url, 'name' => 'Vehicle photo'];
+                    }
+                }
+                $manualSlotLabels = [
+                    'photo_front' => 'Front view',
+                    'photo_back' => 'Rear view',
+                    'photo_left' => 'Left side',
+                    'photo_right' => 'Right side',
+                    'photo_interior_front' => 'Interior front',
+                    'photo_interior_back' => 'Interior rear',
+                    'photo_engine' => 'Engine',
+                    'photo_trunk' => 'Trunk',
+                    'photo_odometer' => 'Odometer',
+                    'photo_dashboard' => 'Dashboard',
+                    'photo_vin_plate' => 'VIN plate',
+                    'photo_tires' => 'Tires',
+                    'photo_undercarriage' => 'Undercarriage',
+                ];
+                foreach ($manualSlotLabels as $column => $label) {
+                    if (!empty($inspection->{$column})) {
+                        $photosList[] = [
+                            'url' => \Illuminate\Support\Facades\Storage::disk('public')->url($inspection->{$column}),
+                            'name' => $label,
+                        ];
+                    }
+                }
+                return $photosList;
+            })(),
             'features' => $inspection->car?->features?->map(fn ($feature) => [
                 'id' => $feature->id,
                 'name' => $feature->getTranslation('name'),
