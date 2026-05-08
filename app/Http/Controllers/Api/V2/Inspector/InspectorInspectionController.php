@@ -742,59 +742,88 @@ class InspectorInspectionController extends BaseInspectorController
         }
     }
 
-    public function downloadPdf(Request $request, int $inspectionId)
-    {
-        $inspector = $request->user()->carInspector;
+   public function downloadPdf(Request $request, int $inspectionId)
+{
+    $inspector = $request->user()->carInspector;
 
-        if (!$inspector) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Inspector profile not found',
-                    'code' => 'INSPECTOR_NOT_FOUND'
-                ]
-            ], 404);
-        }
+    if (!$inspector) {
+        return response()->json([
+            'error' => [
+                'message' => 'Inspector profile not found',
+                'code'    => 'INSPECTOR_NOT_FOUND',
+            ]
+        ], 404);
+    }
 
-        $inspection = CarInspection::with($this->pdfRelations())
-            ->where('inspector_id', $inspector->id)
-            ->find($inspectionId);
+    $inspection = CarInspection::with($this->pdfRelations())
+        ->where('inspector_id', $inspector->id)
+        ->find($inspectionId);
 
-        if (!$inspection) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Inspection not found or not assigned to you',
-                    'code' => 'INSPECTION_NOT_FOUND'
-                ]
-            ], 404);
-        }
+    if (!$inspection) {
+        return response()->json([
+            'error' => [
+                'message' => 'Inspection not found or not assigned to you',
+                'code'    => 'INSPECTION_NOT_FOUND',
+            ]
+        ], 404);
+    }
 
-        $options = get_pdf_options();
+    // ✅ FIX 1: Guard against non-completed inspections
+    // (missing in original — caused crashes inside the view when data was incomplete)
+    if ($inspection->status !== CarInspection::STATUS_COMPLETED) {
+        return response()->json([
+            'error' => [
+                'message' => 'PDF can only be generated for completed inspections',
+                'code'    => 'INSPECTION_NOT_COMPLETED',
+            ]
+        ], 422);
+    }
+
+    // ✅ FIX 2: Wrap everything in try/catch so errors return JSON,
+    // not an HTML 500 page that breaks the frontend blob check
+    try {
+        $options = function_exists('get_pdf_options')
+            ? get_pdf_options()
+            : [                             // ✅ FIX 3: Fallback if helper is missing
+                'font_family'    => 'DejaVu Sans',
+                'direction'      => 'rtl',
+                'text_align'     => 'right',
+                'not_text_align' => 'left',
+            ];
+
         $pdf = PDF::loadView('backend.cars.inspections.pdf-report', [
-            'carInspection' => $inspection,
-            'sectionData' => $this->buildSectionData($inspection),
-            'font_family' => $options['font_family'],
-            'direction' => $options['direction'],
-            'text_align' => $options['text_align'],
+            'carInspection'  => $inspection,
+            'sectionData'    => $this->buildSectionData($inspection),
+            'font_family'    => $options['font_family'],
+            'direction'      => $options['direction'],
+            'text_align'     => $options['text_align'],
             'not_text_align' => $options['not_text_align'],
         ]);
 
         $filename = 'inspection-report-' . $inspection->inspection_number . '.pdf';
 
-        // streamDownload keeps the response inside Laravel's pipeline so the
-        // CORS middleware can attach Access-Control-Allow-Origin correctly.
-        // The DomPDF download()/stream() helpers can terminate before
-        // middleware headers are added, which breaks browser downloads.
         return response()->streamDownload(
             function () use ($pdf) {
                 echo $pdf->output();
             },
             $filename,
             [
-                'Content-Type' => 'application/pdf',
+                'Content-Type'        => 'application/pdf',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             ]
         );
+
+    } catch (\Throwable $e) {
+        // ✅ FIX 2 (continued): Return JSON so the frontend can show
+        // the real error message instead of "Server did not return a PDF"
+        return response()->json([
+            'error' => [
+                'message' => 'Failed to generate PDF: ' . $e->getMessage(),
+                'code'    => 'PDF_GENERATION_FAILED',
+            ]
+        ], 500);
     }
+}
 
     private function pdfRelations(): array
     {
