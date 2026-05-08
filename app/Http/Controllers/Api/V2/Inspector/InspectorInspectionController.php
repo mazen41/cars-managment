@@ -742,16 +742,13 @@ class InspectorInspectionController extends BaseInspectorController
         }
     }
 
-   public function downloadPdf(Request $request, int $inspectionId)
+  public function downloadPdf(Request $request, int $inspectionId)
 {
     $inspector = $request->user()->carInspector;
 
     if (!$inspector) {
         return response()->json([
-            'error' => [
-                'message' => 'Inspector profile not found',
-                'code'    => 'INSPECTOR_NOT_FOUND',
-            ]
+            'error' => ['message' => 'Inspector profile not found', 'code' => 'INSPECTOR_NOT_FOUND']
         ], 404);
     }
 
@@ -761,30 +758,30 @@ class InspectorInspectionController extends BaseInspectorController
 
     if (!$inspection) {
         return response()->json([
-            'error' => [
-                'message' => 'Inspection not found or not assigned to you',
-                'code'    => 'INSPECTION_NOT_FOUND',
-            ]
+            'error' => ['message' => 'Inspection not found or not assigned to you', 'code' => 'INSPECTION_NOT_FOUND']
         ], 404);
     }
 
-    // ✅ FIX 1: Guard against non-completed inspections
-    // (missing in original — caused crashes inside the view when data was incomplete)
     if ($inspection->status !== CarInspection::STATUS_COMPLETED) {
         return response()->json([
-            'error' => [
-                'message' => 'PDF can only be generated for completed inspections',
-                'code'    => 'INSPECTION_NOT_COMPLETED',
-            ]
+            'error' => ['message' => 'PDF can only be generated for completed inspections', 'code' => 'INSPECTION_NOT_COMPLETED']
         ], 422);
     }
 
-    // ✅ FIX 2: Wrap everything in try/catch so errors return JSON,
-    // not an HTML 500 page that breaks the frontend blob check
     try {
+        // ✅ FIX: Increase pcre.backtrack_limit for large HTML views
+        // The PDF Blade view generates HTML larger than PHP's default 1,000,000 limit.
+        // We raise it temporarily just for this operation, then restore it.
+        $originalBacktrackLimit = ini_get('pcre.backtrack_limit');
+        ini_set('pcre.backtrack_limit', '5000000');
+
+        // Also raise memory limit in case the large PDF needs more RAM
+        $originalMemoryLimit = ini_get('memory_limit');
+        ini_set('memory_limit', '256M');
+
         $options = function_exists('get_pdf_options')
             ? get_pdf_options()
-            : [                             // ✅ FIX 3: Fallback if helper is missing
+            : [
                 'font_family'    => 'DejaVu Sans',
                 'direction'      => 'rtl',
                 'text_align'     => 'right',
@@ -800,6 +797,10 @@ class InspectorInspectionController extends BaseInspectorController
             'not_text_align' => $options['not_text_align'],
         ]);
 
+        // ✅ Restore original PHP limits after PDF is built
+        ini_set('pcre.backtrack_limit', $originalBacktrackLimit);
+        ini_set('memory_limit', $originalMemoryLimit);
+
         $filename = 'inspection-report-' . $inspection->inspection_number . '.pdf';
 
         return response()->streamDownload(
@@ -814,8 +815,6 @@ class InspectorInspectionController extends BaseInspectorController
         );
 
     } catch (\Throwable $e) {
-        // ✅ FIX 2 (continued): Return JSON so the frontend can show
-        // the real error message instead of "Server did not return a PDF"
         return response()->json([
             'error' => [
                 'message' => 'Failed to generate PDF: ' . $e->getMessage(),
