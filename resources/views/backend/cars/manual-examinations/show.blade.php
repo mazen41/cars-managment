@@ -1,8 +1,6 @@
 @extends('backend.layouts.app')
 
 @php
-use Illuminate\Support\Facades\Storage;
-
 $manualInspectionPhotoSlots = [
     'photo_front' => translate('Front view'),
     'photo_back' => translate('Rear view'),
@@ -20,6 +18,19 @@ $manualInspectionPhotoSlots = [
 ];
 
 $sectionPhotosBySection = (($manualExamination->metadata ?? [])['section_photos'] ?? []);
+$manualPhotoUrl = function ($path) use ($manualExamination) {
+    if (empty($path)) {
+        return null;
+    }
+
+    if (is_string($path) && (preg_match('#^(https?:)?//#i', $path) || str_starts_with($path, 'data:'))) {
+        return $path;
+    }
+
+    $encodedPath = rtrim(strtr(base64_encode((string) $path), '+/', '-_'), '=');
+
+    return route('admin.manual-examinations.photo', [$manualExamination, $encodedPath]);
+};
 @endphp
 
 @section('content')
@@ -212,7 +223,7 @@ $sectionPhotosBySection = (($manualExamination->metadata ?? [])['section_photos'
                             @php $hasVehiclePhotos = true; @endphp
                             <div class="col-md-3 col-6 mb-3">
                                 <div class="border rounded overflow-hidden bg-light">
-                                    <img src="{{ Storage::disk('public')->url($manualExamination->{$column}) }}" alt="{{ $label }}" class="img-fluid w-100" style="object-fit:cover;max-height:180px;">
+                                    <img src="{{ $manualPhotoUrl($manualExamination->{$column}) }}" alt="{{ $label }}" class="img-fluid w-100" style="object-fit:cover;max-height:180px;">
                                 </div>
                                 <small class="text-muted d-block mt-1">{{ $label }}</small>
                             </div>
@@ -237,10 +248,11 @@ $sectionPhotosBySection = (($manualExamination->metadata ?? [])['section_photos'
                     <div class="row gutters-10">
                         @foreach($manualExamination->fieldValues as $fieldValue)
                             @foreach(($fieldValue->file_attachments ?? []) as $attachment)
-                                @if(!empty($attachment['url']))
+                                @php $attachmentUrl = $attachment['url'] ?? (!empty($attachment['path']) ? $manualPhotoUrl($attachment['path']) : null); @endphp
+                                @if(!empty($attachmentUrl))
                                     <div class="col-md-3 col-6 mb-3">
                                         <div class="border rounded overflow-hidden bg-light">
-                                            <img src="{{ $attachment['url'] }}" alt="{{ $fieldValue->field?->name ?? translate('Field photo') }}" class="img-fluid w-100" style="object-fit:cover;max-height:180px;">
+                                            <img src="{{ $attachmentUrl }}" alt="{{ $fieldValue->field?->name ?? translate('Field photo') }}" class="img-fluid w-100" style="object-fit:cover;max-height:180px;">
                                         </div>
                                         <small class="text-muted d-block mt-1">{{ $fieldValue->field?->name ?? translate('Field') }}</small>
                                     </div>
@@ -273,7 +285,7 @@ $sectionPhotosBySection = (($manualExamination->metadata ?? [])['section_photos'
                                         @if(!empty($path))
                                             <div class="col-md-3 col-6 mb-3">
                                                 <div class="border rounded overflow-hidden bg-light">
-                                                    <img src="{{ Storage::disk('public')->url($path) }}" alt="" class="img-fluid w-100" style="object-fit:cover;max-height:180px;">
+                                                    <img src="{{ $manualPhotoUrl($path) }}" alt="" class="img-fluid w-100" style="object-fit:cover;max-height:180px;">
                                                 </div>
                                             </div>
                                         @endif
