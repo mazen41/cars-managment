@@ -36,7 +36,7 @@
         "predis/predis": "^2.1",
         "psr/log": "^2.0",
         "rmccue/requests": "^2.0",
-        "simplesoftwareio/simple-qrcode": "^4.2",
+        "simplesoftwareio/simple-qrcode": "*",
         "smsgateway24/smsgateway24-php-sdk": "^2.0",
         "spatie/cpu-load-health-check": "^1.0",
         "spatie/db-dumper": "^3.3",

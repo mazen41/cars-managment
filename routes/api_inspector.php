@@ -18,10 +18,15 @@ Route::group(['prefix' => 'v2/inspector', 'middleware' => ['app_language', 'insp
         "states-by-country/{country_id}",
         "App\Http\Controllers\Api\V2\AddressController@getStatesByCountry",
     );
-     Route::get(
+    Route::get(
         "cities-by-state/{state_id}",
         "App\Http\Controllers\Api\V2\AddressController@getCitiesByState",
     );
+
+    Route::get(
+        'manual-examinations/{manualExamination}/photos/{encodedPath}',
+        'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@photo'
+    )->name('api.inspector.manual-examinations.photo');
 
     // Protected routes (require inspector authentication)
     Route::middleware(['inspector.auth'])->group(function () {

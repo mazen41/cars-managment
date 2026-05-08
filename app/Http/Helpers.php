@@ -2893,6 +2893,92 @@ function get_pdf_options(){
    return $result;
    }
 
+if (!function_exists('encode_inspection_photo_path')) {
+    function encode_inspection_photo_path(?string $path): ?string
+    {
+        $normalized = ltrim(str_replace('\\', '/', (string) $path), '/');
+
+        if ($normalized === '') {
+            return null;
+        }
+
+        return rtrim(strtr(base64_encode($normalized), '+/', '-_'), '=');
+    }
+}
+
+if (!function_exists('decode_inspection_photo_path')) {
+    function decode_inspection_photo_path(?string $encodedPath): ?string
+    {
+        if ($encodedPath === null || $encodedPath === '') {
+            return null;
+        }
+
+        $base64 = strtr($encodedPath, '-_', '+/');
+        $base64 .= str_repeat('=', (4 - strlen($base64) % 4) % 4);
+        $decoded = base64_decode($base64, true);
+
+        if ($decoded === false) {
+            return null;
+        }
+
+        $path = ltrim(str_replace('\\', '/', $decoded), '/');
+
+        if ($path === '' || str_contains($path, '../') || str_contains($path, '..\\')) {
+            return null;
+        }
+
+        return $path;
+    }
+}
+
+if (!function_exists('inspection_photo_file_candidates')) {
+    function inspection_photo_file_candidates(?string $path): array
+    {
+        $normalized = ltrim(str_replace('\\', '/', (string) $path), '/');
+
+        if ($normalized === '') {
+            return [];
+        }
+
+        $candidates = [
+            storage_path('app/public/' . $normalized),
+            storage_path('app/' . $normalized),
+            public_path('storage/' . preg_replace('#^public/#', '', $normalized)),
+            public_path($normalized),
+        ];
+
+        if (str_starts_with($normalized, 'public/')) {
+            $candidates[] = public_path(substr($normalized, 7));
+        }
+
+        return array_values(array_unique($candidates));
+    }
+}
+
+if (!function_exists('manual_examination_photo_url')) {
+    function manual_examination_photo_url($manualExamination, ?string $path): ?string
+    {
+        if (empty($path)) {
+            return null;
+        }
+
+        if (preg_match('#^(https?:)?//#i', $path) || str_starts_with($path, 'data:')) {
+            return $path;
+        }
+
+        $encodedPath = encode_inspection_photo_path($path);
+
+        if ($encodedPath === null || !$manualExamination) {
+            return null;
+        }
+
+        return route('api.inspector.manual-examinations.photo', [
+            'manualExamination' => $manualExamination instanceof \App\Models\CarInspection ? $manualExamination->id : $manualExamination,
+            'encodedPath' => $encodedPath,
+        ]);
+    }
+}
+
 if (!function_exists('pdf_binary_to_data_uri')) {
     function pdf_binary_to_data_uri(string $absolutePath): string
     {

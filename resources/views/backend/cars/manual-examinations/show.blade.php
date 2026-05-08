@@ -18,22 +18,72 @@ $manualInspectionPhotoSlots = [
 ];
 
 $sectionPhotosBySection = (($manualExamination->metadata ?? [])['section_photos'] ?? []);
-$manualPhotoUrl = function ($path) use ($manualExamination) {
-    if (empty($path)) {
-        return null;
-    }
-
-    if (is_string($path) && (preg_match('#^(https?:)?//#i', $path) || str_starts_with($path, 'data:'))) {
-        return $path;
-    }
-
-    $encodedPath = rtrim(strtr(base64_encode((string) $path), '+/', '-_'), '=');
-
-    return route('admin.manual-examinations.photo', [$manualExamination, $encodedPath]);
-};
+$manualPhotoUrl = fn ($path) => manual_examination_photo_url($manualExamination, $path);
 @endphp
 
 @section('content')
+<style>
+    .inspection-photo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+    }
+    .inspection-photo-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #ffffff, #f8fafc);
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+    .inspection-photo-media {
+        position: relative;
+        aspect-ratio: 1 / 1;
+        background: #eef2f7;
+    }
+    .inspection-photo-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    .inspection-photo-fallback {
+        position: absolute;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 1rem;
+        color: #64748b;
+        background: linear-gradient(180deg, #f8fafc, #e2e8f0);
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .inspection-photo-card.is-missing .inspection-photo-fallback {
+        display: flex;
+    }
+    .inspection-photo-card.is-missing img {
+        display: none;
+    }
+    .inspection-photo-body {
+        padding: 0.9rem 1rem 1rem;
+    }
+    .inspection-photo-title {
+        margin: 0;
+        font-weight: 700;
+        color: #0f172a;
+    }
+    .inspection-photo-subtitle {
+        margin-top: 0.3rem;
+        font-size: 0.82rem;
+        color: #64748b;
+    }
+    .inspection-photo-section {
+        border-top: 1px solid #eef2f7;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+    }
+</style>
 <div class="aiz-titlebar text-left mt-2 mb-3">
     <div class="row align-items-center">
         <div class="col-md-8">
@@ -198,34 +248,46 @@ $manualPhotoUrl = function ($path) use ($manualExamination) {
             </div>
             <div class="card-body">
                 <h6 class="mb-3">{{ translate('Vehicle & overview') }}</h6>
-                <div class="row gutters-10 mb-4">
+                <div class="inspection-photo-grid mb-4">
                     @php $hasVehiclePhotos = false; @endphp
                     @if(!empty($manualExamination->car?->main_photo))
                         @php $hasVehiclePhotos = true; @endphp
-                        <div class="col-md-3 col-6 mb-3">
-                            <div class="border rounded overflow-hidden bg-light">
-                                <img src="{{ uploaded_asset($manualExamination->car->main_photo) }}" alt="{{ translate('Main photo') }}" class="img-fluid w-100" style="object-fit:cover;max-height:180px;">
+                        <div class="inspection-photo-card">
+                            <div class="inspection-photo-media">
+                                <img src="{{ uploaded_asset($manualExamination->car->main_photo) }}" alt="{{ translate('Main photo') }}" onerror="this.closest('.inspection-photo-card').classList.add('is-missing')">
+                                <div class="inspection-photo-fallback">{{ translate('Image unavailable') }}</div>
                             </div>
-                            <small class="text-muted d-block mt-1">{{ translate('Main photo') }}</small>
+                            <div class="inspection-photo-body">
+                                <p class="inspection-photo-title">{{ translate('Main photo') }}</p>
+                                <div class="inspection-photo-subtitle">{{ translate('Primary vehicle image') }}</div>
+                            </div>
                         </div>
                     @endif
                     @foreach(array_filter(explode(',', (string) ($manualExamination->car?->photos ?? ''))) as $photoId)
                         @php $hasVehiclePhotos = true; @endphp
-                        <div class="col-md-3 col-6 mb-3">
-                            <div class="border rounded overflow-hidden bg-light">
-                                <img src="{{ uploaded_asset(trim($photoId)) }}" alt="{{ translate('Vehicle photo') }}" class="img-fluid w-100" style="object-fit:cover;max-height:180px;">
+                        <div class="inspection-photo-card">
+                            <div class="inspection-photo-media">
+                                <img src="{{ uploaded_asset(trim($photoId)) }}" alt="{{ translate('Vehicle photo') }}" onerror="this.closest('.inspection-photo-card').classList.add('is-missing')">
+                                <div class="inspection-photo-fallback">{{ translate('Image unavailable') }}</div>
                             </div>
-                            <small class="text-muted d-block mt-1">{{ translate('Vehicle photo') }}</small>
+                            <div class="inspection-photo-body">
+                                <p class="inspection-photo-title">{{ translate('Vehicle photo') }}</p>
+                                <div class="inspection-photo-subtitle">{{ translate('Uploaded from the vehicle listing') }}</div>
+                            </div>
                         </div>
                     @endforeach
                     @foreach($manualInspectionPhotoSlots as $column => $label)
                         @if(!empty($manualExamination->{$column}))
                             @php $hasVehiclePhotos = true; @endphp
-                            <div class="col-md-3 col-6 mb-3">
-                                <div class="border rounded overflow-hidden bg-light">
-                                    <img src="{{ $manualPhotoUrl($manualExamination->{$column}) }}" alt="{{ $label }}" class="img-fluid w-100" style="object-fit:cover;max-height:180px;">
+                            <div class="inspection-photo-card">
+                                <div class="inspection-photo-media">
+                                    <img src="{{ $manualPhotoUrl($manualExamination->{$column}) }}" alt="{{ $label }}" onerror="this.closest('.inspection-photo-card').classList.add('is-missing')">
+                                    <div class="inspection-photo-fallback">{{ translate('Image unavailable') }}</div>
                                 </div>
-                                <small class="text-muted d-block mt-1">{{ $label }}</small>
+                                <div class="inspection-photo-body">
+                                    <p class="inspection-photo-title">{{ $label }}</p>
+                                    <div class="inspection-photo-subtitle">{{ translate('Manual examination upload') }}</div>
+                                </div>
                             </div>
                         @endif
                     @endforeach
@@ -243,22 +305,27 @@ $manualPhotoUrl = function ($path) use ($manualExamination) {
                     }
                 @endphp
                 @if($fieldPhotoCount > 0)
-                    <hr>
+                    <div class="inspection-photo-section">
                     <h6 class="mb-3">{{ translate('Photos by inspection field') }}</h6>
-                    <div class="row gutters-10">
+                    <div class="inspection-photo-grid">
                         @foreach($manualExamination->fieldValues as $fieldValue)
                             @foreach(($fieldValue->file_attachments ?? []) as $attachment)
                                 @php $attachmentUrl = $attachment['url'] ?? (!empty($attachment['path']) ? $manualPhotoUrl($attachment['path']) : null); @endphp
                                 @if(!empty($attachmentUrl))
-                                    <div class="col-md-3 col-6 mb-3">
-                                        <div class="border rounded overflow-hidden bg-light">
-                                            <img src="{{ $attachmentUrl }}" alt="{{ $fieldValue->field?->name ?? translate('Field photo') }}" class="img-fluid w-100" style="object-fit:cover;max-height:180px;">
+                                    <div class="inspection-photo-card">
+                                        <div class="inspection-photo-media">
+                                            <img src="{{ $attachmentUrl }}" alt="{{ $fieldValue->field?->name ?? translate('Field photo') }}" onerror="this.closest('.inspection-photo-card').classList.add('is-missing')">
+                                            <div class="inspection-photo-fallback">{{ translate('Image unavailable') }}</div>
                                         </div>
-                                        <small class="text-muted d-block mt-1">{{ $fieldValue->field?->name ?? translate('Field') }}</small>
+                                        <div class="inspection-photo-body">
+                                            <p class="inspection-photo-title">{{ $fieldValue->field?->name ?? translate('Field') }}</p>
+                                            <div class="inspection-photo-subtitle">{{ translate('Field attachment') }}</div>
+                                        </div>
                                     </div>
                                 @endif
                             @endforeach
                         @endforeach
+                    </div>
                     </div>
                 @endif
 
@@ -272,20 +339,25 @@ $manualPhotoUrl = function ($path) use ($manualExamination) {
                     }
                 @endphp
                 @if($hasSectionPhotos)
-                    <hr>
+                    <div class="inspection-photo-section">
                     <h6 class="mb-3">{{ translate('Photos by inspection section') }}</h6>
                     @foreach($sectionPhotosBySection as $sectionId => $items)
                         @if(!empty($items))
                             @php $sectionMeta = $manualExamination->inspectionType?->sections?->firstWhere('id', (int) $sectionId); @endphp
                             <div class="mb-4">
                                 <div class="fw-600 mb-2">{{ $sectionMeta->name ?? (translate('Section') . ' #' . $sectionId) }}</div>
-                                <div class="row gutters-10">
+                                <div class="inspection-photo-grid">
                                     @foreach($items as $photoRow)
                                         @php $path = $photoRow['path'] ?? null; @endphp
                                         @if(!empty($path))
-                                            <div class="col-md-3 col-6 mb-3">
-                                                <div class="border rounded overflow-hidden bg-light">
-                                                    <img src="{{ $manualPhotoUrl($path) }}" alt="" class="img-fluid w-100" style="object-fit:cover;max-height:180px;">
+                                            <div class="inspection-photo-card">
+                                                <div class="inspection-photo-media">
+                                                    <img src="{{ $manualPhotoUrl($path) }}" alt="{{ $sectionMeta->name ?? translate('Section photo') }}" onerror="this.closest('.inspection-photo-card').classList.add('is-missing')">
+                                                    <div class="inspection-photo-fallback">{{ translate('Image unavailable') }}</div>
+                                                </div>
+                                                <div class="inspection-photo-body">
+                                                    <p class="inspection-photo-title">{{ $sectionMeta->name ?? translate('Section photo') }}</p>
+                                                    <div class="inspection-photo-subtitle">{{ translate('Section upload') }}</div>
                                                 </div>
                                             </div>
                                         @endif
@@ -294,6 +366,7 @@ $manualPhotoUrl = function ($path) use ($manualExamination) {
                             </div>
                         @endif
                     @endforeach
+                    </div>
                 @endif
             </div>
         </div>
