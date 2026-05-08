@@ -186,69 +186,59 @@ class CarInspectionController extends Controller
     }
 
     public function downloadPdf(CarInspection $carInspection)
-    {
-         if ($carInspection->status !== CarInspection::STATUS_COMPLETED) {
-             return response()->json([
-                   "success" => false,
-                    "message" => "PDF report is only available for completed inspections",
-            ],422,);
-        }
-
-        //Check if user owns the inspection
-        // if(Auth::user()->id !== $carInspection->requested_by){
-        //     return response()->json([
-        //         "success" => false,
-        //         "message" => "You do not have permission to view this resource",
-        //     ],403,);
-        // }
-        $carInspection->load([
-            "car.brand",
-            "car.model",
-            "car.category",
-            "inspectionType.sections.fields",
-            "inspector",
-            "requester",
-            "fieldValues.field.section",
-        ]);
-
-        // Organize field values by section
-        $sectionData = [];
-        foreach ($carInspection->inspectionType->sections as $section) {
-            $sectionData[$section->id] = [
-                "section" => $section,
-                "fields" => [],
-                "completion" => $carInspection->getSectionCompletion(
-                    $section->id,
-                ),
-            ];
-
-            foreach ($section->fields as $field) {
-                $fieldValue = $carInspection->fieldValues
-                    ->where("field_id", $field->id)
-                    ->first();
-
-                $sectionData[$section->id]["fields"][] = [
-                    "field" => $field,
-                    "value" => $fieldValue,
-                ];
-            }
-        }
-        $options = get_pdf_options();
-        $pdf = PDF::loadView(
-            "backend.cars.inspections.pdf-report",
-            [
-                'carInspection' => $carInspection,
-                'sectionData' => $sectionData,
-                'font_family' => $options['font_family'],
-                'direction' => $options['direction'],
-                'text_align' => $options['text_align'],
-                'not_text_align' => $options['not_text_align'],
-            ],
-        );
-
-        $filename =
-            "inspection-report-" . $carInspection->inspection_number . ".pdf";
-
-        return $pdf->download($filename);
+{
+    if ($carInspection->status !== CarInspection::STATUS_COMPLETED) {
+        return redirect()
+            ->back()
+            ->with('error', 'PDF report is only available for completed inspections');
     }
+
+    $carInspection->load([
+        'car.brand',
+        'car.model',
+        'car.category',
+        'inspectionType.sections.fields',
+        'inspector',
+        'requester',
+        'fieldValues.field.section',
+    ]);
+
+    $sectionData = [];
+    foreach ($carInspection->inspectionType->sections as $section) {
+        $sectionData[$section->id] = [
+            'section'    => $section,
+            'fields'     => [],
+            'completion' => $carInspection->getSectionCompletion($section->id),
+        ];
+        foreach ($section->fields as $field) {
+            $sectionData[$section->id]['fields'][] = [
+                'field' => $field,
+                'value' => $carInspection->fieldValues->where('field_id', $field->id)->first(),
+            ];
+        }
+    }
+
+    $options = get_pdf_options();
+    $pdf = PDF::loadView('backend.cars.inspections.pdf-report', [
+        'carInspection'  => $carInspection,
+        'sectionData'    => $sectionData,
+        'font_family'    => $options['font_family'],
+        'direction'      => $options['direction'],
+        'text_align'     => $options['text_align'],
+        'not_text_align' => $options['not_text_align'],
+    ]);
+
+    $filename = 'inspection-report-' . $carInspection->inspection_number . '.pdf';
+
+    return response()->streamDownload(
+        function () use ($pdf) {
+            echo $pdf->output();
+        },
+        $filename,
+        [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]
+    );
+}
 }

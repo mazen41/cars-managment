@@ -742,44 +742,62 @@ class InspectorInspectionController extends BaseInspectorController
         }
     }
 
-    public function downloadPdf(Request $request, int $inspectionId)
-    {
-        $inspector = $request->user()->carInspector;
-
-        if (!$inspector) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Inspector profile not found',
-                    'code' => 'INSPECTOR_NOT_FOUND'
-                ]
-            ], 404);
-        }
-
-        $inspection = CarInspection::with($this->pdfRelations())
-            ->where('inspector_id', $inspector->id)
-            ->find($inspectionId);
-
-        if (!$inspection) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Inspection not found or not assigned to you',
-                    'code' => 'INSPECTION_NOT_FOUND'
-                ]
-            ], 404);
-        }
-
-        $options = get_pdf_options();
-        $pdf = PDF::loadView('backend.cars.inspections.pdf-report', [
-            'carInspection' => $inspection,
-            'sectionData' => $this->buildSectionData($inspection),
-            'font_family' => $options['font_family'],
-            'direction' => $options['direction'],
-            'text_align' => $options['text_align'],
-            'not_text_align' => $options['not_text_align'],
-        ]);
-
-        return $pdf->download('inspection-report-' . $inspection->inspection_number . '.pdf');
+    public function downloadPdf(CarInspection $carInspection)
+{
+    if ($carInspection->status !== CarInspection::STATUS_COMPLETED) {
+        return redirect()
+            ->back()
+            ->with('error', 'PDF report is only available for completed inspections');
     }
+
+    $carInspection->load([
+        'car.brand',
+        'car.model',
+        'car.category',
+        'inspectionType.sections.fields',
+        'inspector',
+        'requester',
+        'fieldValues.field.section',
+    ]);
+
+    $sectionData = [];
+    foreach ($carInspection->inspectionType->sections as $section) {
+        $sectionData[$section->id] = [
+            'section'    => $section,
+            'fields'     => [],
+            'completion' => $carInspection->getSectionCompletion($section->id),
+        ];
+        foreach ($section->fields as $field) {
+            $sectionData[$section->id]['fields'][] = [
+                'field' => $field,
+                'value' => $carInspection->fieldValues->where('field_id', $field->id)->first(),
+            ];
+        }
+    }
+
+    $options = get_pdf_options();
+    $pdf = PDF::loadView('backend.cars.inspections.pdf-report', [
+        'carInspection'  => $carInspection,
+        'sectionData'    => $sectionData,
+        'font_family'    => $options['font_family'],
+        'direction'      => $options['direction'],
+        'text_align'     => $options['text_align'],
+        'not_text_align' => $options['not_text_align'],
+    ]);
+
+    $filename = 'inspection-report-' . $carInspection->inspection_number . '.pdf';
+
+    return response()->streamDownload(
+        function () use ($pdf) {
+            echo $pdf->output();
+        },
+        $filename,
+        [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]
+    );
+}
 
     private function pdfRelations(): array
     {
