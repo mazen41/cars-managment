@@ -161,7 +161,20 @@ class ManualExaminationController extends BaseInspectorController
 
         try {
             $manualExamination = DB::transaction(function () use ($request, $validated, $inspector) {
-                $inspectionTypeId = $validated['inspection_type_id'] ?? $this->getDefaultInspectionTypeId();
+                $requestedInspectionTypeId = isset($validated['inspection_type_id']) ? (int) $validated['inspection_type_id'] : null;
+                $assignedTypeIds = $inspector->manualExaminationInspectionTypes()
+                    ->active()
+                    ->ordered()
+                    ->pluck('car_inspection_types.id')
+                    ->map(fn ($id) => (int) $id)
+                    ->all();
+
+                if (!empty($assignedTypeIds) && $requestedInspectionTypeId && !in_array($requestedInspectionTypeId, $assignedTypeIds, true)) {
+                    throw new \Exception('Selected inspection type is not allowed for this center');
+                }
+
+                $inspectionTypeId = $requestedInspectionTypeId
+                    ?? (!empty($assignedTypeIds) ? $assignedTypeIds[0] : $this->getDefaultInspectionTypeId());
 
                 if (!$inspectionTypeId) {
                     throw new \Exception('No active inspection type found');

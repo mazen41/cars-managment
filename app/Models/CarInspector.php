@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class CarInspector extends Model
 {
@@ -100,6 +101,16 @@ class CarInspector extends Model
     public function manualExaminationPermission(): HasOne
     {
         return $this->hasOne(ManualExaminationPermission::class, 'center_id');
+    }
+
+    public function manualExaminationInspectionTypes(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            CarInspectionType::class,
+            'manual_examination_center_inspection_types',
+            'center_id',
+            'inspection_type_id'
+        );
     }
 
     public function canUseManualExaminations(): bool

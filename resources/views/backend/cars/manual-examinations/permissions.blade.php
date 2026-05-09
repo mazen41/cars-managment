@@ -73,6 +73,10 @@
         opacity: 0.65;
         pointer-events: none;
     }
+    .perm-types-select {
+        min-width: 220px;
+        max-width: 320px;
+    }
 
     /* Save button — hidden by default, shown when toggle changes */
     .perm-save-btn {
@@ -135,6 +139,7 @@
                         <th>{{ translate('Center') }}</th>
                         <th>{{ translate('Contact') }}</th>
                         <th>{{ translate('Status') }}</th>
+                        <th>{{ translate('Allowed Inspection Types') }}</th>
                         <th class="text-right">{{ translate('Enable Manual Examinations') }}</th>
                     </tr>
                 </thead>
@@ -142,8 +147,12 @@
                     @forelse($centers as $center)
                         @php
                             $enabled = $center->manualExaminationPermission?->can_manual_examination ?? true;
+                            $selectedTypeIds = $center->manualExaminationInspectionTypes->pluck('id')->map(fn($id) => (int) $id)->values()->all();
                         @endphp
-                        <tr data-center-id="{{ $center->id }}">
+                        <tr
+                            data-center-id="{{ $center->id }}"
+                            data-update-url="{{ route('admin.manual-examinations.permissions.update', ['center' => $center->id]) }}"
+                        >
                             <td>
                                 <div class="fw-700">{{ $center->shop_name ?? translate('N/A') }}</div>
                                 <div class="perm-muted">
@@ -161,6 +170,33 @@
                                         {{ $enabled ? translate('Enabled') : translate('Disabled') }}
                                     </span>
                                 </span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center justify-content-end" style="gap: 0.5rem;">
+                                    <button
+                                        type="button"
+                                        class="perm-save-btn"
+                                        data-types-save
+                                        aria-label="{{ translate('Save inspection types') }}"
+                                    >
+                                        <i class="las la-save" style="font-size:1rem;"></i>
+                                        {{ translate('Save') }}
+                                    </button>
+                                    <select
+                                        class="form-control perm-types-select"
+                                        multiple
+                                        size="4"
+                                        data-types-select
+                                        data-original='@json($selectedTypeIds)'
+                                        aria-label="{{ translate('Assign inspection types') }}"
+                                    >
+                                        @foreach($inspectionTypes as $type)
+                                            <option value="{{ $type->id }}" @selected(in_array((int) $type->id, $selectedTypeIds, true))>
+                                                {{ $type->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </td>
                             <td class="text-right">
                                 <div class="perm-switch">
@@ -188,7 +224,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="text-center">
+                            <td colspan="5" class="text-center">
                                 {{ translate('No inspection centers found') }}
                             </td>
                         </tr>
@@ -232,6 +268,19 @@
             }
         }
 
+        function normalizeTypeIds(ids) {
+            return Array.from(new Set((ids || []).map((id) => Number(id)).filter((id) => Number.isInteger(id))))
+                .sort((a, b) => a - b);
+        }
+
+        function readSelectedTypeIds(select) {
+            return normalizeTypeIds(Array.from(select.selectedOptions || []).map((opt) => Number(opt.value)));
+        }
+
+        function getRowUpdateUrl(row) {
+            return row.getAttribute('data-update-url') || '';
+        }
+
         // When toggle changes: show Save button, mark row dirty (no request yet)
         document.querySelectorAll('[data-perm-toggle]').forEach((toggle) => {
             toggle.addEventListener('change', (e) => {
@@ -264,23 +313,22 @@
 
                 const centerId = row.getAttribute('data-center-id');
                 const enabled = !!toggle.checked;
+                const updateUrl = getRowUpdateUrl(row);
+                if (!updateUrl) return;
 
                 row.classList.add('perm-row-saving');
                 saveBtn.disabled = true;
 
                 try {
-                    const res = await fetch(
-                        @json(url('/admin/manual-examinations/permissions')) + '/' + centerId,
-                        {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': csrf || '',
-                            },
-                            body: JSON.stringify({ can_manual_examination: enabled ? 1 : 0 }),
-                        }
-                    );
+                    const res = await fetch(updateUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrf || '',
+                        },
+                        body: JSON.stringify({ can_manual_examination: enabled ? 1 : 0 }),
+                    });
 
                     if (!res.ok) {
                         const payload = await res.json().catch(() => null);
@@ -305,6 +353,78 @@
                     saveBtn.classList.add('visible');
                     row.classList.add('perm-row-dirty');
 
+                    showAlert('danger', err?.message || @json(translate('Failed to update permission')));
+                } finally {
+                    row.classList.remove('perm-row-saving');
+                    saveBtn.disabled = false;
+                }
+            });
+        });
+
+        document.querySelectorAll('[data-types-select]').forEach((select) => {
+            select.addEventListener('change', (e) => {
+                const input = e.currentTarget;
+                const row = input.closest('tr');
+                if (!row) return;
+
+                const saveBtn = row.querySelector('[data-types-save]');
+                if (!saveBtn) return;
+
+                const original = normalizeTypeIds(JSON.parse(input.getAttribute('data-original') || '[]'));
+                const selected = readSelectedTypeIds(input);
+                const isDirty = JSON.stringify(selected) !== JSON.stringify(original);
+
+                saveBtn.classList.toggle('visible', isDirty);
+                row.classList.toggle('perm-row-dirty', isDirty);
+            });
+        });
+
+        document.querySelectorAll('[data-types-save]').forEach((saveBtn) => {
+            saveBtn.addEventListener('click', async () => {
+                const row = saveBtn.closest('tr');
+                if (!row) return;
+
+                const select = row.querySelector('[data-types-select]');
+                if (!select) return;
+
+                const selectedTypeIds = readSelectedTypeIds(select);
+                const updateUrl = getRowUpdateUrl(row);
+                if (!updateUrl) {
+                    showAlert('danger', @json(translate('Failed to update permission')));
+                    return;
+                }
+
+                row.classList.add('perm-row-saving');
+                saveBtn.disabled = true;
+
+                try {
+                    const res = await fetch(updateUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrf || '',
+                        },
+                        body: JSON.stringify({ inspection_type_ids: selectedTypeIds }),
+                    });
+
+                    if (!res.ok) {
+                        const payload = await res.json().catch(() => null);
+                        const msg = payload?.error?.message || payload?.message || @json(translate('Failed to update permission'));
+                        throw new Error(msg);
+                    }
+
+                    select.setAttribute('data-original', JSON.stringify(selectedTypeIds));
+                    saveBtn.classList.remove('visible');
+                    row.classList.remove('perm-row-dirty');
+                    showAlert('success', @json(translate('Permission updated successfully')));
+                } catch (err) {
+                    const original = normalizeTypeIds(JSON.parse(select.getAttribute('data-original') || '[]'));
+                    Array.from(select.options).forEach((option) => {
+                        option.selected = original.includes(Number(option.value));
+                    });
+                    saveBtn.classList.add('visible');
+                    row.classList.add('perm-row-dirty');
                     showAlert('danger', err?.message || @json(translate('Failed to update permission')));
                 } finally {
                     row.classList.remove('perm-row-saving');

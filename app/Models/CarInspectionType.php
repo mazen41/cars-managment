@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CarInspectionType extends Model
@@ -67,6 +68,16 @@ class CarInspectionType extends Model
     public function inspections(): HasMany
     {
         return $this->hasMany(CarInspection::class, "inspection_type_id");
+    }
+
+    public function manualExaminationCenters(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            CarInspector::class,
+            'manual_examination_center_inspection_types',
+            'inspection_type_id',
+            'center_id'
+        );
     }
 
     /**

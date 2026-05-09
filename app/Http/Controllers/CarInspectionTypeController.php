@@ -661,10 +661,21 @@ class CarInspectionTypeController extends Controller
     public function apiIndex(Request $request)
     {
         $query = CarInspectionType::query();
+        $user = $request->user();
+        $inspector = $user?->carInspector;
 
         // Only active types for public API
-        if (!Auth::check() || !Auth::user()->hasRole("admin")) {
+        if (!$user || !$user->hasRole("admin")) {
             $query->active();
+        }
+
+        // If this is an inspector user, only show types assigned to their center.
+        // Backward compatibility: if no assignment exists yet, return all active types.
+        if ($inspector) {
+            $assignedTypeIds = $inspector->manualExaminationInspectionTypes()->pluck('car_inspection_types.id');
+            if ($assignedTypeIds->isNotEmpty()) {
+                $query->whereIn('id', $assignedTypeIds->all());
+            }
         }
 
         if ($request->has("with_sections")) {

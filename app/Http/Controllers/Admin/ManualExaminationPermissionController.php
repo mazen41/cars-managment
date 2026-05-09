@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CarInspector;
+use App\Models\CarInspectionType;
 use App\Models\ManualExaminationPermission;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ManualExaminationPermissionController extends Controller
 {
@@ -19,7 +21,7 @@ class ManualExaminationPermissionController extends Controller
         $search = (string) $request->get('search', '');
 
         $centers = CarInspector::query()
-            ->with(['user', 'manualExaminationPermission'])
+            ->with(['user', 'manualExaminationPermission', 'manualExaminationInspectionTypes:id'])
             ->when($search !== '', function ($q) use ($search) {
                 $q->where(function ($sub) use ($search) {
                     $sub->where('shop_name', 'like', "%{$search}%")
@@ -35,25 +37,64 @@ class ManualExaminationPermissionController extends Controller
             ->paginate(25)
             ->appends($request->query());
 
-        return view('backend.cars.manual-examinations.permissions', compact('centers', 'search'));
+        $inspectionTypes = CarInspectionType::query()
+            ->active()
+            ->ordered()
+            ->get(['id', 'name']);
+
+        return view('backend.cars.manual-examinations.permissions', compact('centers', 'search', 'inspectionTypes'));
     }
 
     public function update(Request $request, CarInspector $center)
     {
         $validated = $request->validate([
-            'can_manual_examination' => ['required', 'boolean'],
+            'can_manual_examination' => ['sometimes', 'boolean'],
+            'inspection_type_ids' => ['sometimes', 'array'],
+            'inspection_type_ids.*' => ['integer', Rule::exists('car_inspection_types', 'id')],
         ]);
 
-        ManualExaminationPermission::updateOrCreate(
-            ['center_id' => $center->id],
-            ['can_manual_examination' => (bool) $validated['can_manual_examination']]
-        );
+        $hasPermissionUpdate = array_key_exists('can_manual_examination', $validated);
+        $hasTypeUpdate = array_key_exists('inspection_type_ids', $validated);
+
+        if (!$hasPermissionUpdate && !$hasTypeUpdate) {
+            return response()->json([
+                'error' => [
+                    'message' => translate('No data provided to update'),
+                    'code' => 'NO_UPDATE_FIELDS',
+                ],
+            ], 422, [], JSON_UNESCAPED_UNICODE);
+        }
+
+        if ($hasPermissionUpdate) {
+            ManualExaminationPermission::updateOrCreate(
+                ['center_id' => $center->id],
+                ['can_manual_examination' => (bool) $validated['can_manual_examination']]
+            );
+        }
+
+        if ($hasTypeUpdate) {
+            $typeIds = collect($validated['inspection_type_ids'] ?? [])
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values()
+                ->all();
+
+            $center->manualExaminationInspectionTypes()->sync($typeIds);
+        }
+
+        $currentPermission = $hasPermissionUpdate
+            ? (bool) $validated['can_manual_examination']
+            : $center->manualExaminationPermission?->can_manual_examination ?? true;
+        $currentTypeIds = $hasTypeUpdate
+            ? collect($validated['inspection_type_ids'] ?? [])->map(fn ($id) => (int) $id)->unique()->values()->all()
+            : $center->manualExaminationInspectionTypes()->pluck('car_inspection_types.id')->map(fn ($id) => (int) $id)->all();
 
         if ($request->wantsJson()) {
             return response()->json([
                 'data' => [
                     'center_id' => $center->id,
-                    'can_manual_examination' => (bool) $validated['can_manual_examination'],
+                    'can_manual_examination' => $currentPermission,
+                    'inspection_type_ids' => $currentTypeIds,
                 ],
                 'message' => translate('Permission updated successfully'),
             ], 200, [], JSON_UNESCAPED_UNICODE);
