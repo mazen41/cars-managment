@@ -168,11 +168,17 @@
 
     <table style="border: 0; margin-bottom: 0;">
         <tr>
-            <td style="border: 0; width: 80%; vertical-align: middle;">
+            <td style="border: 0; width: 20%; text-align: right; vertical-align: middle;">
+                @php $logoImage = pdf_safe_image_src('assets/img/logo.png'); @endphp
+                @if($logoImage)
+                    <img src="{{ $logoImage }}" alt="Logo" style="max-width: 100px; max-height: 80px;">
+                @endif
+            </td>
+            <td style="border: 0; width: 60%; vertical-align: middle; text-align: center;">
                 <h1 style="margin: 0; color: #000;">تقرير الفحص الفني للمركبة</h1>
                 <p style="margin: 5px 0 0 0;">رقم التقرير: {{ $carInspection->inspection_number }}</p>
             </td>
-            <td style="border: 0; width: 20%; text-align: center;">
+            <td style="border: 0; width: 20%; text-align: left; vertical-align: middle;">
                 @if(!empty($qrDataUri))
                     <img src="{{ $qrDataUri }}" alt="QR" style="width: 80px; height: 80px;">
                 @endif
@@ -242,17 +248,26 @@
     @if($vehicleImages->count() > 0)
         <div class="page-break"></div>
         <h2>صور المركبة المرفقة</h2>
-        <div style="width: 100%;">
-            @foreach($vehicleImages as $image)
-                @php $imageSrc = pdf_safe_image_src($image['src']); @endphp
-                @if($imageSrc)
-                <div class="image-container">
-                    <img src="{{ $imageSrc }}" alt="">
-                    <div class="image-label">{{ $image['label'] }}</div>
-                </div>
-                @endif
+        <table style="border:0; width: 100%;">
+            @foreach($vehicleImages->chunk(3) as $chunk)
+                <tr>
+                    @foreach($chunk as $image)
+                        @php $imageSrc = pdf_safe_image_src($image['src']); @endphp
+                        <td style="border:0; width: 33.33%; text-align: center; padding: 5px;">
+                            @if($imageSrc)
+                                <div style="border: 1px solid #ccc; padding: 5px; background: #f9f9f9;">
+                                    <img src="{{ $imageSrc }}" alt="" style="max-width: 100%; height: 120px; object-fit: cover;">
+                                    <div style="font-weight: bold; font-size: 10px; margin-top: 4px;">{{ $image['label'] }}</div>
+                                </div>
+                            @endif
+                        </td>
+                    @endforeach
+                    @for($i = $chunk->count(); $i < 3; $i++)
+                        <td style="border:0; width: 33.33%;"></td>
+                    @endfor
+                </tr>
             @endforeach
-        </div>
+        </table>
     @endif
 </body>
 </html>
