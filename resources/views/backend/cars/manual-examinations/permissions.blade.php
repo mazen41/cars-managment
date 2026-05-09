@@ -103,7 +103,7 @@
     }
 
     .perm-save-btn {
-        display: none;
+        display: inline-flex;
         align-items: center;
         gap: 0.35rem;
         padding: 0.38rem 0.95rem;
@@ -297,6 +297,13 @@
 @section('script')
 <script>
     (function () {
+        window.addEventListener('unhandledrejection', function (event) {
+            const message = String(event?.reason?.message || event?.reason || '');
+            if (message.includes("We weren't granted permission.")) {
+                event.preventDefault();
+            }
+        });
+
         const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         const alertEl = document.getElementById('permAlert');
 
@@ -363,14 +370,14 @@
             if (permBtn) {
                 permBtn.disabled = !permDirty;
                 permBtn.classList.toggle('is-dirty', permDirty);
-                permBtn.classList.toggle('visible', permDirty);
+                permBtn.classList.add('visible');
             }
 
             const typesBtn = row.querySelector('[data-types-save]');
             if (typesBtn) {
                 typesBtn.disabled = !typesDirty;
                 typesBtn.classList.toggle('is-dirty', typesDirty);
-                typesBtn.classList.toggle('visible', typesDirty);
+                typesBtn.classList.add('visible');
             }
         }
 
