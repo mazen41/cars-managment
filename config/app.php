@@ -134,6 +134,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Manual examination QR (PDF scan → redirect into inspector / SPA)
+    |--------------------------------------------------------------------------
+    |
+    | When set (e.g. https://inspector.example.com), QR codes embedded in PDFs send users to:
+    | {manual_examination_qr_redirect_base}/manual-examinations/{id}
+    |
+    */
+
+    'manual_examination_qr_redirect_base' => env('MANUAL_EXAMINATION_QR_REDIRECT_BASE', ''),
+
+    /*
+    |--------------------------------------------------------------------------
     | Autoloaded Service Providers
     |--------------------------------------------------------------------------
     |

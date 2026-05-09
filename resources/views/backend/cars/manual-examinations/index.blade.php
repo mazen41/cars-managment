@@ -162,13 +162,15 @@
                                 <div class="me-muted">{{ $manualExamination->created_at?->format('H:i') }}</div>
                             </td>
                             <td>{!! $manualExamination->status_badge !!}</td>
-                            <td class="text-right">
-                                <a class="btn btn-soft-primary btn-sm" href="{{ route('admin.manual-examinations.show', $manualExamination->id) }}" title="{{ translate('View') }}">
-                                    <i class="las la-eye mr-1"></i> {{ translate('View') }}
-                                </a>
-                                <a class="btn btn-soft-success btn-sm" href="{{ route('admin.manual-examinations.download', $manualExamination->id) }}" title="{{ translate('Download PDF') }}">
-                                    <i class="las la-file-download mr-1"></i> {{ translate('PDF') }}
-                                </a>
+                            <td class="text-right text-nowrap">
+                                <div class="btn-group shadow-sm rounded" role="group" aria-label="{{ translate('Manual examination actions') }}">
+                                    <a class="btn btn-soft-primary btn-sm" href="{{ route('admin.manual-examinations.show', $manualExamination->id) }}" title="{{ translate('View') }}" target="_blank" rel="noopener">
+                                        <i class="las la-eye"></i>
+                                    </a>
+                                    <a class="btn btn-soft-success btn-sm px-3" href="{{ route('admin.manual-examinations.download', $manualExamination->id) }}" title="{{ translate('Download Arabic PDF with QR verification') }}" rel="noopener">
+                                        <i class="las la-file-pdf mr-1"></i>PDF
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     @empty

@@ -425,48 +425,49 @@ class ManualExaminationController extends BaseInspectorController
     }
 
     public function downloadPdf(Request $request, int $manualExaminationId)
-{
-    $inspector = $request->user()->carInspector;
+    {
+        $inspector = $this->getInspectorProfile();
 
-    if (!$inspector) {
-        return response()->json([
-            'error' => [
-                'message' => 'Inspector profile not found',
-                'code'    => 'INSPECTOR_NOT_FOUND',
+        if (!$inspector) {
+            return response()->json([
+                'error' => [
+                    'message' => 'Inspector profile not found',
+                    'code' => 'INSPECTOR_NOT_FOUND',
+                ],
+            ], 404);
+        }
+
+        ['manualExamination' => $manualExamination, 'sectionData' => $sectionData] =
+            ManualExaminationService::getFullData($manualExaminationId, $inspector->id);
+
+        $pdfOptions = get_manual_examination_pdf_options();
+        $verificationUrl = manual_examination_report_public_url($manualExamination);
+        $qrDataUri = manual_examination_pdf_qr_data_uri($verificationUrl);
+
+        $pdf = PDF::loadView('backend.cars.inspections.manual-pdf-report', [
+            'carInspection' => $manualExamination,
+            'sectionData' => $sectionData,
+            'font_family' => $pdfOptions['font_family'],
+            'direction' => $pdfOptions['direction'],
+            'text_align' => $pdfOptions['text_align'],
+            'not_text_align' => $pdfOptions['not_text_align'],
+            'verificationUrl' => $verificationUrl,
+            'qrDataUri' => $qrDataUri,
+        ]);
+
+        $filename = 'manual-examination-' . $manualExamination->id . '.pdf';
+
+        return response()->streamDownload(
+            function () use ($pdf) {
+                echo $pdf->output();
+            },
+            $filename,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             ]
-        ], 404);
+        );
     }
-
-    ['manualExamination' => $manualExamination, 'sectionData' => $sectionData] =
-        ManualExaminationService::getFullData($manualExaminationId, $inspector->id);
-
-    $options = get_pdf_options();
-    $pdf = PDF::loadView('backend.cars.inspections.manual-pdf-report', [
-        'carInspection'  => $manualExamination,
-        'sectionData'    => $sectionData,
-        'font_family'    => $options['font_family'],
-        'direction'      => $options['direction'],
-        'text_align'     => $options['text_align'],
-        'not_text_align' => $options['not_text_align'],
-    ]);
-
-    $filename = 'manual-examination-' . $manualExamination->id . '.pdf';
-
-    // ✅ streamDownload keeps the response inside Laravel's pipeline
-    // so CORS middleware can attach Access-Control-Allow-Origin correctly.
-    // ❌ Never use $pdf->download() or $pdf->stream() — they call exit()
-    //    which kills middleware execution before headers are sent.
-    return response()->streamDownload(
-        function () use ($pdf) {
-            echo $pdf->output();
-        },
-        $filename,
-        [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]
-    );
-}
 
     private function getDefaultInspectionTypeId(): ?int
     {

@@ -87,14 +87,19 @@ class ManualExaminationController extends Controller
         ['manualExamination' => $manualExamination, 'sectionData' => $sectionData] =
             ManualExaminationService::getFullData((int) $manualExamination->id);
 
-        $options = get_pdf_options();
+        $pdfOptions = get_manual_examination_pdf_options();
+        $verificationUrl = manual_examination_report_public_url($manualExamination);
+        $qrDataUri = manual_examination_pdf_qr_data_uri($verificationUrl);
+
         $pdf = PDF::loadView('backend.cars.inspections.manual-pdf-report', [
             'carInspection' => $manualExamination,
             'sectionData' => $sectionData,
-            'font_family' => $options['font_family'],
-            'direction' => $options['direction'],
-            'text_align' => $options['text_align'],
-            'not_text_align' => $options['not_text_align'],
+            'font_family' => $pdfOptions['font_family'],
+            'direction' => $pdfOptions['direction'],
+            'text_align' => $pdfOptions['text_align'],
+            'not_text_align' => $pdfOptions['not_text_align'],
+            'verificationUrl' => $verificationUrl,
+            'qrDataUri' => $qrDataUri,
         ]);
 
         return $pdf->download('manual-examination-' . $manualExamination->id . '.pdf');

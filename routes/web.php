@@ -16,6 +16,7 @@ use App\Http\Controllers\SizeChartController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PublicManualExaminationPhotoController;
+use App\Http\Controllers\PublicManualExaminationReportController;
 /*
   |--------------------------------------------------------------------------
   | Web Routes
@@ -88,6 +89,9 @@ Route::controller(AddressController::class)->group(function () {
  */
 Route::get('/manual-examinations/{manualExamination}/photos/{encodedPath}', [PublicManualExaminationPhotoController::class, 'show'])
     ->name('public.manual-examinations.photo');
+
+Route::get('/manual-examination-reports/{carInspection}', [PublicManualExaminationReportController::class, 'resolve'])
+    ->name('public.manual-examination.report');
 
 // AIZ Uploader
 Route::controller(AizUploadController::class)->middleware(['auth'])->group(function () {

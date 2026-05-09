@@ -2893,6 +2893,64 @@ function get_pdf_options(){
    return $result;
    }
 
+if (!function_exists('get_manual_examination_pdf_options')) {
+    /**
+     * Fixed RTL Arabic styling for manual examination PDFs (independent of session locale).
+     */
+    function get_manual_examination_pdf_options(): array
+    {
+        return [
+            'font_family' => 'xbriyaz',
+            'direction' => 'rtl',
+            'text_align' => 'right',
+            'not_text_align' => 'left',
+        ];
+    }
+}
+
+if (!function_exists('manual_examination_report_public_url')) {
+    /**
+     * Absolute URL encoded in QR codes; resolves to Laravel then redirects into the SPA when configured.
+     *
+     * @param  object|int|string  $inspection  CarInspection or id.
+     */
+    function manual_examination_report_public_url($inspection): string
+    {
+        $id = is_object($inspection) ? (int) ($inspection->id ?? 0) : (int) $inspection;
+        if ($id <= 0) {
+            return url('/');
+        }
+
+        try {
+            return route('public.manual-examination.report', ['carInspection' => $id], true);
+        } catch (\Throwable $e) {
+            return url('/');
+        }
+    }
+}
+
+if (!function_exists('manual_examination_pdf_qr_data_uri')) {
+    /**
+     * PNG data URI for Dompdf/mpdf QR embedding.
+     */
+    function manual_examination_pdf_qr_data_uri(string $url): string
+    {
+        $url = trim($url);
+        if ($url === '') {
+            return '';
+        }
+
+        try {
+            $generator = app(\SimpleSoftwareIO\QrCode\Generator::class);
+            $generated = $generator->format('png')->size(180)->generate($url);
+
+            return 'data:image/png;base64,' . base64_encode((string) $generated);
+        } catch (\Throwable $e) {
+            return '';
+        }
+    }
+}
+
 if (!function_exists('encode_inspection_photo_path')) {
     function encode_inspection_photo_path(?string $path): ?string
     {
