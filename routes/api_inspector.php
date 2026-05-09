@@ -46,6 +46,11 @@ Route::group(['prefix' => 'v2/inspector', 'middleware' => ['app_language', 'insp
 
         // Manual examination routes
         Route::middleware(['manual_examinations.enabled'])->group(function () {
+            Route::get('manual-examination-inspection-types', [
+                App\Http\Controllers\Api\V2\CarInspectionTypeController::class,
+                'manualExaminationInspectionTypes',
+            ])->name('api.inspector.manual-examination-inspection-types');
+
             Route::get('manual-examinations', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@index');
             Route::post('manual-examinations', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@store');
             Route::get('manual-examinations/{manualExamination}/download', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@downloadPdf');

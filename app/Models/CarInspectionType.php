@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -104,6 +105,31 @@ class CarInspectionType extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy("sort_order");
+    }
+
+    /**
+     * Limit types to rows linked to the inspector center via admin
+     * "Manual examinations permissions" (manualExaminationInspectionTypes).
+     *
+     * If no types are assigned in the pivot, we do not constrain the query
+     * so legacy centers keep seeing all active types.
+     */
+    public function scopeForInspectorManualAssignments(Builder $query, CarInspector $inspector): Builder
+    {
+        $assignedTypeIds = $inspector
+            ->manualExaminationInspectionTypes()
+            ->pluck("car_inspection_types.id")
+            ->map(static fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        if ($assignedTypeIds->isEmpty()) {
+            return $query;
+        }
+
+        $table = $query->getModel()->getTable();
+
+        return $query->whereIn("{$table}.id", $assignedTypeIds->all());
     }
 
     /**

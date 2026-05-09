@@ -669,13 +669,11 @@ class CarInspectionTypeController extends Controller
             $query->active();
         }
 
-        // If this is an inspector user, only show types assigned to their center.
+        // If this is an inspector user, only show types assigned to their center
+        // (Manual examinations permissions in admin).
         // Backward compatibility: if no assignment exists yet, return all active types.
         if ($inspector) {
-            $assignedTypeIds = $inspector->manualExaminationInspectionTypes()->pluck('car_inspection_types.id');
-            if ($assignedTypeIds->isNotEmpty()) {
-                $query->whereIn('id', $assignedTypeIds->all());
-            }
+            $query->forInspectorManualAssignments($inspector);
         }
 
         if ($request->has("with_sections")) {
