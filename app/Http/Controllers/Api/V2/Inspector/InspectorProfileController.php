@@ -7,6 +7,7 @@ use App\Http\Requests\Api\V2\Inspector\UpdateProfileRequest;
 use App\Http\Requests\Api\V2\Inspector\ChangePasswordRequest;
 use App\Http\Requests\Api\V2\Inspector\UpdateBusinessSettingsRequest;
 use App\Http\Requests\Api\V2\Inspector\UploadAvatarRequest;
+use App\Http\Requests\Api\V2\Inspector\UploadCoverPhotoRequest;
 use App\Http\Resources\V2\Inspector\InspectorProfileResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -212,6 +213,60 @@ class InspectorProfileController extends Controller
             return response()->json([
                 'error' => [
                     'message' => 'Failed to upload avatar',
+                    'code' => 'UPLOAD_FAILED'
+                ]
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload cover photo image
+     */
+    public function uploadCoverPhoto(UploadCoverPhotoRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $inspector = $user->carInspector;
+        
+        if (!$inspector) {
+            return response()->json([
+                'error' => [
+                    'message' => 'Inspector profile not found',
+                    'code' => 'INSPECTOR_NOT_FOUND'
+                ]
+            ], 404);
+        }
+
+        try {
+            $file = $request->file('cover_photo');
+            
+            // Generate unique filename
+            $filename = 'inspector_cover_photos/' . uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+            
+            // Store the file
+            $path = $file->storeAs('public/uploads', $filename);
+            
+            // Delete old cover photo if exists
+            if ($inspector->banner_image && Storage::exists('public/uploads/' . $inspector->banner_image)) {
+                Storage::delete('public/uploads/' . $inspector->banner_image);
+            }
+            
+            // Update inspector with new banner image path
+            $inspector->update([
+                'banner_image' => $filename
+            ]);
+
+            return response()->json([
+                'data' => [
+                    'banner_image_url' => $inspector->fresh()->banner_image_url,
+                    'banner_image_path' => $filename
+                ],
+                'message' => 'Cover photo uploaded successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => [
+                    'message' => 'Failed to upload cover photo',
                     'code' => 'UPLOAD_FAILED'
                 ]
             ], 500);

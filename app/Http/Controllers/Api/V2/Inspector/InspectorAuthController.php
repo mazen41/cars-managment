@@ -94,6 +94,7 @@ class InspectorAuthController extends Controller
                         'inspector' => [
                             'id' => $user->carInspector->id,
                             'shop_name' => $user->carInspector->shop_name,
+                            'name' => $user->name,
                             'address' => $user->carInspector->address,
                             'phone' => $user->carInspector->phone,
                             'email' => $user->carInspector->email,
@@ -101,6 +102,7 @@ class InspectorAuthController extends Controller
                             'certification_number' => $user->carInspector->certification_number,
                             'experience_years' => $user->carInspector->experience_years,
                             'image_url' => $user->carInspector->image_url,
+                            'banner_image_url' => $user->carInspector->banner_image_url,
                             'permissions' => [
                                 'can_manual_examination' => $user->carInspector->canUseManualExaminations(),
                             ],
@@ -246,10 +248,13 @@ class InspectorAuthController extends Controller
                         'inspector' => [
                             'id' => $inspector->id,
                             'shop_name' => $inspector->shop_name,
+                            'name' => $user->name,
                             'address' => $inspector->address,
                             'phone' => $inspector->phone,
                             'email' => $inspector->email,
                             'is_active' => $inspector->is_active,
+                            'image_url' => $inspector->image_url,
+                            'banner_image_url' => $inspector->banner_image_url,
                             'permissions' => [
                                 'can_manual_examination' => $inspector->canUseManualExaminations(),
                             ],

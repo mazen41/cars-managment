@@ -82,6 +82,7 @@ Route::group(['prefix' => 'v2/inspector', 'middleware' => ['app_language', 'insp
         Route::put('profile/password', 'App\Http\Controllers\Api\V2\Inspector\InspectorProfileController@changePassword');
         Route::put('profile/business-settings', 'App\Http\Controllers\Api\V2\Inspector\InspectorProfileController@updateBusinessSettings');
         Route::post('profile/avatar', 'App\Http\Controllers\Api\V2\Inspector\InspectorProfileController@uploadAvatar');
+        Route::post('profile/cover-photo', 'App\Http\Controllers\Api\V2\Inspector\InspectorProfileController@uploadCoverPhoto');
 
 
     });
