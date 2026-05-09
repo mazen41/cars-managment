@@ -3,6 +3,7 @@
 return [
     'permissions_title' => 'Manual Examination Permissions',
     'permissions_subtitle' => 'Control which inspection centers can access manual examinations',
+    'back_to_manual' => 'Back to Manual Examinations',
     'inspection_centers' => 'Inspection Centers',
     'search_placeholder' => 'Search by center name, phone, email, or user',
     'search_button' => 'Search',
@@ -25,6 +26,7 @@ return [
     'disabled' => 'Disabled',
     'save_success' => 'Permission updated successfully',
     'save_failed' => 'Failed to update permission',
+    'na' => 'N/A',
     'no_centers' => 'No inspection centers found',
 ];
 

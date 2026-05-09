@@ -3,6 +3,7 @@
 return [
     'permissions_title' => 'صلاحيات الفحص اليدوي',
     'permissions_subtitle' => 'التحكم في المراكز المسموح لها باستخدام الفحص اليدوي',
+    'back_to_manual' => 'العودة إلى الفحوصات اليدوية',
     'inspection_centers' => 'مراكز الفحص',
     'search_placeholder' => 'ابحث باسم المركز أو الهاتف أو البريد الإلكتروني أو اسم المستخدم',
     'search_button' => 'بحث',
@@ -25,6 +26,7 @@ return [
     'disabled' => 'معطل',
     'save_success' => 'تم تحديث الصلاحية بنجاح',
     'save_failed' => 'فشل تحديث الصلاحية',
+    'na' => 'غير متوفر',
     'no_centers' => 'لا توجد مراكز فحص',
 ];
 

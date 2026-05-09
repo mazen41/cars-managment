@@ -11,7 +11,7 @@
         </div>
         <div class="col-auto">
             <a href="{{ route('admin.manual-examinations.index') }}" class="btn btn-soft-primary">
-                <i class="las la-arrow-left mr-1"></i> {{ translate('Back to Manual Examinations') }}
+                <i class="las la-arrow-left mr-1"></i> {{ __('manual_examinations.back_to_manual') }}
             </a>
         </div>
     </div>
@@ -129,7 +129,7 @@
     .perm-types-select {
         min-width: 260px;
         max-width: 360px;
-        height: 42px;
+        min-height: 120px;
         border-radius: 10px;
         border-color: #cbd5e1;
         background: #fff;
@@ -215,16 +215,15 @@
                         @php
                             $enabled = $center->manualExaminationPermission?->can_manual_examination ?? true;
                             $selectedTypeIds = $center->manualExaminationInspectionTypes->pluck('id')->map(fn($id) => (int) $id)->values()->all();
-                            $selectedTypeId = !empty($selectedTypeIds) ? $selectedTypeIds[0] : null;
                         @endphp
                         <tr
                             data-center-id="{{ $center->id }}"
                             data-update-url="{{ route('admin.manual-examinations.permissions.update', ['center' => $center->id]) }}"
                         >
                             <td>
-                                <div class="fw-700">{{ $center->shop_name ?? translate('N/A') }}</div>
+                                <div class="fw-700">{{ $center->shop_name ?? __('manual_examinations.na') }}</div>
                                 <div class="perm-muted">
-                                    {{ __('manual_examinations.owner_label') }}: {{ $center->user?->name ?? translate('N/A') }}
+                                    {{ __('manual_examinations.owner_label') }}: {{ $center->user?->name ?? __('manual_examinations.na') }}
                                 </div>
                             </td>
                             <td>
@@ -235,7 +234,7 @@
                                 <span class="perm-badge {{ $enabled ? 'is-enabled' : 'is-disabled' }}" data-perm-badge>
                                     <span aria-hidden="true" style="font-size: 0.95rem;">●</span>
                                     <span data-perm-label>
-                                        {{ $enabled ? translate('Enabled') : translate('Disabled') }}
+                                        {{ $enabled ? __('manual_examinations.enabled') : __('manual_examinations.disabled') }}
                                     </span>
                                 </span>
                             </td>
@@ -246,14 +245,16 @@
                                     class="perm-types-wrap"
                                 >
                                     @csrf
+                                    <input type="hidden" name="inspection_type_ids[]" value="">
                                     <select
                                         class="form-control perm-types-select"
                                         name="inspection_type_ids[]"
+                                        multiple
+                                        size="5"
                                         aria-label="{{ __('manual_examinations.assign_types') }}"
                                     >
-                                        <option value="">{{ __('manual_examinations.select_type') }}</option>
                                         @foreach($inspectionTypes as $type)
-                                            <option value="{{ $type->id }}" @selected((int) $type->id === (int) $selectedTypeId)>
+                                            <option value="{{ $type->id }}" @selected(in_array((int) $type->id, $selectedTypeIds, true))>
                                                 {{ $type->name }}
                                             </option>
                                         @endforeach
