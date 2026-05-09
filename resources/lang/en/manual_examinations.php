@@ -15,6 +15,7 @@ return [
     'save_button' => 'Save',
     'save_types' => 'Save inspection types',
     'assign_types' => 'Assign inspection types',
+    'select_type' => 'Select inspection type',
     'types_help' => 'Choose one or more types, then click Save.',
     'save_permission' => 'Save permission',
     'toggle_permission' => 'Toggle manual examination permission',

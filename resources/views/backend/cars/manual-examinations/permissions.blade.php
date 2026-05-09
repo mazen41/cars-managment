@@ -119,7 +119,7 @@
     .perm-types-select {
         min-width: 260px;
         max-width: 360px;
-        min-height: 110px;
+        height: 42px;
         border-radius: 10px;
         border-color: #cbd5e1;
         background: #fff;
@@ -261,12 +261,11 @@
                                     </button>
                                     <select
                                         class="form-control perm-types-select"
-                                        multiple
-                                        size="4"
                                         data-types-select
                                         data-original='@json($selectedTypeIds)'
                                         aria-label="{{ __('manual_examinations.assign_types') }}"
                                     >
+                                        <option value="">{{ __('manual_examinations.select_type') }}</option>
                                         @foreach($inspectionTypes as $type)
                                             <option value="{{ $type->id }}" @selected(in_array((int) $type->id, $selectedTypeIds, true))>
                                                 {{ $type->name }}
@@ -338,20 +337,31 @@
 @section('script')
 <script>
     (function () {
+        var DEBUG = true;
+
+        function debugLog(label, payload) {
+            if (!DEBUG || !window.console) return;
+            try {
+                console.log('[manual-permissions] ' + label, payload || '');
+            } catch (e) {}
+        }
+
         window.addEventListener('unhandledrejection', function (event) {
-            const message = String(event?.reason?.message || event?.reason || '');
+            var reason = event && event.reason ? event.reason : '';
+            var message = String((reason && reason.message) ? reason.message : reason || '');
             if (message.includes("We weren't granted permission.")) {
                 event.preventDefault();
             }
         });
 
-        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        const alertEl = document.getElementById('permAlert');
+        var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        var csrf = csrfMeta ? csrfMeta.getAttribute('content') : '';
+        var alertEl = document.getElementById('permAlert');
 
-        const MSG_ENABLED = @json(__('manual_examinations.enabled'));
-        const MSG_DISABLED = @json(__('manual_examinations.disabled'));
-        const MSG_SAVE_SUCCESS = @json(__('manual_examinations.save_success'));
-        const MSG_SAVE_FAILED = @json(__('manual_examinations.save_failed'));
+        var MSG_ENABLED = @json(__('manual_examinations.enabled'));
+        var MSG_DISABLED = @json(__('manual_examinations.disabled'));
+        var MSG_SAVE_SUCCESS = @json(__('manual_examinations.save_success'));
+        var MSG_SAVE_FAILED = @json(__('manual_examinations.save_failed'));
 
         function showAlert(type, message) {
             if (!alertEl) return;
@@ -364,8 +374,8 @@
         }
 
         function updateBadgeUI(row, enabled) {
-            const badge = row.querySelector('[data-perm-badge]');
-            const label = row.querySelector('[data-perm-label]');
+            var badge = row.querySelector('[data-perm-badge]');
+            var label = row.querySelector('[data-perm-label]');
             if (badge) {
                 badge.classList.toggle('is-enabled', !!enabled);
                 badge.classList.toggle('is-disabled', !enabled);
@@ -376,12 +386,14 @@
         }
 
         function normalizeTypeIds(ids) {
-            return Array.from(new Set((ids || []).map((id) => Number(id)).filter((id) => Number.isInteger(id))))
+            return Array.from(new Set((ids || []).map(function (id) { return Number(id); }).filter(function (id) { return Number.isInteger(id); })))
                 .sort((a, b) => a - b);
         }
 
         function readSelectedTypeIds(select) {
-            return normalizeTypeIds(Array.from(select.selectedOptions || []).map((opt) => Number(opt.value)));
+            var value = select ? select.value : '';
+            if (!value) return [];
+            return normalizeTypeIds([Number(value)]);
         }
 
         function getRowUpdateUrl(row) {
@@ -389,33 +401,33 @@
         }
 
         function getPermissionDirty(row) {
-            const toggle = row.querySelector('[data-perm-toggle]');
+            var toggle = row.querySelector('[data-perm-toggle]');
             if (!toggle) return false;
             return String(toggle.value || '0') !== (toggle.getAttribute('data-original') || '0');
         }
 
         function getTypesDirty(row) {
-            const select = row.querySelector('[data-types-select]');
+            var select = row.querySelector('[data-types-select]');
             if (!select) return false;
-            const original = normalizeTypeIds(JSON.parse(select.getAttribute('data-original') || '[]'));
-            const selected = readSelectedTypeIds(select);
+            var original = normalizeTypeIds(JSON.parse(select.getAttribute('data-original') || '[]'));
+            var selected = readSelectedTypeIds(select);
             return JSON.stringify(selected) !== JSON.stringify(original);
         }
 
         function refreshRowDirtyState(row) {
-            const permDirty = getPermissionDirty(row);
-            const typesDirty = getTypesDirty(row);
+            var permDirty = getPermissionDirty(row);
+            var typesDirty = getTypesDirty(row);
             row.classList.toggle('perm-row-dirty', permDirty || typesDirty);
             refreshPermActionButtons(row);
 
-            const permBtn = row.querySelector('[data-perm-save]');
+            var permBtn = row.querySelector('[data-perm-save]');
             if (permBtn) {
                 permBtn.disabled = !permDirty;
                 permBtn.classList.toggle('is-dirty', permDirty);
                 permBtn.classList.add('visible');
             }
 
-            const typesBtn = row.querySelector('[data-types-save]');
+            var typesBtn = row.querySelector('[data-types-save]');
             if (typesBtn) {
                 typesBtn.disabled = !typesDirty;
                 typesBtn.classList.toggle('is-dirty', typesDirty);
@@ -424,9 +436,9 @@
         }
 
         function refreshPermActionButtons(row) {
-            const toggle = row.querySelector('[data-perm-toggle]');
+            var toggle = row.querySelector('[data-perm-toggle]');
             if (!toggle) return;
-            const currentValue = String(toggle.value || '0');
+            var currentValue = String(toggle.value || '0');
             row.querySelectorAll('[data-perm-action]').forEach((btn) => {
                 btn.classList.toggle('is-active', btn.getAttribute('data-value') === currentValue);
             });
@@ -434,37 +446,39 @@
 
         document.querySelectorAll('[data-perm-action]').forEach((actionBtn) => {
             actionBtn.addEventListener('click', (e) => {
-                const button = e.currentTarget;
-                const row = button.closest('tr');
+                var button = e.currentTarget;
+                var row = button.closest('tr');
                 if (!row) return;
-                const toggle = row.querySelector('[data-perm-toggle]');
+                var toggle = row.querySelector('[data-perm-toggle]');
                 if (!toggle) return;
 
-                const nextValue = button.getAttribute('data-value') === '1' ? '1' : '0';
+                var nextValue = button.getAttribute('data-value') === '1' ? '1' : '0';
                 toggle.value = nextValue;
                 updateBadgeUI(row, nextValue === '1');
                 refreshRowDirtyState(row);
+                debugLog('permission toggled', { centerId: row.getAttribute('data-center-id'), value: nextValue });
             });
         });
 
         // Save button click: send the request
         document.querySelectorAll('[data-perm-save]').forEach((saveBtn) => {
             saveBtn.addEventListener('click', async () => {
-                const row = saveBtn.closest('tr');
+                var row = saveBtn.closest('tr');
                 if (!row) return;
 
-                const toggle = row.querySelector('[data-perm-toggle]');
+                var toggle = row.querySelector('[data-perm-toggle]');
                 if (!toggle) return;
 
-                const enabled = String(toggle.value || '0') === '1';
-                const updateUrl = getRowUpdateUrl(row);
+                var enabled = String(toggle.value || '0') === '1';
+                var updateUrl = getRowUpdateUrl(row);
                 if (!updateUrl) return;
 
                 row.classList.add('perm-row-saving');
                 saveBtn.disabled = true;
+                debugLog('permission save start', { updateUrl: updateUrl, enabled: enabled });
 
                 try {
-                    const res = await fetch(updateUrl, {
+                    var res = await fetch(updateUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -473,10 +487,12 @@
                         },
                         body: JSON.stringify({ can_manual_examination: enabled ? 1 : 0 }),
                     });
+                    debugLog('permission save response', { status: res.status, ok: res.ok });
 
                     if (!res.ok) {
-                        const payload = await res.json().catch(() => null);
-                        const msg = payload?.error?.message || payload?.message || @json(translate('Failed to update permission'));
+                        var payload = await res.json().catch(() => null);
+                        var msg = (payload && payload.error && payload.error.message) || (payload && payload.message) || MSG_SAVE_FAILED;
+                        debugLog('permission save error payload', payload);
                         throw new Error(msg);
                     }
 
@@ -489,14 +505,15 @@
                     showAlert('success', MSG_SAVE_SUCCESS);
                 } catch (err) {
                     // Revert toggle to last-saved value
-                    const original = toggle.getAttribute('data-original');
+                    var original = toggle.getAttribute('data-original');
                     toggle.value = original === '1' ? '1' : '0';
                     updateBadgeUI(row, toggle.value === '1');
 
                     // Keep save button visible so user can retry
                     refreshRowDirtyState(row);
 
-                    showAlert('danger', err?.message || MSG_SAVE_FAILED);
+                    showAlert('danger', (err && err.message) ? err.message : MSG_SAVE_FAILED);
+                    debugLog('permission save exception', err);
                 } finally {
                     row.classList.remove('perm-row-saving');
                     saveBtn.disabled = false;
@@ -506,32 +523,33 @@
 
         document.querySelectorAll('[data-types-select]').forEach((select) => {
             select.addEventListener('change', (e) => {
-                const input = e.currentTarget;
-                const row = input.closest('tr');
+                var input = e.currentTarget;
+                var row = input.closest('tr');
                 if (!row) return;
 
-                const saveBtn = row.querySelector('[data-types-save]');
+                var saveBtn = row.querySelector('[data-types-save]');
                 if (!saveBtn) return;
 
-                const original = normalizeTypeIds(JSON.parse(input.getAttribute('data-original') || '[]'));
-                const selected = readSelectedTypeIds(input);
-                const isDirty = JSON.stringify(selected) !== JSON.stringify(original);
+                var original = normalizeTypeIds(JSON.parse(input.getAttribute('data-original') || '[]'));
+                var selected = readSelectedTypeIds(input);
+                var isDirty = JSON.stringify(selected) !== JSON.stringify(original);
 
                 saveBtn.disabled = !isDirty;
                 refreshRowDirtyState(row);
+                debugLog('type changed', { centerId: row.getAttribute('data-center-id'), selected: selected });
             });
         });
 
         document.querySelectorAll('[data-types-save]').forEach((saveBtn) => {
             saveBtn.addEventListener('click', async () => {
-                const row = saveBtn.closest('tr');
+                var row = saveBtn.closest('tr');
                 if (!row) return;
 
-                const select = row.querySelector('[data-types-select]');
+                var select = row.querySelector('[data-types-select]');
                 if (!select) return;
 
-                const selectedTypeIds = readSelectedTypeIds(select);
-                const updateUrl = getRowUpdateUrl(row);
+                var selectedTypeIds = readSelectedTypeIds(select);
+                var updateUrl = getRowUpdateUrl(row);
                 if (!updateUrl) {
                     showAlert('danger', MSG_SAVE_FAILED);
                     return;
@@ -539,9 +557,10 @@
 
                 row.classList.add('perm-row-saving');
                 saveBtn.disabled = true;
+                debugLog('types save start', { updateUrl: updateUrl, selectedTypeIds: selectedTypeIds });
 
                 try {
-                    const res = await fetch(updateUrl, {
+                    var res = await fetch(updateUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -550,10 +569,12 @@
                         },
                         body: JSON.stringify({ inspection_type_ids: selectedTypeIds }),
                     });
+                    debugLog('types save response', { status: res.status, ok: res.ok });
 
                     if (!res.ok) {
-                        const payload = await res.json().catch(() => null);
-                        const msg = payload?.error?.message || payload?.message || @json(translate('Failed to update permission'));
+                        var payload = await res.json().catch(() => null);
+                        var msg = (payload && payload.error && payload.error.message) || (payload && payload.message) || MSG_SAVE_FAILED;
+                        debugLog('types save error payload', payload);
                         throw new Error(msg);
                     }
 
@@ -561,12 +582,13 @@
                     refreshRowDirtyState(row);
                     showAlert('success', MSG_SAVE_SUCCESS);
                 } catch (err) {
-                    const original = normalizeTypeIds(JSON.parse(select.getAttribute('data-original') || '[]'));
+                    var original = normalizeTypeIds(JSON.parse(select.getAttribute('data-original') || '[]'));
                     Array.from(select.options).forEach((option) => {
                         option.selected = original.includes(Number(option.value));
                     });
                     refreshRowDirtyState(row);
-                    showAlert('danger', err?.message || MSG_SAVE_FAILED);
+                    showAlert('danger', (err && err.message) ? err.message : MSG_SAVE_FAILED);
+                    debugLog('types save exception', err);
                 } finally {
                     row.classList.remove('perm-row-saving');
                     saveBtn.disabled = false;
@@ -577,6 +599,7 @@
         document.querySelectorAll('.perm-table tbody tr[data-center-id]').forEach((row) => {
             refreshRowDirtyState(row);
         });
+        debugLog('page init complete');
     })();
 </script>
 @endsection

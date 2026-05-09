@@ -15,6 +15,7 @@ return [
     'save_button' => 'حفظ',
     'save_types' => 'حفظ أنواع الفحص',
     'assign_types' => 'تعيين أنواع الفحص',
+    'select_type' => 'اختر نوع الفحص',
     'types_help' => 'اختر نوعًا واحدًا أو أكثر ثم اضغط حفظ.',
     'save_permission' => 'حفظ الصلاحية',
     'toggle_permission' => 'تبديل صلاحية الفحص اليدوي',
