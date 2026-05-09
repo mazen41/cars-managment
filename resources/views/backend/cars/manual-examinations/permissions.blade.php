@@ -96,6 +96,19 @@
         background: rgba(239, 68, 68, 0.12);
         color: #7f1d1d;
     }
+    .perm-radio-input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+    .perm-radio-input:checked + .perm-toggle-btn[data-value="1"] {
+        background: rgba(16, 185, 129, 0.14);
+        color: #065f46;
+    }
+    .perm-radio-input:checked + .perm-toggle-btn[data-value="0"] {
+        background: rgba(239, 68, 68, 0.12);
+        color: #7f1d1d;
+    }
     .perm-alert {
         display: none;
         margin-bottom: 0.75rem;
@@ -106,10 +119,7 @@
         font-size: 0.82rem;
         color: #64748b;
     }
-    .perm-row-saving {
-        opacity: 0.65;
-        pointer-events: none;
-    }
+    .perm-row-saving { opacity: 0.65; pointer-events: none; }
     .perm-types-wrap {
         display: flex;
         align-items: flex-start;
@@ -147,10 +157,6 @@
     .perm-save-btn:hover { background: linear-gradient(180deg, #334155, #1e293b); }
     .perm-save-btn:active { transform: translateY(1px); }
     .perm-save-btn.visible { display: inline-flex; }
-    .perm-save-btn.is-dirty {
-        background: linear-gradient(180deg, #2563eb, #1d4ed8);
-        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
-    }
     .perm-save-btn:disabled { opacity: 0.55; cursor: not-allowed; }
     .perm-cell-note {
         display: block;
@@ -159,25 +165,9 @@
         color: #64748b;
     }
 
-    /* Subtle highlight on the row when there are unsaved changes */
-    tr.perm-row-dirty {
-        background: rgba(249, 250, 251, 0.85);
-        outline: 1.5px solid rgba(99, 102, 241, 0.18);
-        outline-offset: -1px;
-    }
-    .perm-unsaved-pill {
-        display: none;
-        margin-top: 0.35rem;
-        font-size: 0.72rem;
-        font-weight: 700;
-        color: #1d4ed8;
-        background: rgba(219, 234, 254, 0.8);
-        border: 1px solid rgba(147, 197, 253, 0.9);
-        border-radius: 999px;
-        padding: 0.14rem 0.52rem;
-    }
-    tr.perm-row-dirty .perm-unsaved-pill {
-        display: inline-block;
+    .perm-types-wrap form,
+    .perm-switch form {
+        margin: 0;
     }
 </style>
 
@@ -225,6 +215,7 @@
                         @php
                             $enabled = $center->manualExaminationPermission?->can_manual_examination ?? true;
                             $selectedTypeIds = $center->manualExaminationInspectionTypes->pluck('id')->map(fn($id) => (int) $id)->values()->all();
+                            $selectedTypeId = !empty($selectedTypeIds) ? $selectedTypeIds[0] : null;
                         @endphp
                         <tr
                             data-center-id="{{ $center->id }}"
@@ -249,71 +240,76 @@
                                 </span>
                             </td>
                             <td>
-                                <div class="perm-types-wrap">
+                                <form
+                                    method="POST"
+                                    action="{{ route('admin.manual-examinations.permissions.update', ['center' => $center->id]) }}"
+                                    class="perm-types-wrap"
+                                >
+                                    @csrf
+                                    <select
+                                        class="form-control perm-types-select"
+                                        name="inspection_type_ids[]"
+                                        aria-label="{{ __('manual_examinations.assign_types') }}"
+                                    >
+                                        <option value="">{{ __('manual_examinations.select_type') }}</option>
+                                        @foreach($inspectionTypes as $type)
+                                            <option value="{{ $type->id }}" @selected((int) $type->id === (int) $selectedTypeId)>
+                                                {{ $type->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                     <button
-                                        type="button"
+                                        type="submit"
                                         class="perm-save-btn"
-                                        data-types-save
                                         aria-label="{{ __('manual_examinations.save_types') }}"
                                     >
                                         <i class="las la-save" style="font-size:1rem;"></i>
                                         {{ __('manual_examinations.save_button') }}
                                     </button>
-                                    <select
-                                        class="form-control perm-types-select"
-                                        data-types-select
-                                        data-original='@json($selectedTypeIds)'
-                                        aria-label="{{ __('manual_examinations.assign_types') }}"
-                                    >
-                                        <option value="">{{ __('manual_examinations.select_type') }}</option>
-                                        @foreach($inspectionTypes as $type)
-                                            <option value="{{ $type->id }}" @selected(in_array((int) $type->id, $selectedTypeIds, true))>
-                                                {{ $type->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                                </form>
                                 <span class="perm-cell-note">{{ __('manual_examinations.types_help') }}</span>
-                                <span class="perm-unsaved-pill">{{ __('manual_examinations.unsaved_changes') }}</span>
                             </td>
                             <td class="text-right">
-                                <div class="perm-switch">
+                                <form
+                                    method="POST"
+                                    action="{{ route('admin.manual-examinations.permissions.update', ['center' => $center->id]) }}"
+                                    class="perm-switch"
+                                >
+                                    @csrf
+                                    <div class="perm-toggle-actions" role="group" aria-label="{{ __('manual_examinations.toggle_permission') }}">
+                                        <input
+                                            id="perm-enable-{{ $center->id }}"
+                                            class="perm-radio-input"
+                                            type="radio"
+                                            name="can_manual_examination"
+                                            value="1"
+                                            @checked($enabled)
+                                        >
+                                        <label class="perm-toggle-btn" data-value="1" for="perm-enable-{{ $center->id }}">
+                                            {{ __('manual_examinations.enabled') }}
+                                        </label>
+                                        <input
+                                            id="perm-disable-{{ $center->id }}"
+                                            class="perm-radio-input"
+                                            type="radio"
+                                            name="can_manual_examination"
+                                            value="0"
+                                            @checked(!$enabled)
+                                        >
+                                        <label class="perm-toggle-btn" data-value="0" for="perm-disable-{{ $center->id }}">
+                                            {{ __('manual_examinations.disabled') }}
+                                        </label>
+                                    </div>
                                     <button
-                                        type="button"
+                                        type="submit"
                                         class="perm-save-btn"
-                                        data-perm-save
                                         aria-label="{{ __('manual_examinations.save_permission') }}"
                                     >
                                         <i class="las la-save" style="font-size:1rem;"></i>
                                         {{ __('manual_examinations.save_button') }}
                                     </button>
-                                    <div class="perm-toggle-actions" role="group" aria-label="{{ __('manual_examinations.toggle_permission') }}">
-                                        <button
-                                            type="button"
-                                            class="perm-toggle-btn {{ $enabled ? 'is-active' : '' }}"
-                                            data-perm-action
-                                            data-value="1"
-                                        >
-                                            {{ __('manual_examinations.enabled') }}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="perm-toggle-btn {{ !$enabled ? 'is-active' : '' }}"
-                                            data-perm-action
-                                            data-value="0"
-                                        >
-                                            {{ __('manual_examinations.disabled') }}
-                                        </button>
-                                    </div>
-                                    <input
-                                        type="hidden"
-                                        data-perm-toggle
-                                        data-original="{{ $enabled ? '1' : '0' }}"
-                                        value="{{ $enabled ? '1' : '0' }}"
-                                    >
-                                </div>
+                                </form>
                                 <span class="perm-cell-note">{{ __('manual_examinations.toggle_help') }}</span>
-                                <span class="perm-unsaved-pill">{{ __('manual_examinations.unsaved_changes') }}</span>
                             </td>
                         </tr>
                     @empty
@@ -332,274 +328,4 @@
         </div>
     </div>
 </div>
-@endsection
-
-@section('script')
-<script>
-    (function () {
-        var DEBUG = true;
-
-        function debugLog(label, payload) {
-            if (!DEBUG || !window.console) return;
-            try {
-                console.log('[manual-permissions] ' + label, payload || '');
-            } catch (e) {}
-        }
-
-        window.addEventListener('unhandledrejection', function (event) {
-            var reason = event && event.reason ? event.reason : '';
-            var message = String((reason && reason.message) ? reason.message : reason || '');
-            if (message.includes("We weren't granted permission.")) {
-                event.preventDefault();
-            }
-        });
-
-        var csrfMeta = document.querySelector('meta[name="csrf-token"]');
-        var csrf = csrfMeta ? csrfMeta.getAttribute('content') : '';
-        var alertEl = document.getElementById('permAlert');
-
-        var MSG_ENABLED = @json(__('manual_examinations.enabled'));
-        var MSG_DISABLED = @json(__('manual_examinations.disabled'));
-        var MSG_SAVE_SUCCESS = @json(__('manual_examinations.save_success'));
-        var MSG_SAVE_FAILED = @json(__('manual_examinations.save_failed'));
-
-        function showAlert(type, message) {
-            if (!alertEl) return;
-            alertEl.className = `alert perm-alert show alert-${type}`;
-            alertEl.textContent = message;
-            window.clearTimeout(showAlert._t);
-            showAlert._t = window.setTimeout(() => {
-                alertEl.classList.remove('show');
-            }, 3500);
-        }
-
-        function updateBadgeUI(row, enabled) {
-            var badge = row.querySelector('[data-perm-badge]');
-            var label = row.querySelector('[data-perm-label]');
-            if (badge) {
-                badge.classList.toggle('is-enabled', !!enabled);
-                badge.classList.toggle('is-disabled', !enabled);
-            }
-            if (label) {
-                label.textContent = enabled ? MSG_ENABLED : MSG_DISABLED;
-            }
-        }
-
-        function normalizeTypeIds(ids) {
-            return Array.from(new Set((ids || []).map(function (id) { return Number(id); }).filter(function (id) { return Number.isInteger(id); })))
-                .sort((a, b) => a - b);
-        }
-
-        function readSelectedTypeIds(select) {
-            var value = select ? select.value : '';
-            if (!value) return [];
-            return normalizeTypeIds([Number(value)]);
-        }
-
-        function getRowUpdateUrl(row) {
-            return row.getAttribute('data-update-url') || '';
-        }
-
-        function getPermissionDirty(row) {
-            var toggle = row.querySelector('[data-perm-toggle]');
-            if (!toggle) return false;
-            return String(toggle.value || '0') !== (toggle.getAttribute('data-original') || '0');
-        }
-
-        function getTypesDirty(row) {
-            var select = row.querySelector('[data-types-select]');
-            if (!select) return false;
-            var original = normalizeTypeIds(JSON.parse(select.getAttribute('data-original') || '[]'));
-            var selected = readSelectedTypeIds(select);
-            return JSON.stringify(selected) !== JSON.stringify(original);
-        }
-
-        function refreshRowDirtyState(row) {
-            var permDirty = getPermissionDirty(row);
-            var typesDirty = getTypesDirty(row);
-            row.classList.toggle('perm-row-dirty', permDirty || typesDirty);
-            refreshPermActionButtons(row);
-
-            var permBtn = row.querySelector('[data-perm-save]');
-            if (permBtn) {
-                permBtn.disabled = !permDirty;
-                permBtn.classList.toggle('is-dirty', permDirty);
-                permBtn.classList.add('visible');
-            }
-
-            var typesBtn = row.querySelector('[data-types-save]');
-            if (typesBtn) {
-                typesBtn.disabled = !typesDirty;
-                typesBtn.classList.toggle('is-dirty', typesDirty);
-                typesBtn.classList.add('visible');
-            }
-        }
-
-        function refreshPermActionButtons(row) {
-            var toggle = row.querySelector('[data-perm-toggle]');
-            if (!toggle) return;
-            var currentValue = String(toggle.value || '0');
-            row.querySelectorAll('[data-perm-action]').forEach((btn) => {
-                btn.classList.toggle('is-active', btn.getAttribute('data-value') === currentValue);
-            });
-        }
-
-        document.querySelectorAll('[data-perm-action]').forEach((actionBtn) => {
-            actionBtn.addEventListener('click', (e) => {
-                var button = e.currentTarget;
-                var row = button.closest('tr');
-                if (!row) return;
-                var toggle = row.querySelector('[data-perm-toggle]');
-                if (!toggle) return;
-
-                var nextValue = button.getAttribute('data-value') === '1' ? '1' : '0';
-                toggle.value = nextValue;
-                updateBadgeUI(row, nextValue === '1');
-                refreshRowDirtyState(row);
-                debugLog('permission toggled', { centerId: row.getAttribute('data-center-id'), value: nextValue });
-            });
-        });
-
-        // Save button click: send the request
-        document.querySelectorAll('[data-perm-save]').forEach((saveBtn) => {
-            saveBtn.addEventListener('click', async () => {
-                var row = saveBtn.closest('tr');
-                if (!row) return;
-
-                var toggle = row.querySelector('[data-perm-toggle]');
-                if (!toggle) return;
-
-                var enabled = String(toggle.value || '0') === '1';
-                var updateUrl = getRowUpdateUrl(row);
-                if (!updateUrl) return;
-
-                row.classList.add('perm-row-saving');
-                saveBtn.disabled = true;
-                debugLog('permission save start', { updateUrl: updateUrl, enabled: enabled });
-
-                try {
-                    var res = await fetch(updateUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': csrf || '',
-                        },
-                        body: JSON.stringify({ can_manual_examination: enabled ? 1 : 0 }),
-                    });
-                    debugLog('permission save response', { status: res.status, ok: res.ok });
-
-                    if (!res.ok) {
-                        var payload = await res.json().catch(() => null);
-                        var msg = (payload && payload.error && payload.error.message) || (payload && payload.message) || MSG_SAVE_FAILED;
-                        debugLog('permission save error payload', payload);
-                        throw new Error(msg);
-                    }
-
-                    // Commit: update original value, hide save button, remove dirty state
-                    toggle.setAttribute('data-original', enabled ? '1' : '0');
-                    toggle.value = enabled ? '1' : '0';
-                    updateBadgeUI(row, enabled);
-                    refreshRowDirtyState(row);
-
-                    showAlert('success', MSG_SAVE_SUCCESS);
-                } catch (err) {
-                    // Revert toggle to last-saved value
-                    var original = toggle.getAttribute('data-original');
-                    toggle.value = original === '1' ? '1' : '0';
-                    updateBadgeUI(row, toggle.value === '1');
-
-                    // Keep save button visible so user can retry
-                    refreshRowDirtyState(row);
-
-                    showAlert('danger', (err && err.message) ? err.message : MSG_SAVE_FAILED);
-                    debugLog('permission save exception', err);
-                } finally {
-                    row.classList.remove('perm-row-saving');
-                    saveBtn.disabled = false;
-                }
-            });
-        });
-
-        document.querySelectorAll('[data-types-select]').forEach((select) => {
-            select.addEventListener('change', (e) => {
-                var input = e.currentTarget;
-                var row = input.closest('tr');
-                if (!row) return;
-
-                var saveBtn = row.querySelector('[data-types-save]');
-                if (!saveBtn) return;
-
-                var original = normalizeTypeIds(JSON.parse(input.getAttribute('data-original') || '[]'));
-                var selected = readSelectedTypeIds(input);
-                var isDirty = JSON.stringify(selected) !== JSON.stringify(original);
-
-                saveBtn.disabled = !isDirty;
-                refreshRowDirtyState(row);
-                debugLog('type changed', { centerId: row.getAttribute('data-center-id'), selected: selected });
-            });
-        });
-
-        document.querySelectorAll('[data-types-save]').forEach((saveBtn) => {
-            saveBtn.addEventListener('click', async () => {
-                var row = saveBtn.closest('tr');
-                if (!row) return;
-
-                var select = row.querySelector('[data-types-select]');
-                if (!select) return;
-
-                var selectedTypeIds = readSelectedTypeIds(select);
-                var updateUrl = getRowUpdateUrl(row);
-                if (!updateUrl) {
-                    showAlert('danger', MSG_SAVE_FAILED);
-                    return;
-                }
-
-                row.classList.add('perm-row-saving');
-                saveBtn.disabled = true;
-                debugLog('types save start', { updateUrl: updateUrl, selectedTypeIds: selectedTypeIds });
-
-                try {
-                    var res = await fetch(updateUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': csrf || '',
-                        },
-                        body: JSON.stringify({ inspection_type_ids: selectedTypeIds }),
-                    });
-                    debugLog('types save response', { status: res.status, ok: res.ok });
-
-                    if (!res.ok) {
-                        var payload = await res.json().catch(() => null);
-                        var msg = (payload && payload.error && payload.error.message) || (payload && payload.message) || MSG_SAVE_FAILED;
-                        debugLog('types save error payload', payload);
-                        throw new Error(msg);
-                    }
-
-                    select.setAttribute('data-original', JSON.stringify(selectedTypeIds));
-                    refreshRowDirtyState(row);
-                    showAlert('success', MSG_SAVE_SUCCESS);
-                } catch (err) {
-                    var original = normalizeTypeIds(JSON.parse(select.getAttribute('data-original') || '[]'));
-                    Array.from(select.options).forEach((option) => {
-                        option.selected = original.includes(Number(option.value));
-                    });
-                    refreshRowDirtyState(row);
-                    showAlert('danger', (err && err.message) ? err.message : MSG_SAVE_FAILED);
-                    debugLog('types save exception', err);
-                } finally {
-                    row.classList.remove('perm-row-saving');
-                    saveBtn.disabled = false;
-                }
-            });
-        });
-
-        document.querySelectorAll('.perm-table tbody tr[data-center-id]').forEach((row) => {
-            refreshRowDirtyState(row);
-        });
-        debugLog('page init complete');
-    })();
-</script>
 @endsection
