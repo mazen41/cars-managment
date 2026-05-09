@@ -73,6 +73,31 @@
         opacity: 0.65;
         pointer-events: none;
     }
+
+    /* Save button — hidden by default, shown when toggle changes */
+    .perm-save-btn {
+        display: none;
+        padding: 0.3rem 0.85rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        background: #0f172a;
+        color: #fff;
+        transition: background 0.15s, opacity 0.15s;
+        white-space: nowrap;
+    }
+    .perm-save-btn:hover { background: #1e293b; }
+    .perm-save-btn.visible { display: inline-flex; align-items: center; gap: 0.35rem; }
+    .perm-save-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* Subtle highlight on the row when there are unsaved changes */
+    tr.perm-row-dirty {
+        background: rgba(249, 250, 251, 0.85);
+        outline: 1.5px solid rgba(99, 102, 241, 0.18);
+        outline-offset: -1px;
+    }
 </style>
 
 <div class="card perm-card">
@@ -139,10 +164,20 @@
                             </td>
                             <td class="text-right">
                                 <div class="perm-switch">
+                                    <button
+                                        type="button"
+                                        class="perm-save-btn"
+                                        data-perm-save
+                                        aria-label="{{ translate('Save permission') }}"
+                                    >
+                                        <i class="las la-save" style="font-size:1rem;"></i>
+                                        {{ translate('Save') }}
+                                    </button>
                                     <label class="aiz-switch aiz-switch-success mb-0">
                                         <input
                                             type="checkbox"
                                             data-perm-toggle
+                                            data-original="{{ $enabled ? '1' : '0' }}"
                                             @checked($enabled)
                                             aria-label="{{ translate('Toggle manual examination permission') }}"
                                         >
@@ -185,7 +220,7 @@
             }, 3500);
         }
 
-        function updateRowUI(row, enabled) {
+        function updateBadgeUI(row, enabled) {
             const badge = row.querySelector('[data-perm-badge]');
             const label = row.querySelector('[data-perm-label]');
             if (badge) {
@@ -197,18 +232,41 @@
             }
         }
 
+        // When toggle changes: show Save button, mark row dirty (no request yet)
         document.querySelectorAll('[data-perm-toggle]').forEach((toggle) => {
-            toggle.addEventListener('change', async (e) => {
+            toggle.addEventListener('change', (e) => {
                 const input = e.currentTarget;
                 const row = input.closest('tr');
                 if (!row) return;
 
+                const saveBtn = row.querySelector('[data-perm-save]');
+                const original = input.getAttribute('data-original');
+                const isDirty = (input.checked ? '1' : '0') !== original;
+
+                if (saveBtn) {
+                    saveBtn.classList.toggle('visible', isDirty);
+                }
+                row.classList.toggle('perm-row-dirty', isDirty);
+
+                // Update badge preview so user sees the pending state
+                updateBadgeUI(row, input.checked);
+            });
+        });
+
+        // Save button click: send the request
+        document.querySelectorAll('[data-perm-save]').forEach((saveBtn) => {
+            saveBtn.addEventListener('click', async () => {
+                const row = saveBtn.closest('tr');
+                if (!row) return;
+
+                const toggle = row.querySelector('[data-perm-toggle]');
+                if (!toggle) return;
+
                 const centerId = row.getAttribute('data-center-id');
-                const enabled = !!input.checked;
-                const old = !enabled;
+                const enabled = !!toggle.checked;
 
                 row.classList.add('perm-row-saving');
-                updateRowUI(row, enabled);
+                saveBtn.disabled = true;
 
                 try {
                     const res = await fetch(
@@ -230,18 +288,30 @@
                         throw new Error(msg);
                     }
 
+                    // Commit: update original value, hide save button, remove dirty state
+                    toggle.setAttribute('data-original', enabled ? '1' : '0');
+                    saveBtn.classList.remove('visible');
+                    row.classList.remove('perm-row-dirty');
+                    updateBadgeUI(row, enabled);
+
                     showAlert('success', @json(translate('Permission updated successfully')));
                 } catch (err) {
-                    // Revert UI
-                    input.checked = old ? true : false;
-                    updateRowUI(row, input.checked);
+                    // Revert toggle to last-saved value
+                    const original = toggle.getAttribute('data-original');
+                    toggle.checked = original === '1';
+                    updateBadgeUI(row, toggle.checked);
+
+                    // Keep save button visible so user can retry
+                    saveBtn.classList.add('visible');
+                    row.classList.add('perm-row-dirty');
+
                     showAlert('danger', err?.message || @json(translate('Failed to update permission')));
                 } finally {
                     row.classList.remove('perm-row-saving');
+                    saveBtn.disabled = false;
                 }
             });
         });
     })();
 </script>
 @endsection
-
