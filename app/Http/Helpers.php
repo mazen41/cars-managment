@@ -2921,11 +2921,9 @@ if (!function_exists('manual_examination_report_public_url')) {
             return url('/');
         }
 
-        try {
-            return route('public.manual-examination.report', ['carInspection' => $id], true);
-        } catch (\Throwable $e) {
-            return url('/');
-        }
+        $baseUrl = rtrim((string) config('services.inspector.url', 'https://inspector.samh.store'), '/');
+
+        return $baseUrl . '/manual-examinations/' . $id;
     }
 }
 

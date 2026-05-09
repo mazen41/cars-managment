@@ -364,9 +364,7 @@
         $sectionData = $sectionDataByInspection[$carInspection->id] ?? [];
         $car = $carInspection->car;
         $sectionPhotosMap = ($carInspection->metadata ?? [])['section_photos'] ?? [];
-        $isManual = (bool) ($carInspection->is_manual ?? false);
-        $reportPath = $isManual ? 'manual-examinations/' . $carInspection->id : 'inspections/' . $carInspection->id;
-        $reportUrl = rtrim(config('app.url'), '/') . '/' . $reportPath;
+        $reportUrl = manual_examination_report_public_url($carInspection);
         $reportDate = optional($carInspection->completed_at ?? $carInspection->created_at)->format('Y-m-d');
         $centerName = $carInspection->inspector?->shop_name ?? $carInspection->inspector?->user?->name ?? translate('Inspection Center');
         $centerPhone = $carInspection->inspector?->user?->phone ?? $carInspection->inspector?->phone ?? translate('N/A');
