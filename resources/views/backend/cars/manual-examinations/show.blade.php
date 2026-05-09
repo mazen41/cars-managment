@@ -18,11 +18,61 @@ $manualInspectionPhotoSlots = [
 ];
 
 $sectionPhotosBySection = (($manualExamination->metadata ?? [])['section_photos'] ?? []);
-$manualPhotoUrl = fn ($path) => manual_examination_photo_url($manualExamination, $path);
+$manualPhotoUrl = fn ($path) => manual_examination_admin_photo_url($manualExamination, $path);
 @endphp
 
 @section('content')
 <style>
+    .me-header {
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: 16px;
+        background: linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,1));
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+        padding: 1rem 1rem;
+        margin: 0.5rem 0 1rem;
+    }
+    .me-header-title {
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        margin-bottom: 0;
+        color: #0f172a;
+    }
+    .me-header-sub {
+        color: #64748b;
+        font-size: 0.92rem;
+        margin-top: 0.4rem;
+    }
+    .me-actions .btn {
+        border-radius: 12px;
+        padding-inline: .85rem;
+    }
+    .me-page .card {
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    }
+    .me-page .card .card-header {
+        background: linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,1));
+        border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    }
+    .me-page .table td:first-child {
+        color: #0f172a;
+    }
+    .me-muted { color: #64748b; }
+    .me-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .35rem .65rem;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        background: rgba(241, 245, 249, 0.7);
+        color: #0f172a;
+        font-size: .78rem;
+        font-weight: 800;
+        white-space: nowrap;
+    }
     .inspection-photo-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -84,22 +134,35 @@ $manualPhotoUrl = fn ($path) => manual_examination_photo_url($manualExamination,
         padding-top: 1.5rem;
     }
 </style>
-<div class="aiz-titlebar text-left mt-2 mb-3">
+<div class="me-header">
     <div class="row align-items-center">
-        <div class="col-md-8">
-            <h1 class="h3">{{ translate('Manual Examination Details') }}</h1>
-            <div class="text-muted">{{ $manualExamination->inspection_number }}</div>
+        <div class="col">
+            <h1 class="h3 me-header-title">
+                {{ translate('Manual Examination') }}
+                <span class="text-muted">#{{ $manualExamination->id }}</span>
+            </h1>
+            <div class="me-header-sub">
+                <span class="me-pill">{!! $manualExamination->status_badge !!}</span>
+                <span class="mx-2">•</span>
+                <span class="me-muted">{{ translate('Inspection Number') }}:</span>
+                <span dir="ltr" class="fw-700">{{ $manualExamination->inspection_number }}</span>
+            </div>
         </div>
-        <div class="col-md-4 text-right">
+        <div class="col-auto me-actions">
+            <a href="{{ route('admin.manual-examinations.index') }}" class="btn btn-soft-primary">
+                <i class="las la-arrow-left mr-1"></i>{{ translate('Back') }}
+            </a>
+            <a href="{{ route('admin.manual-examinations.schedule', $manualExamination->id) }}" class="btn btn-soft-info">
+                <i class="las la-calendar mr-1"></i>{{ translate('Schedule') }}
+            </a>
             <a href="{{ route('admin.manual-examinations.download', $manualExamination->id) }}" class="btn btn-primary">
                 <i class="las la-download mr-1"></i>{{ translate('Download PDF') }}
-            </a>
-            <a href="{{ route('admin.manual-examinations.index') }}" class="btn btn-light">
-                <i class="las la-arrow-left mr-1"></i>{{ translate('Back') }}
             </a>
         </div>
     </div>
 </div>
+
+<div class="me-page">
 
 <div class="row">
     <div class="col-lg-4">
@@ -434,12 +497,17 @@ $manualPhotoUrl = fn ($path) => manual_examination_photo_url($manualExamination,
                 <h5 class="mb-0 h6">{{ translate('Inspector Notes') }}</h5>
             </div>
             <div class="card-body">
-                <h6>{{ translate('Final Notes') }}</h6>
-                <p>{{ $manualExamination->inspector_notes ?? translate('N/A') }}</p>
-                <h6>{{ translate('Recommendations') }}</h6>
-                <p class="mb-0">{{ $manualExamination->recommendations ?? translate('N/A') }}</p>
+                <div class="mb-3">
+                    <div class="fw-800 mb-1">{{ translate('Final Notes') }}</div>
+                    <div class="me-muted" style="white-space: pre-wrap;">{{ $manualExamination->inspector_notes ?? translate('N/A') }}</div>
+                </div>
+                <div>
+                    <div class="fw-800 mb-1">{{ translate('Recommendations') }}</div>
+                    <div class="me-muted" style="white-space: pre-wrap;">{{ $manualExamination->recommendations ?? translate('N/A') }}</div>
+                </div>
             </div>
         </div>
     </div>
+</div>
 </div>
 @endsection

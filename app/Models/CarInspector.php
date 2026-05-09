@@ -104,6 +104,8 @@ class CarInspector extends Model
 
     public function canUseManualExaminations(): bool
     {
+        // Default is "allowed" unless explicitly disabled.
+        // This preserves backwards compatibility for centers created before the permission system existed.
         return $this->manualExaminationPermission?->can_manual_examination ?? true;
     }
 

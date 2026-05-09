@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ManualExaminationPermission extends Model
 {
-    protected $table = 'permissions';
+    protected $table = 'manual_examination_center_permissions';
 
     protected $fillable = [
         'center_id',

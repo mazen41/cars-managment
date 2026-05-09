@@ -175,6 +175,13 @@
                                 </li>
                             @endcan
                             @can('view_all_cars_inspections')
+                                <li class="aiz-side-nav-item">
+                                    <a href="{{ route('admin.manual-examinations.permissions.index') }}" class="aiz-side-nav-link {{ areActiveRoutes(['admin.manual-examinations.permissions.index'])}}">
+                                        <span class="aiz-side-nav-text">{{translate('Manual Examination Permissions')}}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('view_all_cars_inspections')
                             <li class="aiz-side-nav-item">
                                 <a href="{{ route('admin.car-inspection-types.index') }}" class="aiz-side-nav-link {{ areActiveRoutes(['admin.car-inspection-types.show', 'admin.car-inspection-types.edit', 'admin.car-inspection-types.create'])}}">
                                     <span class="aiz-side-nav-text">{{ translate('Inspection Types') }}</span>

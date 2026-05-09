@@ -3002,6 +3002,71 @@ if (!function_exists('manual_examination_photo_url')) {
     }
 }
 
+if (!function_exists('manual_examination_api_photo_url')) {
+    /**
+     * Generate a publicly reachable URL for manual examination photos for the inspector app.
+     *
+     * Important: this intentionally avoids relying on `/storage/...` (symlink/CDN/webserver configs),
+     * and instead uses the dedicated photo streaming endpoint which reads from storage directly.
+     */
+    function manual_examination_api_photo_url($manualExamination, ?string $path): ?string
+    {
+        if (empty($path)) {
+            return null;
+        }
+
+        if (preg_match('#^(https?:)?//#i', $path) || str_starts_with($path, 'data:')) {
+            return $path;
+        }
+
+        $encoded = encode_inspection_photo_path($path);
+        if (empty($encoded)) {
+            return null;
+        }
+
+        $id = is_object($manualExamination) ? ($manualExamination->id ?? null) : null;
+        if (empty($id)) {
+            return public_storage_url($path);
+        }
+
+        return route('public.manual-examinations.photo', [
+            'manualExamination' => $id,
+            'encodedPath' => $encoded,
+        ]);
+    }
+}
+
+if (!function_exists('manual_examination_admin_photo_url')) {
+    /**
+     * Generate an admin-only URL for manual examination photos (secured by admin auth).
+     */
+    function manual_examination_admin_photo_url($manualExamination, ?string $path): ?string
+    {
+        if (empty($path)) {
+            return null;
+        }
+
+        if (preg_match('#^(https?:)?//#i', $path) || str_starts_with($path, 'data:')) {
+            return $path;
+        }
+
+        $encoded = encode_inspection_photo_path($path);
+        if (empty($encoded)) {
+            return null;
+        }
+
+        $id = is_object($manualExamination) ? ($manualExamination->id ?? null) : null;
+        if (empty($id)) {
+            return public_storage_url($path);
+        }
+
+        return route('admin.manual-examinations.photo', [
+            'manualExamination' => $id,
+            'encodedPath' => $encoded,
+        ]);
+    }
+}
+
 if (!function_exists('pdf_binary_to_data_uri')) {
     function pdf_binary_to_data_uri(string $absolutePath): string
     {

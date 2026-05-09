@@ -531,7 +531,7 @@ class ManualExaminationController extends BaseInspectorController
                 foreach ($manualSlotLabels as $column => $label) {
                     if (!empty($inspection->{$column})) {
                         $photosList[] = [
-                            'url' => manual_examination_photo_url($inspection, $inspection->{$column}),
+                            'url' => manual_examination_api_photo_url($inspection, $inspection->{$column}),
                             'name' => $label,
                         ];
                     }
@@ -579,7 +579,7 @@ class ManualExaminationController extends BaseInspectorController
 
                         return [
                             'path' => $path,
-                            'url' => manual_examination_photo_url($inspection, $path),
+                            'url' => manual_examination_api_photo_url($inspection, $path),
                         ];
                     })
                     ->filter()
@@ -608,7 +608,7 @@ class ManualExaminationController extends BaseInspectorController
                                 $path = $attachment['path'] ?? null;
 
                                 return array_merge($attachment, [
-                                    'url' => $attachment['url'] ?? ($path ? manual_examination_photo_url($inspection, $path) : null),
+                                    'url' => $attachment['url'] ?? ($path ? manual_examination_api_photo_url($inspection, $path) : null),
                                 ]);
                             })
                             ->values()

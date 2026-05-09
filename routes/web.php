@@ -15,6 +15,7 @@ use App\Http\Controllers\SubscriberController;
 use App\Http\Controllers\SizeChartController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PublicManualExaminationPhotoController;
 /*
   |--------------------------------------------------------------------------
   | Web Routes
@@ -77,6 +78,16 @@ Route::controller(AddressController::class)->group(function () {
     Route::post('/get-states', 'getStates')->name('get-state');
     Route::post('/get-cities', 'getCities')->name('get-city');
 });
+
+/**
+ * Public photo streaming for manual examinations.
+ *
+ * This route is intentionally NOT under the `api` middleware group because browser <img> tags
+ * cannot include custom headers (like System-Key). It also works even when `/storage` symlink
+ * isn't exposed correctly by the web server.
+ */
+Route::get('/manual-examinations/{manualExamination}/photos/{encodedPath}', [PublicManualExaminationPhotoController::class, 'show'])
+    ->name('public.manual-examinations.photo');
 
 // AIZ Uploader
 Route::controller(AizUploadController::class)->middleware(['auth'])->group(function () {

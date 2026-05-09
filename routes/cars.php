@@ -17,6 +17,7 @@ use App\Http\Controllers\CarInspectionFieldValueController;
 use App\Http\Controllers\CarInspectorController;
 use App\Http\Controllers\CarReservationController;
 use App\Http\Controllers\Admin\ManualExaminationController;
+use App\Http\Controllers\Admin\ManualExaminationPermissionController;
 
 // Cars System Routes
 Route::prefix("admin")
@@ -643,6 +644,14 @@ Route::prefix("admin")
                     ManualExaminationController::class,
                     "index",
                 ])->name("index");
+                Route::get("/permissions", [
+                    ManualExaminationPermissionController::class,
+                    "index",
+                ])->name("permissions.index");
+                Route::post("/permissions/{center}", [
+                    ManualExaminationPermissionController::class,
+                    "update",
+                ])->name("permissions.update");
                 Route::get("/{manualExamination}/photos/{encodedPath}", [
                     ManualExaminationController::class,
                     "photo",
