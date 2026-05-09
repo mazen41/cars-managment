@@ -318,6 +318,7 @@
                                             class="form-control perm-type-add-select"
                                             data-type-picker
                                             aria-label="{{ __('manual_examinations.select_type') }}"
+                                            onchange="if (window.manualExamPermPickType) { window.manualExamPermPickType(this); }"
                                         >
                                             <option value="">{{ __('manual_examinations.select_type') }}</option>
                                             @foreach($inspectionTypes as $type)
@@ -435,83 +436,92 @@
 
 @section('script')
 <script>
-(function () {
+(function ($) {
+    'use strict';
     var REMOVE_LABEL = @json(__('manual_examinations.remove_type'));
 
-    function escapeHtml(s) {
-        if (!s) return '';
-        return String(s)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
+    function syncChipsForm($form) {
+        var $chipsBox = $form.find('[data-chips]');
+        var $hiddenWrap = $form.find('[data-hidden-wrap]');
+        var $emptyHint = $form.find('[data-chips-empty]');
+        if (!$chipsBox.length || !$hiddenWrap.length) return;
 
-    function syncChipsForm(form) {
-        var chipsBox = form.querySelector('[data-chips]');
-        var hiddenWrap = form.querySelector('[data-hidden-wrap]');
-        var emptyHint = form.querySelector('[data-chips-empty]');
-        if (!chipsBox || !hiddenWrap) return;
-
-        var chips = chipsBox.querySelectorAll('.perm-type-chip');
-        hiddenWrap.innerHTML = '';
-        if (chips.length === 0) {
-            var h0 = document.createElement('input');
-            h0.type = 'hidden';
-            h0.name = 'inspection_type_ids[]';
-            h0.value = '';
-            hiddenWrap.appendChild(h0);
-            chipsBox.classList.remove('has-chips');
-            if (emptyHint) emptyHint.style.display = '';
+        var $chips = $chipsBox.find('.perm-type-chip');
+        $hiddenWrap.empty();
+        if ($chips.length === 0) {
+            $hiddenWrap.append(
+                $('<input>', { type: 'hidden', name: 'inspection_type_ids[]', value: '' })
+            );
+            $chipsBox.removeClass('has-chips');
+            $emptyHint.show();
         } else {
-            Array.prototype.forEach.call(chips, function (chip) {
-                var id = chip.getAttribute('data-type-id');
+            $chips.each(function () {
+                var id = $(this).attr('data-type-id');
                 if (!id) return;
-                var h = document.createElement('input');
-                h.type = 'hidden';
-                h.name = 'inspection_type_ids[]';
-                h.value = id;
-                hiddenWrap.appendChild(h);
+                $hiddenWrap.append(
+                    $('<input>', { type: 'hidden', name: 'inspection_type_ids[]', value: id })
+                );
             });
-            chipsBox.classList.add('has-chips');
-            if (emptyHint) emptyHint.style.display = 'none';
+            $chipsBox.addClass('has-chips');
+            $emptyHint.hide();
         }
     }
 
-    document.querySelectorAll('.perm-types-form').forEach(function (form) {
-        var picker = form.querySelector('[data-type-picker]');
-        var chipsBox = form.querySelector('[data-chips]');
-        if (!picker || !chipsBox) return;
+    function addTypeFromPicker($picker) {
+        var val = String($picker.val() || '');
+        if (!val) return;
 
-        picker.addEventListener('change', function () {
-            var val = picker.value;
-            if (!val) return;
-            if (chipsBox.querySelector('.perm-type-chip[data-type-id="' + val + '"]')) {
-                picker.selectedIndex = 0;
-                return;
-            }
-            var opt = picker.options[picker.selectedIndex];
-            var label = opt ? opt.textContent.trim() : '';
-            var span = document.createElement('span');
-            span.className = 'perm-type-chip';
-            span.setAttribute('data-type-id', val);
-            span.innerHTML =
-                '<span class="perm-type-chip-text">' + escapeHtml(label) + '</span>' +
-                '<button type="button" class="perm-type-remove" aria-label="' + escapeHtml(REMOVE_LABEL) + '" title="' + escapeHtml(REMOVE_LABEL) + '">' +
-                '<i class="las la-times"></i></button>';
-            chipsBox.appendChild(span);
-            picker.selectedIndex = 0;
-            syncChipsForm(form);
+        var $form = $picker.closest('form.perm-types-form');
+        if (!$form.length) return;
+
+        var $chipsBox = $form.find('[data-chips]');
+        if ($chipsBox.find('.perm-type-chip').filter(function () {
+            return String($(this).attr('data-type-id')) === val;
+        }).length) {
+            $picker.prop('selectedIndex', 0);
+            try { $picker.selectpicker && $picker.selectpicker('val', ''); } catch (e) {}
+            return;
+        }
+
+        var label = $picker.find('option:selected').text().trim();
+        var $chip = $('<span class="perm-type-chip"></span>').attr('data-type-id', val);
+        var $text = $('<span class="perm-type-chip-text"></span>').text(label);
+        var $btn = $('<button type="button" class="perm-type-remove"></button>')
+            .attr('aria-label', REMOVE_LABEL)
+            .attr('title', REMOVE_LABEL)
+            .html('<i class="las la-times"></i>');
+        $chip.append($text, $btn);
+        $chipsBox.append($chip);
+
+        $picker.prop('selectedIndex', 0);
+        try { $picker.selectpicker && $picker.selectpicker('refresh'); } catch (e) {}
+        syncChipsForm($form);
+    }
+
+    window.manualExamPermPickType = function (selectEl) {
+        addTypeFromPicker($(selectEl));
+    };
+
+    $(function () {
+        $(document).on('change', 'select[data-type-picker]', function () {
+            addTypeFromPicker($(this));
         });
 
-        chipsBox.addEventListener('click', function (e) {
-            var btn = e.target.closest('.perm-type-remove');
-            if (!btn) return;
-            var chip = btn.closest('.perm-type-chip');
-            if (chip) chip.remove();
-            syncChipsForm(form);
+        $(document).on('changed.bs.select', 'select[data-type-picker]', function () {
+            addTypeFromPicker($(this));
+        });
+
+        $(document).on('click', 'form.perm-types-form [data-chips] .perm-type-remove', function (e) {
+            e.preventDefault();
+            var $form = $(this).closest('form.perm-types-form');
+            $(this).closest('.perm-type-chip').remove();
+            syncChipsForm($form);
+        });
+
+        $('form.perm-types-form').each(function () {
+            syncChipsForm($(this));
         });
     });
-})();
+})(jQuery);
 </script>
 @endsection
