@@ -72,7 +72,7 @@
     <title>تقرير الفحص</title>
     <style>
         @page {
-            margin: 60px 20px 60px 20px;
+            margin: 120px 20px 120px 20px;
         }
         body {
             font-family: "{{ $font_family }}", sans-serif;
@@ -86,25 +86,25 @@
         }
         header {
             position: fixed;
-            top: -40px;
+            top: -100px;
             left: 0;
             right: 0;
-            height: 40px;
+            height: 80px;
             text-align: center;
         }
         header img {
-            max-height: 40px;
+            max-height: 80px;
         }
         footer {
             position: fixed;
-            bottom: -40px;
+            bottom: -100px;
             left: 0;
             right: 0;
-            height: 40px;
+            height: 80px;
             text-align: center;
         }
         footer img {
-            max-height: 40px;
+            max-height: 80px;
         }
         h2, h3 {
             color: #333;
@@ -165,6 +165,8 @@
             <img src="{{ $footerImage }}" alt="Footer">
         @endif
     </footer>
+
+    <main>
 
     <table style="border: 0; margin-bottom: 0;">
         <tr>
@@ -269,5 +271,6 @@
             @endforeach
         </table>
     @endif
+    </main>
 </body>
 </html>
