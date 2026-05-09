@@ -1,0 +1,29 @@
+<?php
+
+return [
+    'permissions_title' => 'Manual Examination Permissions',
+    'permissions_subtitle' => 'Control which inspection centers can access manual examinations',
+    'inspection_centers' => 'Inspection Centers',
+    'search_placeholder' => 'Search by center name, phone, email, or user',
+    'search_button' => 'Search',
+    'col_center' => 'Center',
+    'col_contact' => 'Contact',
+    'col_status' => 'Status',
+    'col_allowed_types' => 'Allowed Inspection Types',
+    'col_enable_manual' => 'Enable Manual Examinations',
+    'owner_label' => 'Owner',
+    'save_button' => 'Save',
+    'save_types' => 'Save inspection types',
+    'assign_types' => 'Assign inspection types',
+    'types_help' => 'Choose one or more types, then click Save.',
+    'save_permission' => 'Save permission',
+    'toggle_permission' => 'Toggle manual examination permission',
+    'toggle_help' => 'Toggle and click Save to apply.',
+    'unsaved_changes' => 'Unsaved changes',
+    'enabled' => 'Enabled',
+    'disabled' => 'Disabled',
+    'save_success' => 'Permission updated successfully',
+    'save_failed' => 'Failed to update permission',
+    'no_centers' => 'No inspection centers found',
+];
+
