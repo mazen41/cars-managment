@@ -69,6 +69,33 @@
         gap: 0.65rem;
         justify-content: flex-end;
     }
+    .perm-toggle-actions {
+        display: inline-flex;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fff;
+    }
+    .perm-toggle-btn {
+        border: none;
+        background: transparent;
+        color: #334155;
+        padding: 0.32rem 0.72rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .perm-toggle-btn + .perm-toggle-btn {
+        border-left: 1px solid #e2e8f0;
+    }
+    .perm-toggle-btn.is-active[data-value="1"] {
+        background: rgba(16, 185, 129, 0.14);
+        color: #065f46;
+    }
+    .perm-toggle-btn.is-active[data-value="0"] {
+        background: rgba(239, 68, 68, 0.12);
+        color: #7f1d1d;
+    }
     .perm-alert {
         display: none;
         margin-bottom: 0.75rem;
@@ -261,16 +288,30 @@
                                         <i class="las la-save" style="font-size:1rem;"></i>
                                         {{ __('manual_examinations.save_button') }}
                                     </button>
-                                    <label class="aiz-switch aiz-switch-success mb-0">
-                                        <input
-                                            type="checkbox"
-                                            data-perm-toggle
-                                            data-original="{{ $enabled ? '1' : '0' }}"
-                                            @checked($enabled)
-                                            aria-label="{{ __('manual_examinations.toggle_permission') }}"
+                                    <div class="perm-toggle-actions" role="group" aria-label="{{ __('manual_examinations.toggle_permission') }}">
+                                        <button
+                                            type="button"
+                                            class="perm-toggle-btn {{ $enabled ? 'is-active' : '' }}"
+                                            data-perm-action
+                                            data-value="1"
                                         >
-                                        <span class="slider round"></span>
-                                    </label>
+                                            {{ __('manual_examinations.enabled') }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="perm-toggle-btn {{ !$enabled ? 'is-active' : '' }}"
+                                            data-perm-action
+                                            data-value="0"
+                                        >
+                                            {{ __('manual_examinations.disabled') }}
+                                        </button>
+                                    </div>
+                                    <input
+                                        type="hidden"
+                                        data-perm-toggle
+                                        data-original="{{ $enabled ? '1' : '0' }}"
+                                        value="{{ $enabled ? '1' : '0' }}"
+                                    >
                                 </div>
                                 <span class="perm-cell-note">{{ __('manual_examinations.toggle_help') }}</span>
                                 <span class="perm-unsaved-pill">{{ __('manual_examinations.unsaved_changes') }}</span>
@@ -350,7 +391,7 @@
         function getPermissionDirty(row) {
             const toggle = row.querySelector('[data-perm-toggle]');
             if (!toggle) return false;
-            return (toggle.checked ? '1' : '0') !== (toggle.getAttribute('data-original') || '0');
+            return String(toggle.value || '0') !== (toggle.getAttribute('data-original') || '0');
         }
 
         function getTypesDirty(row) {
@@ -365,6 +406,7 @@
             const permDirty = getPermissionDirty(row);
             const typesDirty = getTypesDirty(row);
             row.classList.toggle('perm-row-dirty', permDirty || typesDirty);
+            refreshPermActionButtons(row);
 
             const permBtn = row.querySelector('[data-perm-save]');
             if (permBtn) {
@@ -381,21 +423,26 @@
             }
         }
 
-        // When toggle changes: show Save button, mark row dirty (no request yet)
-        document.querySelectorAll('[data-perm-toggle]').forEach((toggle) => {
-            toggle.addEventListener('change', (e) => {
-                const input = e.currentTarget;
-                const row = input.closest('tr');
+        function refreshPermActionButtons(row) {
+            const toggle = row.querySelector('[data-perm-toggle]');
+            if (!toggle) return;
+            const currentValue = String(toggle.value || '0');
+            row.querySelectorAll('[data-perm-action]').forEach((btn) => {
+                btn.classList.toggle('is-active', btn.getAttribute('data-value') === currentValue);
+            });
+        }
+
+        document.querySelectorAll('[data-perm-action]').forEach((actionBtn) => {
+            actionBtn.addEventListener('click', (e) => {
+                const button = e.currentTarget;
+                const row = button.closest('tr');
                 if (!row) return;
+                const toggle = row.querySelector('[data-perm-toggle]');
+                if (!toggle) return;
 
-                const saveBtn = row.querySelector('[data-perm-save]');
-                const original = input.getAttribute('data-original');
-                const isDirty = (input.checked ? '1' : '0') !== original;
-
-                if (saveBtn) saveBtn.disabled = !isDirty;
-
-                // Update badge preview so user sees the pending state
-                updateBadgeUI(row, input.checked);
+                const nextValue = button.getAttribute('data-value') === '1' ? '1' : '0';
+                toggle.value = nextValue;
+                updateBadgeUI(row, nextValue === '1');
                 refreshRowDirtyState(row);
             });
         });
@@ -409,8 +456,7 @@
                 const toggle = row.querySelector('[data-perm-toggle]');
                 if (!toggle) return;
 
-                const centerId = row.getAttribute('data-center-id');
-                const enabled = !!toggle.checked;
+                const enabled = String(toggle.value || '0') === '1';
                 const updateUrl = getRowUpdateUrl(row);
                 if (!updateUrl) return;
 
@@ -436,6 +482,7 @@
 
                     // Commit: update original value, hide save button, remove dirty state
                     toggle.setAttribute('data-original', enabled ? '1' : '0');
+                    toggle.value = enabled ? '1' : '0';
                     updateBadgeUI(row, enabled);
                     refreshRowDirtyState(row);
 
@@ -443,8 +490,8 @@
                 } catch (err) {
                     // Revert toggle to last-saved value
                     const original = toggle.getAttribute('data-original');
-                    toggle.checked = original === '1';
-                    updateBadgeUI(row, toggle.checked);
+                    toggle.value = original === '1' ? '1' : '0';
+                    updateBadgeUI(row, toggle.value === '1');
 
                     // Keep save button visible so user can retry
                     refreshRowDirtyState(row);
