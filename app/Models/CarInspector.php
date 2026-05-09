@@ -207,7 +207,10 @@ class CarInspector extends Model
     public function getImageUrlAttribute()
     {
         if ($this->image) {
-            return uploaded_asset($this->image);
+            if (is_numeric($this->image)) {
+                return uploaded_asset($this->image);
+            }
+            return asset('storage/uploads/' . $this->image);
         }
         return static_asset("assets/img/avatar-place.png");
     }
@@ -218,7 +221,10 @@ class CarInspector extends Model
     public function getBannerImageUrlAttribute()
     {
         if ($this->banner_image) {
-            return uploaded_asset($this->banner_image);
+            if (is_numeric($this->banner_image)) {
+                return uploaded_asset($this->banner_image);
+            }
+            return asset('storage/uploads/' . $this->banner_image);
         }
         return static_asset("assets/img/placeholder.jpg");
     }
