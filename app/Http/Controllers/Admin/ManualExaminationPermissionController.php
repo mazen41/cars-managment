@@ -50,7 +50,7 @@ class ManualExaminationPermissionController extends Controller
         $validated = $request->validate([
             'can_manual_examination' => ['sometimes', 'boolean'],
             'inspection_type_ids' => ['sometimes', 'array'],
-            'inspection_type_ids.*' => ['integer', Rule::exists('car_inspection_types', 'id')],
+            'inspection_type_ids.*' => ['nullable', 'integer', Rule::exists('car_inspection_types', 'id')],
         ]);
 
         $hasPermissionUpdate = array_key_exists('can_manual_examination', $validated);
@@ -74,7 +74,9 @@ class ManualExaminationPermissionController extends Controller
 
         if ($hasTypeUpdate) {
             $typeIds = collect($validated['inspection_type_ids'] ?? [])
+                ->filter(fn ($id) => filled($id))
                 ->map(fn ($id) => (int) $id)
+                ->filter(fn ($id) => $id > 0)
                 ->unique()
                 ->values()
                 ->all();
