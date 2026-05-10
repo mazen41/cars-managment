@@ -1331,6 +1331,10 @@ class CarInspectionController extends Controller
         'direction'      => $options['direction'],
         'text_align'     => $options['text_align'],
         'not_text_align' => $options['not_text_align'],
+    ])->setOptions([
+        'isRemoteEnabled' => true,
+        'isHtml5ParserEnabled' => true,
+        'chroot' => base_path(),
     ]);
 
     $filename = 'inspection-report-' . $carInspection->inspection_number . '.pdf';
