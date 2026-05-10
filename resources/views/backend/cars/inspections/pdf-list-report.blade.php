@@ -4,9 +4,7 @@
     <meta charset="utf-8">
     <title>{{ $title }}</title>
     <style>
-        @page {
-            margin: 120px 20px 120px 20px;
-        }
+        @page { margin: 100px 20px 100px 20px; }
         body {
             font-family: "{{ $font_family }}", sans-serif;
             font-size: 12px;
@@ -17,27 +15,29 @@
             margin: 0;
             padding: 0;
         }
-        header {
+        .pdf-header {
             position: fixed;
-            top: -100px;
+            top: -90px;
             left: 0;
             right: 0;
             height: 80px;
             text-align: center;
         }
-        header img {
-            max-height: 80px;
+        .pdf-header img {
+            width: 100%;
+            height: 80px;
         }
-        footer {
+        .pdf-footer {
             position: fixed;
-            bottom: -100px;
+            bottom: -90px;
             left: 0;
             right: 0;
             height: 80px;
             text-align: center;
         }
-        footer img {
-            max-height: 80px;
+        .pdf-footer img {
+            width: 100%;
+            height: 80px;
         }
         h2, h3 {
             color: #333;
@@ -93,16 +93,16 @@
         $footerImage = pdf_safe_image_src('assets/img/two.jpeg');
     @endphp
 
-    <header>
+    <div class="pdf-header">
         @if($headerImage)
             <img src="{{ $headerImage }}" alt="Header">
         @endif
-    </header>
-    <footer>
+    </div>
+    <div class="pdf-footer">
         @if($footerImage)
             <img src="{{ $footerImage }}" alt="Footer">
         @endif
-    </footer>
+    </div>
 
     <main>
 
