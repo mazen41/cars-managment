@@ -216,12 +216,21 @@ class CarInspector extends Model
             if (str_starts_with($path, 'public/')) {
                 return asset($path);
             }
+<<<<<<< HEAD
             
             if (str_starts_with($path, 'uploads/')) {
                 return asset('public/' . $path);
             }
 
             return asset('public/uploads/' . $path);
+=======
+            // Check if file exists in storage and return proper URL
+            if (\Illuminate\Support\Facades\Storage::disk('public_uploads')->exists(ltrim(preg_replace('#^uploads/#', '', $path), '/'))) {
+                return asset($path);
+            }
+            // Fallback: try direct public path
+            return asset($path);
+>>>>>>> 60cbf96daffdf0f1a40b3edf2eae88c5fccd4d83
         }
         return static_asset("assets/img/avatar-place.png");
     }
@@ -241,12 +250,21 @@ class CarInspector extends Model
             if (str_starts_with($path, 'public/')) {
                 return asset($path);
             }
+<<<<<<< HEAD
             
             if (str_starts_with($path, 'uploads/')) {
                 return asset('public/' . $path);
             }
 
             return asset('public/uploads/' . $path);
+=======
+            // Check if file exists in storage and return proper URL
+            if (\Illuminate\Support\Facades\Storage::disk('public_uploads')->exists(ltrim(preg_replace('#^uploads/#', '', $path), '/'))) {
+                return asset($path);
+            }
+            // Fallback: try direct public path
+            return asset($path);
+>>>>>>> 60cbf96daffdf0f1a40b3edf2eae88c5fccd4d83
         }
         return static_asset("assets/img/placeholder.jpg");
     }

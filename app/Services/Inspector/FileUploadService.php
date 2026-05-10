@@ -40,7 +40,7 @@ class FileUploadService
 
         try {
             // Store the file
-            $storedPath = $file->storeAs($path, $filename, 'public');
+            $storedPath = $file->storeAs($path, $filename, 'public_uploads');
 
             // Process image if needed
             if ($this->isImage($file) && $context === 'inspection_photos') {
@@ -52,7 +52,7 @@ class FileUploadService
             return [
                 'filename' => $filename,
                 'path' => $storedPath,
-                'url' => Storage::url($storedPath),
+                'url' => asset('uploads/' . ltrim($storedPath, '/')),
                 'size' => $file->getSize(),
                 'mime_type' => $file->getMimeType(),
                 'original_name' => $file->getClientOriginalName(),
@@ -236,7 +236,7 @@ class FileUploadService
     private function processInspectionPhoto(string $path): void
     {
         try {
-            $fullPath = Storage::disk('public')->path($path);
+            $fullPath = Storage::disk('public_uploads')->path($path);
             
             $image = Image::make($fullPath);
             
@@ -266,7 +266,7 @@ class FileUploadService
     private function processAvatar(string $path): void
     {
         try {
-            $fullPath = Storage::disk('public')->path($path);
+            $fullPath = Storage::disk('public_uploads')->path($path);
             
             $image = Image::make($fullPath);
             
@@ -289,7 +289,7 @@ class FileUploadService
     public function deleteFile(string $path): bool
     {
         try {
-            return Storage::disk('public')->delete($path);
+            return Storage::disk('public_uploads')->delete($path);
         } catch (\Exception $e) {
             \Log::error('Failed to delete file', [
                 'path' => $path,

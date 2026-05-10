@@ -1287,12 +1287,21 @@ if (!function_exists('my_asset')) {
             return Storage::disk(config('filesystems.default'))->url($path);
         }
 
+<<<<<<< HEAD
         // Avoid double public/ prefix
         if (str_starts_with($path, 'public/')) {
             return app('url')->asset($path, $secure);
         }
 
         return app('url')->asset('public/' . $path, $secure);
+=======
+        $normalized = normalize_public_storage_path((string) $path);
+        if (str_starts_with($normalized, 'uploads/')) {
+            return app('url')->asset($normalized, $secure);
+        }
+
+        return app('url')->asset(ltrim($path, '/'), $secure);
+>>>>>>> 60cbf96daffdf0f1a40b3edf2eae88c5fccd4d83
     }
 }
 
@@ -1306,12 +1315,16 @@ if (!function_exists('static_asset')) {
      */
     function static_asset($path, $secure = null)
     {
+<<<<<<< HEAD
         // Avoid double public/ prefix
         if (str_starts_with($path, 'public/')) {
             return app('url')->asset($path, $secure);
         }
 
         return app('url')->asset('public/' . $path, $secure);
+=======
+        return app('url')->asset(ltrim($path, '/'), $secure);
+>>>>>>> 60cbf96daffdf0f1a40b3edf2eae88c5fccd4d83
     }
 }
 
@@ -3037,6 +3050,10 @@ if (!function_exists('normalize_public_storage_path')) {
 
         $normalized = preg_replace('#^(public/|storage/)+#', '', $normalized);
 
+        if (str_starts_with($normalized, 'uploads/')) {
+            return ltrim($normalized, '/');
+        }
+
         return ltrim($normalized ?? '', '/');
     }
 }
@@ -3050,7 +3067,7 @@ if (!function_exists('public_storage_url')) {
             return null;
         }
 
-        return asset('storage/' . $normalized);
+        return asset('uploads/' . preg_replace('#^uploads/#', '', $normalized));
     }
 }
 
