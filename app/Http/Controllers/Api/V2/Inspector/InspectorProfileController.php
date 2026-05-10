@@ -189,11 +189,11 @@ class InspectorProfileController extends Controller
             $filename = 'inspector_avatars/' . uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
             
             // Store the file
-            $path = $file->storeAs('public/uploads', $filename);
+            $path = $file->storeAs('uploads', $filename, 'public');
             
             // Delete old avatar if exists
-            if ($inspector->image && Storage::exists('public/uploads/' . $inspector->image)) {
-                Storage::delete('public/uploads/' . $inspector->image);
+            if ($inspector->image && Storage::disk('public')->exists('uploads/' . $inspector->image)) {
+                Storage::disk('public')->delete('uploads/' . $inspector->image);
             }
             
             // Update inspector with new image path
@@ -243,11 +243,11 @@ class InspectorProfileController extends Controller
             $filename = 'inspector_cover_photos/' . uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
             
             // Store the file
-            $path = $file->storeAs('public/uploads', $filename);
+            $path = $file->storeAs('uploads', $filename, 'public');
             
             // Delete old cover photo if exists
-            if ($inspector->banner_image && Storage::exists('public/uploads/' . $inspector->banner_image)) {
-                Storage::delete('public/uploads/' . $inspector->banner_image);
+            if ($inspector->banner_image && Storage::disk('public')->exists('uploads/' . $inspector->banner_image)) {
+                Storage::disk('public')->delete('uploads/' . $inspector->banner_image);
             }
             
             // Update inspector with new banner image path
