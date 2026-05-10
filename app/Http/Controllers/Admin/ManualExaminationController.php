@@ -100,6 +100,10 @@ class ManualExaminationController extends Controller
             'not_text_align' => $pdfOptions['not_text_align'],
             'verificationUrl' => $verificationUrl,
             'qrDataUri' => $qrDataUri,
+        ])->setOptions([
+            'isRemoteEnabled' => true,
+            'isHtml5ParserEnabled' => true,
+            'chroot' => base_path(),
         ]);
 
         return $pdf->download('manual-examination-' . $manualExamination->id . '.pdf');
