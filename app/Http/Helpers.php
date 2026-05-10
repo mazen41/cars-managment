@@ -1334,16 +1334,23 @@ if (!function_exists('my_asset')) {
             $path = normalize_public_storage_path($path);
         }
 
-        // Avoid double public/public paths
+        // Avoid duplicated uploads segment
         if (str_starts_with($path, 'uploads/uploads/')) {
             $path = 'uploads/' . preg_replace('#^uploads/uploads/#', '', $path);
         }
 
-        if (str_starts_with($path, 'public/') || str_starts_with($path, 'uploads/') || str_starts_with($path, 'storage/')) {
-            return app('url')->asset($path, $secure);
+        // Ensure local URLs are always generated from /public to support
+        // installations served from a sub-directory (e.g. localhost/app/public)
+        if (str_starts_with($path, 'public/')) {
+            $path = preg_replace('#^public/#', '', $path);
         }
 
-        return app('url')->asset('public/' . $path, $secure);
+        if (str_starts_with($path, 'storage/')) {
+            $path = preg_replace('#^storage/#', '', $path);
+            return app('url')->asset('storage/' . ltrim($path, '/'), $secure);
+        }
+
+        return app('url')->asset('public/' . ltrim($path, '/'), $secure);
     }
 }
 
@@ -1359,16 +1366,21 @@ if (!function_exists('static_asset')) {
     {
         $path = ltrim((string) $path, '/');
 
-        // Prevent duplicate public/ prefix
-        if (
-            str_starts_with($path, 'public/') ||
-            str_starts_with($path, 'storage/') ||
-            str_starts_with($path, 'uploads/')
-        ) {
-            return app('url')->asset($path, $secure);
+        // Prevent duplicate segments
+        if (str_starts_with($path, 'uploads/uploads/')) {
+            $path = 'uploads/' . preg_replace('#^uploads/uploads/#', '', $path);
         }
 
-        return app('url')->asset('public/' . $path, $secure);
+        if (str_starts_with($path, 'public/')) {
+            $path = preg_replace('#^public/#', '', $path);
+        }
+
+        if (str_starts_with($path, 'storage/')) {
+            $path = preg_replace('#^storage/#', '', $path);
+            return app('url')->asset('storage/' . ltrim($path, '/'), $secure);
+        }
+
+        return app('url')->asset('public/' . ltrim($path, '/'), $secure);
     }
 }
 
