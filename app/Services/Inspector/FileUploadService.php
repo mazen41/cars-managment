@@ -52,7 +52,7 @@ class FileUploadService
             return [
                 'filename' => $filename,
                 'path' => $storedPath,
-                'url' => asset('uploads/' . ltrim($storedPath, '/')),
+                'url' => file_asset_url($storedPath, false),
                 'size' => $file->getSize(),
                 'mime_type' => $file->getMimeType(),
                 'original_name' => $file->getClientOriginalName(),
