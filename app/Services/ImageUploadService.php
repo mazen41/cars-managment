@@ -344,7 +344,7 @@ class ImageUploadService
             return null;
         }
 
-        return uploaded_asset($upload->file_name);
+        return file_asset_url($upload->id);
     }
 
     /**
@@ -402,7 +402,7 @@ class ImageUploadService
             'file_name' => $upload->file_name,
             'extension' => $upload->extension,
             'size' => $upload->file_size,
-            'url' => uploaded_asset($upload->file_name),
+            'url' => file_asset_url($upload->id),
             'created_at' => $upload->created_at,
         ];
     }
