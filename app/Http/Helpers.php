@@ -1287,6 +1287,11 @@ if (!function_exists('my_asset')) {
             return Storage::disk(config('filesystems.default'))->url($path);
         }
 
+        // Avoid double public/ prefix
+        if (str_starts_with($path, 'public/')) {
+            return app('url')->asset($path, $secure);
+        }
+
         return app('url')->asset('public/' . $path, $secure);
     }
 }
@@ -1301,6 +1306,11 @@ if (!function_exists('static_asset')) {
      */
     function static_asset($path, $secure = null)
     {
+        // Avoid double public/ prefix
+        if (str_starts_with($path, 'public/')) {
+            return app('url')->asset($path, $secure);
+        }
+
         return app('url')->asset('public/' . $path, $secure);
     }
 }
