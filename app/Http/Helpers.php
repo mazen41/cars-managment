@@ -1287,21 +1287,14 @@ if (!function_exists('my_asset')) {
             return Storage::disk(config('filesystems.default'))->url($path);
         }
 
-<<<<<<< HEAD
-        // Avoid double public/ prefix
-        if (str_starts_with($path, 'public/')) {
-            return app('url')->asset($path, $secure);
-        }
+        $normalized = ltrim((string) $path, '/');
 
-        return app('url')->asset('public/' . $path, $secure);
-=======
-        $normalized = normalize_public_storage_path((string) $path);
-        if (str_starts_with($normalized, 'uploads/')) {
+        // Ensure local assets are served from /public
+        if (str_starts_with($normalized, 'public/')) {
             return app('url')->asset($normalized, $secure);
         }
 
-        return app('url')->asset(ltrim($path, '/'), $secure);
->>>>>>> 60cbf96daffdf0f1a40b3edf2eae88c5fccd4d83
+        return app('url')->asset('public/' . $normalized, $secure);
     }
 }
 
@@ -1315,26 +1308,17 @@ if (!function_exists('static_asset')) {
      */
     function static_asset($path, $secure = null)
     {
-<<<<<<< HEAD
-        // Avoid double public/ prefix
-        if (str_starts_with($path, 'public/')) {
-            return app('url')->asset($path, $secure);
+        $normalized = ltrim((string) $path, '/');
+
+        // Ensure static assets are served from /public
+        if (str_starts_with($normalized, 'public/')) {
+            return app('url')->asset($normalized, $secure);
         }
 
-        return app('url')->asset('public/' . $path, $secure);
-=======
-        return app('url')->asset(ltrim($path, '/'), $secure);
->>>>>>> 60cbf96daffdf0f1a40b3edf2eae88c5fccd4d83
+        return app('url')->asset('public/' . $normalized, $secure);
     }
 }
 
-
-// if (!function_exists('isHttps')) {
-//     function isHttps()
-//     {
-//         return !empty($_SERVER['HTTPS']) && ('on' == $_SERVER['HTTPS']);
-//     }
-// }
 
 if (!function_exists('getBaseURL')) {
     function getBaseURL()
