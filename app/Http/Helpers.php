@@ -1322,12 +1322,12 @@ if (!function_exists('my_asset')) {
      * @return string
      */
     function my_asset($path, $secure = null)
-{
-    if (config('filesystems.default') != 'local') {
-        return Storage::disk(config('filesystems.default'))->url($path);
-    }
+    {
+        if (config('filesystems.default') != 'local') {
+            return Storage::disk(config('filesystems.default'))->url($path);
+        }
 
-    $path = ltrim((string) $path, '/');
+        $path = ltrim((string) $path, '/');
 
         // Avoid duplicated uploads segment
         if (str_starts_with($path, 'uploads/uploads/')) {
@@ -1346,22 +1346,7 @@ if (!function_exists('my_asset')) {
         }
 
         return app('url')->asset('public/' . ltrim($path, '/'), $secure);
-    // Normalize storage/public paths if helper exists
-    if (function_exists('normalize_public_storage_path')) {
-        $path = normalize_public_storage_path($path);
     }
-
-    // Avoid duplicate public prefixes
-    if (
-        str_starts_with($path, 'public/') ||
-        str_starts_with($path, 'uploads/') ||
-        str_starts_with($path, 'storage/')
-    ) {
-        return app('url')->asset($path, $secure);
-    }
-
-    return app('url')->asset('public/' . $path, $secure);
-}
 }
 
 if (!function_exists('static_asset')) {
@@ -1391,20 +1376,7 @@ if (!function_exists('static_asset')) {
         }
 
         return app('url')->asset('public/' . ltrim($path, '/'), $secure);
-{
-    $path = ltrim((string) $path, '/');
-
-    // Prevent duplicate public prefixes
-    if (
-        str_starts_with($path, 'public/') ||
-        str_starts_with($path, 'storage/') ||
-        str_starts_with($path, 'uploads/')
-    ) {
-        return app('url')->asset($path, $secure);
     }
-
-    return app('url')->asset('public/' . $path, $secure);
-}
 }
 
 
