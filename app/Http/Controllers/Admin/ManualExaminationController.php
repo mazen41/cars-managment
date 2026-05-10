@@ -7,7 +7,7 @@ use App\Models\CarInspection;
 use App\Models\CarInspector;
 use App\Services\ManualExaminationService;
 use Illuminate\Http\Request;
-use PDF;
+use Mpdf\Mpdf;
 
 class ManualExaminationController extends Controller
 {
@@ -91,22 +91,34 @@ class ManualExaminationController extends Controller
         $verificationUrl = manual_examination_report_public_url($manualExamination);
         $qrDataUri = manual_examination_pdf_qr_data_uri($verificationUrl);
 
-        $pdf = PDF::loadView('backend.cars.inspections.manual-pdf-report', [
+        $html = view('backend.cars.inspections.manual-pdf-report', [
             'carInspection' => $manualExamination,
-            'sectionData' => $sectionData,
-            'font_family' => $pdfOptions['font_family'],
-            'direction' => $pdfOptions['direction'],
-            'text_align' => $pdfOptions['text_align'],
-            'not_text_align' => $pdfOptions['not_text_align'],
+            'sectionData'   => $sectionData,
+            'font_family'   => $pdfOptions['font_family'],
+            'direction'     => $pdfOptions['direction'],
+            'text_align'    => $pdfOptions['text_align'],
+            'not_text_align'=> $pdfOptions['not_text_align'],
             'verificationUrl' => $verificationUrl,
-            'qrDataUri' => $qrDataUri,
-        ])->setOptions([
-            'isRemoteEnabled' => true,
-            'isHtml5ParserEnabled' => true,
-            'chroot' => base_path(),
+            'qrDataUri'     => $qrDataUri,
+        ])->render();
+
+        $mpdf = new Mpdf([
+            'mode'              => 'utf-8',
+            'format'            => 'A4',
+            'margin_top'        => 49,   // 44.6mm image + 4mm gap
+            'margin_bottom'     => 19,   // 14.9mm image + 4mm gap
+            'margin_left'       => 7,
+            'margin_right'      => 7,
+            'direction'         => 'rtl',
+            'autoScriptToLang'  => true,
+            'autoLangToFont'    => true,
         ]);
 
-        return $pdf->download('manual-examination-' . $manualExamination->id . '.pdf');
+        $mpdf->WriteHTML($html);
+
+        return response($mpdf->Output('', 'S'))
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="manual-examination-' . $manualExamination->id . '.pdf"');
     }
 
     public function photo(CarInspection $manualExamination, string $encodedPath)

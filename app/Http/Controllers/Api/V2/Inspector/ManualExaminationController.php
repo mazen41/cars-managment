@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use PDF;
+use Mpdf\Mpdf;
 
 class ManualExaminationController extends BaseInspectorController
 {
@@ -444,29 +444,36 @@ class ManualExaminationController extends BaseInspectorController
         $verificationUrl = manual_examination_report_public_url($manualExamination);
         $qrDataUri = manual_examination_pdf_qr_data_uri($verificationUrl);
 
-        $pdf = PDF::loadView('backend.cars.inspections.manual-pdf-report', [
-            'carInspection' => $manualExamination,
-            'sectionData' => $sectionData,
-            'font_family' => $pdfOptions['font_family'],
-            'direction' => $pdfOptions['direction'],
-            'text_align' => $pdfOptions['text_align'],
+        $html = view('backend.cars.inspections.manual-pdf-report', [
+            'carInspection'  => $manualExamination,
+            'sectionData'    => $sectionData,
+            'font_family'    => $pdfOptions['font_family'],
+            'direction'      => $pdfOptions['direction'],
+            'text_align'     => $pdfOptions['text_align'],
             'not_text_align' => $pdfOptions['not_text_align'],
-            'verificationUrl' => $verificationUrl,
-            'qrDataUri' => $qrDataUri,
+            'verificationUrl'=> $verificationUrl,
+            'qrDataUri'      => $qrDataUri,
+        ])->render();
+
+        $mpdf = new Mpdf([
+            'mode'             => 'utf-8',
+            'format'           => 'A4',
+            'margin_top'       => 49,   // 44.6mm image + 4mm gap
+            'margin_bottom'    => 19,   // 14.9mm image + 4mm gap
+            'margin_left'      => 7,
+            'margin_right'     => 7,
+            'direction'        => 'rtl',
+            'autoScriptToLang' => true,
+            'autoLangToFont'   => true,
         ]);
+
+        $mpdf->WriteHTML($html);
 
         $filename = 'manual-examination-' . $manualExamination->id . '.pdf';
 
-        return response()->streamDownload(
-            function () use ($pdf) {
-                echo $pdf->output();
-            },
-            $filename,
-            [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            ]
-        );
+        return response($mpdf->Output('', 'S'))
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 
     private function getDefaultInspectionTypeId(): ?int

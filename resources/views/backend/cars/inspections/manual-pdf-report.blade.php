@@ -19,19 +19,19 @@
     }
 
     $manualPhotoSlots = [
-        'photo_front' => 'الواجهة الأمامية',
-        'photo_back' => 'الواجهة الخلفية',
-        'photo_left' => 'الجانب الأيسر',
-        'photo_right' => 'الجانب الأيمن',
+        'photo_front'          => 'الواجهة الأمامية',
+        'photo_back'           => 'الواجهة الخلفية',
+        'photo_left'           => 'الجانب الأيسر',
+        'photo_right'          => 'الجانب الأيمن',
         'photo_interior_front' => 'المقصورة (أمامي)',
-        'photo_interior_back' => 'المقصورة (خلفي)',
-        'photo_engine' => 'المحرك',
-        'photo_trunk' => 'صندوق الأمتعة',
-        'photo_odometer' => 'عداد المسافة',
-        'photo_dashboard' => 'لوحة القيادة',
-        'photo_vin_plate' => 'لوحة الهيكل',
-        'photo_tires' => 'الإطارات',
-        'photo_undercarriage' => 'الأسفل / الهيكل السفلي',
+        'photo_interior_back'  => 'المقصورة (خلفي)',
+        'photo_engine'         => 'المحرك',
+        'photo_trunk'          => 'صندوق الأمتعة',
+        'photo_odometer'       => 'عداد المسافة',
+        'photo_dashboard'      => 'لوحة القيادة',
+        'photo_vin_plate'      => 'لوحة الهيكل',
+        'photo_tires'          => 'الإطارات',
+        'photo_undercarriage'  => 'الأسفل / الهيكل السفلي',
     ];
 
     foreach ($manualPhotoSlots as $column => $label) {
@@ -46,7 +46,7 @@
         foreach ((array) $items as $item) {
             if (!empty($item['path'])) {
                 $vehicleImages->push([
-                    'src' => $item['path'],
+                    'src'   => $item['path'],
                     'label' => ($sectionModel->name ?? 'صور القسم'),
                 ]);
             }
@@ -58,7 +58,7 @@
             $path = $attachment['url'] ?? $attachment['path'] ?? null;
             if ($path) {
                 $vehicleImages->push([
-                    'src' => $path,
+                    'src'   => $path,
                     'label' => $fieldValue->field?->name ?? 'مرفق حقل فحص',
                 ]);
             }
@@ -71,7 +71,14 @@
     <meta charset="utf-8">
     <title>تقرير الفحص</title>
     <style>
-        @page { margin: 110px 20px 110px 20px; }
+        @page {
+            margin-top: 49mm;
+            margin-bottom: 19mm;
+            margin-left: 7mm;
+            margin-right: 7mm;
+            header: pdf-header;
+            footer: pdf-footer;
+        }
         body {
             font-family: "{{ $font_family }}", sans-serif;
             font-size: 12px;
@@ -82,32 +89,14 @@
             margin: 0;
             padding: 0;
         }
-        .pdf-header {
-            position: fixed;
-            top: -110px;
-            left: 0;
-            right: 0;
-            height: 100px;
-            text-align: center;
-        }
-        .pdf-header img {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
+        .pdf-header-img {
+            width: 196mm;
+            height: 44.6mm;
             display: block;
         }
-        .pdf-footer {
-            position: fixed;
-            bottom: -110px;
-            left: 0;
-            right: 0;
-            height: 100px;
-            text-align: center;
-        }
-        .pdf-footer img {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
+        .pdf-footer-img {
+            width: 196mm;
+            height: 14.9mm;
             display: block;
         }
         h2, h3 {
@@ -137,40 +126,23 @@
         .page-break {
             page-break-before: always;
         }
-        .image-container {
-            display: inline-block;
-            width: 48%;
-            margin: 1%;
-            text-align: center;
-            border: 1px solid #ccc;
-            padding: 5px;
-            background: #f9f9f9;
-        }
-        .image-container img {
-            max-width: 100%;
-            height: 150px;
-            object-fit: cover;
-        }
-        .image-label {
-            font-weight: bold;
-            font-size: 10px;
-            margin-top: 4px;
-        }
     </style>
 </head>
 <body>
-    <div class="pdf-header">
-        @if($headerImage)
-            <img src="{{ $headerImage }}" alt="Header">
-        @endif
-    </div>
-    <div class="pdf-footer">
-        @if($footerImage)
-            <img src="{{ $footerImage }}" alt="Footer">
-        @endif
-    </div>
 
-    <main>
+    {{-- mPDF named header: repeats on EVERY page automatically --}}
+    <htmlpageheader name="pdf-header">
+        @if($headerImage)
+            <img src="{{ $headerImage }}" class="pdf-header-img" alt="">
+        @endif
+    </htmlpageheader>
+
+    {{-- mPDF named footer: repeats on EVERY page automatically --}}
+    <htmlpagefooter name="pdf-footer">
+        @if($footerImage)
+            <img src="{{ $footerImage }}" class="pdf-footer-img" alt="">
+        @endif
+    </htmlpagefooter>
 
     <table style="border: 0; margin-bottom: 0;">
         <tr>
@@ -275,6 +247,6 @@
             @endforeach
         </table>
     @endif
-    </main>
+
 </body>
 </html>
