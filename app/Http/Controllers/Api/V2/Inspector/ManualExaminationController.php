@@ -280,19 +280,13 @@ class ManualExaminationController extends BaseInspectorController
 
     public function show(Request $request, int $manualExaminationId): JsonResponse
     {
-        $inspector = $request->user()->carInspector;
+        // Support both authenticated and public (unauthenticated) access
+        $inspector = $request->user()?->carInspector;
+        $inspectorId = $inspector?->id;
 
-        if (!$inspector) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Inspector profile not found',
-                    'code' => 'INSPECTOR_NOT_FOUND'
-                ]
-            ], 404);
-        }
-
+        // For public access (QR code), allow without inspector check
         ['manualExamination' => $manualExamination] =
-            ManualExaminationService::getFullData($manualExaminationId, $inspector->id);
+            ManualExaminationService::getFullData($manualExaminationId, $inspectorId);
 
         return response()->json([
             'data' => $this->transformDetail($manualExamination),

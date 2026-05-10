@@ -2911,6 +2911,7 @@ if (!function_exists('get_manual_examination_pdf_options')) {
 if (!function_exists('manual_examination_report_public_url')) {
     /**
      * Absolute URL encoded in QR codes; resolves to Laravel then redirects into the SPA when configured.
+     * This URL must be publicly accessible WITHOUT authentication.
      *
      * @param  object|int|string  $inspection  CarInspection or id.
      */
@@ -2923,7 +2924,7 @@ if (!function_exists('manual_examination_report_public_url')) {
 
         $baseUrl = rtrim((string) config('services.inspector.url', 'https://inspector.samh.store'), '/');
 
-        return $baseUrl . '/manual-examinations/' . $id;
+        return $baseUrl . '/public/manual-examinations/' . $id;
     }
 }
 

@@ -210,7 +210,17 @@ class CarInspector extends Model
             if (is_numeric($this->image)) {
                 return uploaded_asset($this->image);
             }
-            return asset('storage/uploads/' . $this->image);
+            // Handle paths with or without 'uploads/' prefix
+            $path = $this->image;
+            if (!str_starts_with($path, 'uploads/') && !str_starts_with($path, 'public/')) {
+                $path = 'uploads/' . $path;
+            }
+            // Check if file exists in storage and return proper URL
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists(str_replace('uploads/', '', $path))) {
+                return asset('storage/' . $path);
+            }
+            // Fallback: try direct public path
+            return asset('storage/' . $path);
         }
         return static_asset("assets/img/avatar-place.png");
     }
@@ -224,7 +234,17 @@ class CarInspector extends Model
             if (is_numeric($this->banner_image)) {
                 return uploaded_asset($this->banner_image);
             }
-            return asset('storage/uploads/' . $this->banner_image);
+            // Handle paths with or without 'uploads/' prefix
+            $path = $this->banner_image;
+            if (!str_starts_with($path, 'uploads/') && !str_starts_with($path, 'public/')) {
+                $path = 'uploads/' . $path;
+            }
+            // Check if file exists in storage and return proper URL
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists(str_replace('uploads/', '', $path))) {
+                return asset('storage/' . $path);
+            }
+            // Fallback: try direct public path
+            return asset('storage/' . $path);
         }
         return static_asset("assets/img/placeholder.jpg");
     }

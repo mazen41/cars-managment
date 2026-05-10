@@ -23,430 +23,177 @@ $manualPhotoUrl = fn ($path) => manual_examination_admin_photo_url($manualExamin
 
 @section('content')
 <style>
-    .me-header {
-        border: 1px solid rgba(148, 163, 184, 0.25);
-        border-radius: 16px;
-        background: linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,1));
-        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-        padding: 1rem 1rem;
-        margin: 0.5rem 0 1rem;
-    }
-    .me-header-title {
-        font-weight: 900;
-        letter-spacing: -0.02em;
-        margin-bottom: 0;
-        color: #0f172a;
-    }
-    .me-header-sub {
-        color: #64748b;
-        font-size: 0.92rem;
-        margin-top: 0.4rem;
-    }
-    .me-actions .btn {
-        border-radius: 12px;
-        padding-inline: .85rem;
-    }
-    .me-page .card {
-        border: 1px solid rgba(148, 163, 184, 0.25);
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-    }
-    .me-page .card .card-header {
-        background: linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,1));
-        border-bottom: 1px solid rgba(148, 163, 184, 0.18);
-    }
-    .me-page .table td:first-child {
-        color: #0f172a;
-    }
-    .me-muted { color: #64748b; }
-    .me-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: .4rem;
-        padding: .35rem .65rem;
-        border-radius: 999px;
-        border: 1px solid rgba(148, 163, 184, 0.35);
-        background: rgba(241, 245, 249, 0.7);
-        color: #0f172a;
-        font-size: .78rem;
-        font-weight: 800;
-        white-space: nowrap;
-    }
-    .inspection-photo-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 1rem;
-    }
-    .inspection-photo-card {
-        border: 1px solid #e5e7eb;
-        border-radius: 16px;
-        background: linear-gradient(180deg, #ffffff, #f8fafc);
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-    }
-    .inspection-photo-media {
-        position: relative;
-        aspect-ratio: 1 / 1;
-        background: #eef2f7;
-    }
-    .inspection-photo-media img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-    .inspection-photo-fallback {
-        position: absolute;
-        inset: 0;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 1rem;
-        color: #64748b;
-        background: linear-gradient(180deg, #f8fafc, #e2e8f0);
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-    .inspection-photo-card.is-missing .inspection-photo-fallback {
-        display: flex;
-    }
-    .inspection-photo-card.is-missing img {
-        display: none;
-    }
-    .inspection-photo-body {
-        padding: 0.9rem 1rem 1rem;
-    }
-    .inspection-photo-title {
-        margin: 0;
-        font-weight: 700;
-        color: #0f172a;
-    }
-    .inspection-photo-subtitle {
-        margin-top: 0.3rem;
-        font-size: 0.82rem;
-        color: #64748b;
-    }
-    .inspection-photo-section {
-        border-top: 1px solid #eef2f7;
-        margin-top: 1.5rem;
-        padding-top: 1.5rem;
-    }
+.timeline {
+    position: relative;
+    padding: 0;
+    margin: 0;
+}
+
+.timeline:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 8px;
+    height: 100%;
+    width: 2px;
+    background: #e9ecef;
+}
+
+.timeline-item {
+    position: relative;
+    padding: 10px 0 10px 30px;
+    margin: 0;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 0;
+    top: 15px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-content h6 {
+    margin: 0;
+    font-size: 14px;
+}
+
+.timeline-content small {
+    font-size: 12px;
+}
 </style>
-<div class="me-header">
+<div class="aiz-titlebar text-left mt-2 mb-3">
     <div class="row align-items-center">
-        <div class="col">
-            <h1 class="h3 me-header-title">
-                {{ translate('Manual Examination') }}
-                <span class="text-muted">#{{ $manualExamination->id }}</span>
-            </h1>
-            <div class="me-header-sub">
-                <span class="me-pill">{!! $manualExamination->status_badge !!}</span>
-                <span class="mx-2">•</span>
-                <span class="me-muted">{{ translate('Inspection Number') }}:</span>
-                <span dir="ltr" class="fw-700">{{ $manualExamination->inspection_number }}</span>
-            </div>
+        <div class="col-md-6">
+            <h1 class="h3">{{ translate('Manual Examination') }}</h1>
+            <p class="text-muted mb-0">{{ $manualExamination->inspection_number }}</p>
         </div>
-        <div class="col-auto me-actions">
-            <a href="{{ route('admin.manual-examinations.index') }}" class="btn btn-soft-primary">
-                <i class="las la-arrow-left mr-1"></i>{{ translate('Back') }}
-            </a>
-            <a href="{{ route('admin.manual-examinations.schedule', $manualExamination->id) }}" class="btn btn-soft-info">
+        <div class="col-md-6 text-right">
+            @if($manualExamination->status == 'completed')
+                <a href="{{ route('admin.manual-examinations.download', $manualExamination->id) }}" class="btn btn-secondary">
+                    <i class="las la-download mr-1"></i>{{ translate('Download PDF') }}
+                </a>
+            @endif
+            <a href="{{ route('admin.manual-examinations.schedule', $manualExamination->id) }}" class="btn btn-info">
                 <i class="las la-calendar mr-1"></i>{{ translate('Schedule') }}
             </a>
-            <a href="{{ route('admin.manual-examinations.download', $manualExamination->id) }}" class="btn btn-primary">
-                <i class="las la-download mr-1"></i>{{ translate('Download PDF') }}
+            <a href="{{ route('admin.manual-examinations.index') }}" class="btn btn-light">
+                <i class="las la-arrow-left mr-1"></i>{{ translate('Back to List') }}
             </a>
         </div>
     </div>
 </div>
 
-<div class="me-page">
-
 <div class="row">
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0 h6">{{ translate('Inspector Info') }}</h5>
-            </div>
-            <div class="card-body">
-                <table class="table table-borderless table-sm mb-0">
-                    <tr>
-                        <td class="fw-600">{{ translate('Shop Name') }}</td>
-                        <td>{{ $manualExamination->inspector->shop_name ?? translate('N/A') }}</td>
-                    </tr>
-                    <tr>
-                        <td class="fw-600">{{ translate('Name') }}</td>
-                        <td>{{ $manualExamination->inspector->user->name ?? translate('N/A') }}</td>
-                    </tr>
-                    <tr>
-                        <td class="fw-600">{{ translate('Email') }}</td>
-                        <td>{{ $manualExamination->inspector->user->email ?? translate('N/A') }}</td>
-                    </tr>
-                    <tr>
-                        <td class="fw-600">{{ translate('Phone') }}</td>
-                        <td>{{ $manualExamination->inspector->user->phone ?? translate('N/A') }}</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0 h6">{{ translate('Examination Summary') }}</h5>
-            </div>
-            <div class="card-body">
-                <table class="table table-borderless table-sm mb-0">
-                    <tr>
-                        <td class="fw-600">{{ translate('Status') }}</td>
-                        <td>{!! $manualExamination->status_badge !!}</td>
-                    </tr>
-                    <tr>
-                        <td class="fw-600">{{ translate('Inspection Type') }}</td>
-                        <td>{{ $manualExamination->inspectionType->name ?? translate('N/A') }}</td>
-                    </tr>
-                    <tr>
-                        <td class="fw-600">{{ translate('Created At') }}</td>
-                        <td>{{ $manualExamination->created_at?->format('Y-m-d H:i') }}</td>
-                    </tr>
-                    <tr>
-                        <td class="fw-600">{{ translate('Total Score') }}</td>
-                        <td>{{ $manualExamination->total_score ?? translate('N/A') }}</td>
-                    </tr>
-                    <tr>
-                        <td class="fw-600">{{ translate('Overall Condition') }}</td>
-                        <td>{{ $manualExamination->condition_display ?? translate('N/A') }}</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>
-
     <div class="col-lg-8">
+        <!-- Main Inspection Card -->
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0 h6">{{ translate('Car Details') }}</h5>
+                <h5 class="mb-0 h6">{{ translate('Inspection Overview') }}</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <table class="table table-borderless table-sm">
+                        <table class="table table-borderless">
                             <tr>
-                                <td class="fw-600">{{ translate('VIN') }}</td>
-                                <td>{{ $manualExamination->car->vin ?? translate('N/A') }}</td>
+                                <td class="w-50"><strong>{{ translate('Inspection Number') }}:</strong></td>
+                                <td>{{ $manualExamination->inspection_number }}</td>
                             </tr>
                             <tr>
-                                <td class="fw-600">{{ translate('Plate Number') }}</td>
-                                <td>{{ $manualExamination->car->plate_number ?? translate('N/A') }}</td>
+                                <td><strong>{{ translate('Status') }}:</strong></td>
+                                <td>{!! $manualExamination->status_badge !!}</td>
                             </tr>
                             <tr>
-                                <td class="fw-600">{{ translate('Brand') }}</td>
-                                <td>{{ $manualExamination->car->brand->name ?? translate('N/A') }}</td>
+                                <td><strong>{{ translate('Inspector') }}:</strong></td>
+                                <td>{{ $manualExamination->inspector->shop_name ?? translate('Not Assigned') }}</td>
                             </tr>
                             <tr>
-                                <td class="fw-600">{{ translate('Model') }}</td>
-                                <td>{{ $manualExamination->car->model->name ?? translate('N/A') }}</td>
+                                <td><strong>{{ translate('Scheduled Date') }}:</strong></td>
+                                <td>
+                                    @if($manualExamination->scheduled_at)
+                                        {{ date('M d, Y g:i A', strtotime($manualExamination->scheduled_at)) }}
+                                    @else
+                                        <span class="text-muted">{{ translate('Not Scheduled') }}</span>
+                                    @endif
+                                </td>
                             </tr>
                             <tr>
-                                <td class="fw-600">{{ translate('Category') }}</td>
-                                <td>{{ $manualExamination->car->category?->getTranslation('name') ?? translate('N/A') }}</td>
-                            </tr>
-                            <tr>
-                                <td class="fw-600">{{ translate('Color') }}</td>
-                                <td>{{ $manualExamination->car->color?->getTranslation('name') ?? translate('N/A') }}</td>
+                                <td><strong>{{ translate('Created At') }}:</strong></td>
+                                <td>{{ $manualExamination->created_at?->format('M d, Y g:i A') ?? translate('N/A') }}</td>
                             </tr>
                         </table>
                     </div>
                     <div class="col-md-6">
-                        <table class="table table-borderless table-sm">
+                        <table class="table table-borderless">
                             <tr>
-                                <td class="fw-600">{{ translate('Manufacture Year') }}</td>
-                                <td>{{ $manualExamination->car->manufacture_year ?? translate('N/A') }}</td>
+                                <td class="w-50"><strong>{{ translate('Completed At') }}:</strong></td>
+                                <td>
+                                    @if($manualExamination->completed_at)
+                                        {{ $manualExamination->completed_at->format('M d, Y g:i A') }}
+                                    @else
+                                        <span class="text-muted">{{ translate('Not Completed') }}</span>
+                                    @endif
+                                </td>
                             </tr>
                             <tr>
-                                <td class="fw-600">{{ translate('Mileage') }}</td>
-                                <td>{{ $manualExamination->car->formatted_milage ?? translate('N/A') }}</td>
+                                <td><strong>{{ translate('Total Score') }}:</strong></td>
+                                <td>
+                                    @if($manualExamination->total_score)
+                                        <span class="h6 text-primary">{{ number_format($manualExamination->total_score, 1) }}%</span>
+                                    @else
+                                        <span class="text-muted">{{ translate('N/A') }}</span>
+                                    @endif
+                                </td>
                             </tr>
                             <tr>
-                                <td class="fw-600">{{ translate('Condition') }}</td>
-                                <td>{{ translate(ucfirst($manualExamination->car->condition ?? 'N/A')) }}</td>
+                                <td><strong>{{ translate('Overall Condition') }}:</strong></td>
+                                <td>
+                                    @if($manualExamination->condition_display)
+                                        <span class="badge badge-inline badge-info">
+                                            {{ $manualExamination->condition_display }}
+                                        </span>
+                                    @else
+                                        <span class="text-muted">{{ translate('N/A') }}</span>
+                                    @endif
+                                </td>
                             </tr>
                             <tr>
-                                <td class="fw-600">{{ translate('Transmission') }}</td>
-                                <td>{{ $manualExamination->car->transmission ?? translate('N/A') }}</td>
-                            </tr>
-                            <tr>
-                                <td class="fw-600">{{ translate('Fuel Type') }}</td>
-                                <td>{{ $manualExamination->car->fuel_type ?? translate('N/A') }}</td>
-                            </tr>
-                            <tr>
-                                <td class="fw-600">{{ translate('Price') }}</td>
-                                <td>{{ $manualExamination->car->formatted_price ?? translate('N/A') }}</td>
+                                <td><strong>{{ translate('Created By') }}:</strong></td>
+                                <td>{{ $manualExamination->requester?->name ?? translate('N/A') }}</td>
                             </tr>
                         </table>
                     </div>
                 </div>
 
-                <hr>
-                <h6>{{ translate('Description') }}</h6>
-                <div>{!! $manualExamination->car->description ?? translate('N/A') !!}</div>
-
-                <hr>
-                <h6>{{ translate('Location') }}</h6>
-                <p class="mb-0">
-                    {{ $manualExamination->car->location ?? translate('N/A') }}
-                    @if($manualExamination->car?->country || $manualExamination->car?->state || $manualExamination->car?->city)
-                        <br>
-                        <small class="text-muted">
-                            {{ $manualExamination->car->country->name ?? '' }}
-                            {{ $manualExamination->car->state->name ?? '' }}
-                            {{ $manualExamination->car->city->name ?? '' }}
-                        </small>
-                    @endif
-                </p>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0 h6">{{ translate('Uploaded photos') }}</h5>
-            </div>
-            <div class="card-body">
-                <h6 class="mb-3">{{ translate('Vehicle & overview') }}</h6>
-                <div class="inspection-photo-grid mb-4">
-                    @php $hasVehiclePhotos = false; @endphp
-                    @if(!empty($manualExamination->car?->main_photo))
-                        @php $hasVehiclePhotos = true; @endphp
-                        <div class="inspection-photo-card">
-                            <div class="inspection-photo-media">
-                                <img src="{{ uploaded_asset($manualExamination->car->main_photo) }}" alt="{{ translate('Main photo') }}" onerror="this.closest('.inspection-photo-card').classList.add('is-missing')">
-                                <div class="inspection-photo-fallback">{{ translate('Image unavailable') }}</div>
-                            </div>
-                            <div class="inspection-photo-body">
-                                <p class="inspection-photo-title">{{ translate('Main photo') }}</p>
-                                <div class="inspection-photo-subtitle">{{ translate('Primary vehicle image') }}</div>
-                            </div>
-                        </div>
-                    @endif
-                    @foreach(array_filter(explode(',', (string) ($manualExamination->car?->photos ?? ''))) as $photoId)
-                        @php $hasVehiclePhotos = true; @endphp
-                        <div class="inspection-photo-card">
-                            <div class="inspection-photo-media">
-                                <img src="{{ uploaded_asset(trim($photoId)) }}" alt="{{ translate('Vehicle photo') }}" onerror="this.closest('.inspection-photo-card').classList.add('is-missing')">
-                                <div class="inspection-photo-fallback">{{ translate('Image unavailable') }}</div>
-                            </div>
-                            <div class="inspection-photo-body">
-                                <p class="inspection-photo-title">{{ translate('Vehicle photo') }}</p>
-                                <div class="inspection-photo-subtitle">{{ translate('Uploaded from the vehicle listing') }}</div>
-                            </div>
-                        </div>
-                    @endforeach
-                    @foreach($manualInspectionPhotoSlots as $column => $label)
-                        @if(!empty($manualExamination->{$column}))
-                            @php $hasVehiclePhotos = true; @endphp
-                            <div class="inspection-photo-card">
-                                <div class="inspection-photo-media">
-                                    <img src="{{ $manualPhotoUrl($manualExamination->{$column}) }}" alt="{{ $label }}" onerror="this.closest('.inspection-photo-card').classList.add('is-missing')">
-                                    <div class="inspection-photo-fallback">{{ translate('Image unavailable') }}</div>
-                                </div>
-                                <div class="inspection-photo-body">
-                                    <p class="inspection-photo-title">{{ $label }}</p>
-                                    <div class="inspection-photo-subtitle">{{ translate('Manual examination upload') }}</div>
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
-                    @unless($hasVehiclePhotos)
-                        <div class="col-12"><p class="text-muted mb-0">{{ translate('No vehicle photos uploaded.') }}</p></div>
-                    @endunless
-                </div>
-
-                @php
-                    $fieldPhotoCount = 0;
-                    foreach ($manualExamination->fieldValues as $__fv) {
-                        if (!empty($__fv->file_attachments)) {
-                            $fieldPhotoCount++;
-                        }
-                    }
-                @endphp
-                @if($fieldPhotoCount > 0)
-                    <div class="inspection-photo-section">
-                    <h6 class="mb-3">{{ translate('Photos by inspection field') }}</h6>
-                    <div class="inspection-photo-grid">
-                        @foreach($manualExamination->fieldValues as $fieldValue)
-                            @foreach(($fieldValue->file_attachments ?? []) as $attachment)
-                                @php $attachmentUrl = $attachment['url'] ?? (!empty($attachment['path']) ? $manualPhotoUrl($attachment['path']) : null); @endphp
-                                @if(!empty($attachmentUrl))
-                                    <div class="inspection-photo-card">
-                                        <div class="inspection-photo-media">
-                                            <img src="{{ $attachmentUrl }}" alt="{{ $fieldValue->field?->name ?? translate('Field photo') }}" onerror="this.closest('.inspection-photo-card').classList.add('is-missing')">
-                                            <div class="inspection-photo-fallback">{{ translate('Image unavailable') }}</div>
-                                        </div>
-                                        <div class="inspection-photo-body">
-                                            <p class="inspection-photo-title">{{ $fieldValue->field?->name ?? translate('Field') }}</p>
-                                            <div class="inspection-photo-subtitle">{{ translate('Field attachment') }}</div>
-                                        </div>
-                                    </div>
-                                @endif
-                            @endforeach
-                        @endforeach
-                    </div>
+                @if($manualExamination->inspector_notes)
+                    <div class="mt-3">
+                        <strong>{{ translate('Inspector Notes') }}:</strong>
+                        <p class="mt-2 p-3 bg-light rounded">{{ $manualExamination->inspector_notes }}</p>
                     </div>
                 @endif
 
-                @php
-                    $hasSectionPhotos = false;
-                    foreach ($sectionPhotosBySection as $__sectionItems) {
-                        if (is_array($__sectionItems) && count($__sectionItems) > 0) {
-                            $hasSectionPhotos = true;
-                            break;
-                        }
-                    }
-                @endphp
-                @if($hasSectionPhotos)
-                    <div class="inspection-photo-section">
-                    <h6 class="mb-3">{{ translate('Photos by inspection section') }}</h6>
-                    @foreach($sectionPhotosBySection as $sectionId => $items)
-                        @if(!empty($items))
-                            @php $sectionMeta = $manualExamination->inspectionType?->sections?->firstWhere('id', (int) $sectionId); @endphp
-                            <div class="mb-4">
-                                <div class="fw-600 mb-2">{{ $sectionMeta->name ?? (translate('Section') . ' #' . $sectionId) }}</div>
-                                <div class="inspection-photo-grid">
-                                    @foreach($items as $photoRow)
-                                        @php $path = $photoRow['path'] ?? null; @endphp
-                                        @if(!empty($path))
-                                            <div class="inspection-photo-card">
-                                                <div class="inspection-photo-media">
-                                                    <img src="{{ $manualPhotoUrl($path) }}" alt="{{ $sectionMeta->name ?? translate('Section photo') }}" onerror="this.closest('.inspection-photo-card').classList.add('is-missing')">
-                                                    <div class="inspection-photo-fallback">{{ translate('Image unavailable') }}</div>
-                                                </div>
-                                                <div class="inspection-photo-body">
-                                                    <p class="inspection-photo-title">{{ $sectionMeta->name ?? translate('Section photo') }}</p>
-                                                    <div class="inspection-photo-subtitle">{{ translate('Section upload') }}</div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
+                @if($manualExamination->recommendations)
+                    <div class="mt-3">
+                        <strong>{{ translate('Recommendations') }}:</strong>
+                        <p class="mt-2 p-3 bg-light rounded">{{ $manualExamination->recommendations }}</p>
                     </div>
                 @endif
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0 h6">{{ translate('Inspection Fields') }}</h5>
-            </div>
-            <div class="card-body">
-                @foreach($sectionData as $data)
-                    <div class="mb-4">
-                        <h6 class="pb-2 border-bottom">{{ $data['section']->name }}</h6>
+        <!-- Inspection Sections -->
+        @if($manualExamination->inspectionType && $manualExamination->inspectionType->sections)
+            @foreach($sectionData as $data)
+                <div class="card mt-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">{{ $data['section']->name }}</h6>
+                    </div>
+                    <div class="card-body">
                         @if($data['section']->description)
-                            <p class="text-muted">{{ $data['section']->description }}</p>
+                            <p class="text-muted small mb-3">{{ $data['section']->description }}</p>
                         @endif
 
                         <div class="table-responsive">
@@ -488,26 +235,181 @@ $manualPhotoUrl = fn ($path) => manual_examination_admin_photo_url($manualExamin
                             </table>
                         </div>
                     </div>
-                @endforeach
+                </div>
+            @endforeach
+        @endif
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Car Information -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">{{ translate('Car Information') }}</h6>
+            </div>
+            <div class="card-body">
+                @if($manualExamination->car)
+                    <div class="text-center mb-3">
+                        @if($manualExamination->car->main_photo)
+                            <img src="{{ uploaded_asset($manualExamination->car->main_photo) }}" alt="Car" class="img-fluid rounded" style="max-height: 200px;">
+                        @else
+                            <img src="{{ static_asset('assets/img/placeholder.jpg') }}" alt="Car" class="img-fluid rounded" style="max-height: 200px;">
+                        @endif
+                    </div>
+
+                    <h6 class="text-center mb-3">{{ $manualExamination->car->brand?->name ?? '' }} {{ $manualExamination->car->model?->name ?? '' }}</h6>
+
+                    <table class="table table-borderless table-sm">
+                        <tr>
+                            <td><strong>{{ translate('VIN') }}:</strong></td>
+                            <td>{{ $manualExamination->car->vin ?? translate('N/A') }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>{{ translate('Brand') }}:</strong></td>
+                            <td>{{ $manualExamination->car->brand?->name ?? translate('N/A') }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>{{ translate('Model') }}:</strong></td>
+                            <td>{{ $manualExamination->car->model?->name ?? translate('N/A') }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>{{ translate('Category') }}:</strong></td>
+                            <td>{{ $manualExamination->car->category?->getTranslation('name') ?? translate('N/A') }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>{{ translate('Year') }}:</strong></td>
+                            <td>{{ $manualExamination->car->manufacture_year ?? translate('N/A') }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>{{ translate('Plate Number') }}:</strong></td>
+                            <td>{{ $manualExamination->car->plate_number ?? translate('N/A') }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>{{ translate('Color') }}:</strong></td>
+                            <td>{{ $manualExamination->car->color?->getTranslation('name') ?? translate('N/A') }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>{{ translate('Mileage') }}:</strong></td>
+                            <td>{{ $manualExamination->car->formatted_milage ?? translate('N/A') }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>{{ translate('Transmission') }}:</strong></td>
+                            <td>{{ $manualExamination->car->transmission ?? translate('N/A') }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>{{ translate('Fuel Type') }}:</strong></td>
+                            <td>{{ $manualExamination->car->fuel_type ?? translate('N/A') }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>{{ translate('Price') }}:</strong></td>
+                            <td>{{ format_price($manualExamination->car->price ?? 0) }}</td>
+                        </tr>
+                    </table>
+
+                    @if($manualExamination->car->description)
+                        <div class="mt-2 pt-2 border-top">
+                            <strong>{{ translate('Description') }}:</strong>
+                            <p class="mt-1 text-muted small">{{ $manualExamination->car->description }}</p>
+                        </div>
+                    @endif
+                @else
+                    <p class="text-muted text-center">{{ translate('Car information not available') }}</p>
+                @endif
             </div>
         </div>
 
-        <div class="card">
+        <!-- Inspection Type Information -->
+        <div class="card mt-3">
             <div class="card-header">
-                <h5 class="mb-0 h6">{{ translate('Inspector Notes') }}</h5>
+                <h6 class="mb-0">{{ translate('Inspection Type') }}</h6>
             </div>
             <div class="card-body">
-                <div class="mb-3">
-                    <div class="fw-800 mb-1">{{ translate('Final Notes') }}</div>
-                    <div class="me-muted" style="white-space: pre-wrap;">{{ $manualExamination->inspector_notes ?? translate('N/A') }}</div>
+                @if($manualExamination->inspectionType)
+                    <h6>{{ $manualExamination->inspectionType->name }}</h6>
+                    @if($manualExamination->inspectionType->description)
+                        <p class="text-muted small">{{ $manualExamination->inspectionType->description }}</p>
+                    @endif
+
+                    <table class="table table-borderless table-sm">
+                        <tr>
+                            <td><strong>{{ translate('Total Sections') }}:</strong></td>
+                            <td>{{ $manualExamination->inspectionType->sections->count() }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>{{ translate('Total Fields') }}:</strong></td>
+                            <td>{{ $manualExamination->inspectionType->sections->sum(function($section) { return $section->fields->count(); }) }}</td>
+                        </tr>
+                    </table>
+                @else
+                    <p class="text-muted">{{ translate('Inspection type information not available') }}</p>
+                @endif
+            </div>
+        </div>
+
+        <!-- Activity Timeline -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">{{ translate('Activity Timeline') }}</h6>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-info"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-1">{{ translate('Inspection Created') }}</h6>
+                            <small class="text-muted">{{ $manualExamination->created_at?->format('M d, Y g:i A') ?? translate('N/A') }}</small>
+                        </div>
+                    </div>
+
+                    @if($manualExamination->started_at)
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">{{ translate('Inspection Started') }}</h6>
+                                <small class="text-muted">{{ $manualExamination->started_at->format('M d, Y g:i A') }}</small>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($manualExamination->completed_at)
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">{{ translate('Inspection Completed') }}</h6>
+                                <small class="text-muted">{{ $manualExamination->completed_at->format('M d, Y g:i A') }}</small>
+                            </div>
+                        </div>
+                    @endif
                 </div>
-                <div>
-                    <div class="fw-800 mb-1">{{ translate('Recommendations') }}</div>
-                    <div class="me-muted" style="white-space: pre-wrap;">{{ $manualExamination->recommendations ?? translate('N/A') }}</div>
-                </div>
+            </div>
+        </div>
+
+        <!-- Inspector Information -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">{{ translate('Inspector Info') }}</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless table-sm">
+                    <tr>
+                        <td><strong>{{ translate('Shop Name') }}:</strong></td>
+                        <td>{{ $manualExamination->inspector->shop_name ?? translate('N/A') }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ translate('Name') }}:</strong></td>
+                        <td>{{ $manualExamination->inspector->user->name ?? translate('N/A') }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ translate('Email') }}:</strong></td>
+                        <td>{{ $manualExamination->inspector->user->email ?? translate('N/A') }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ translate('Phone') }}:</strong></td>
+                        <td>{{ $manualExamination->inspector->user->phone ?? translate('N/A') }}</td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
 </div>
-</div>
+
 @endsection

@@ -233,8 +233,9 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 50%;">بند</th>
-                        <th style="width: 50%;">القيمة</th>
+                        <th style="width: 40%;">بند</th>
+                        <th style="width: 40%;">القيمة</th>
+                        <th style="width: 20%;">الملاحظات</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -243,6 +244,7 @@
                         <tr>
                             <td>{{ $fieldData['field']->name }}</td>
                             <td>{{ $value?->formatted_value ?? $value?->value ?? '—' }}</td>
+                            <td>{{ $value?->notes ?? '—' }}</td>
                         </tr>
                     @endforeach
                 </tbody>

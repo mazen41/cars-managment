@@ -207,8 +207,9 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 50%;">بند</th>
-                    <th style="width: 50%;">القيمة</th>
+                    <th style="width: 40%;">بند</th>
+                    <th style="width: 40%;">القيمة</th>
+                    <th style="width: 20%;">الملاحظات</th>
                 </tr>
             </thead>
             <tbody>
@@ -217,11 +218,32 @@
                     <tr>
                         <td>{{ $fieldData['field']->name }}</td>
                         <td>{{ $value?->formatted_value ?? $value?->value ?? '—' }}</td>
+                        <td>{{ $value?->notes ?? '—' }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     @endforeach
+
+    @if(!empty($carInspection->inspector_notes) || !empty($carInspection->recommendations))
+        <h2>ملاحظات المفتش والتوصيات</h2>
+        <table>
+            <tbody>
+                @if(!empty($carInspection->inspector_notes))
+                <tr>
+                    <th style="width: 20%;">الملاحظات العامة</th>
+                    <td style="white-space: pre-wrap;">{{ $carInspection->inspector_notes }}</td>
+                </tr>
+                @endif
+                @if(!empty($carInspection->recommendations))
+                <tr>
+                    <th style="width: 20%;">التوصيات</th>
+                    <td style="white-space: pre-wrap;">{{ $carInspection->recommendations }}</td>
+                </tr>
+                @endif
+            </tbody>
+        </table>
+    @endif
 
     @if($vehicleImages->count() > 0)
         <div class="page-break"></div>

@@ -28,6 +28,9 @@ Route::group(['prefix' => 'v2/inspector', 'middleware' => ['app_language', 'insp
         'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@photo'
     )->name('api.inspector.manual-examinations.photo');
 
+    // Public route for manual examination details (no auth required - for QR codes)
+    Route::get('public/manual-examinations/{manualExamination}', 'App\Http\Controllers\Api\V2\Inspector\ManualExaminationController@show');
+
     // Protected routes (require inspector authentication)
     Route::middleware(['inspector.auth'])->group(function () {
         // Authentication management
