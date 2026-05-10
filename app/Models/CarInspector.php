@@ -206,40 +206,7 @@ class CarInspector extends Model
  */
 public function getImageUrlAttribute()
 {
-    if ($this->image) {
-        if (is_numeric($this->image)) {
-            return uploaded_asset($this->image);
-        }
-
-        $path = ltrim((string) $this->image, '/');
-
-        // Already public path
-        if (
-            str_starts_with($path, 'public/') ||
-            str_starts_with($path, 'storage/')
-        ) {
-            return asset($path);
-        }
-
-        // uploads/ path
-        if (str_starts_with($path, 'uploads/')) {
-            return asset($path);
-        }
-
-        // Check storage disk if configured
-        if (
-            config('filesystems.disks.public_uploads') &&
-            \Illuminate\Support\Facades\Storage::disk('public_uploads')
-                ->exists(ltrim(preg_replace('#^uploads/#', '', $path), '/'))
-        ) {
-            return asset('uploads/' . ltrim($path, '/'));
-        }
-
-        // Default fallback
-        return asset('public/uploads/' . $path);
-    }
-
-    return static_asset("assets/img/avatar-place.png");
+    return file_asset_url($this->image, true) ?? static_asset("assets/img/avatar-place.png");
 }
 
 /**
@@ -247,40 +214,7 @@ public function getImageUrlAttribute()
  */
 public function getBannerImageUrlAttribute()
 {
-    if ($this->banner_image) {
-        if (is_numeric($this->banner_image)) {
-            return uploaded_asset($this->banner_image);
-        }
-
-        $path = ltrim((string) $this->banner_image, '/');
-
-        // Already public path
-        if (
-            str_starts_with($path, 'public/') ||
-            str_starts_with($path, 'storage/')
-        ) {
-            return asset($path);
-        }
-
-        // uploads/ path
-        if (str_starts_with($path, 'uploads/')) {
-            return asset($path);
-        }
-
-        // Check storage disk if configured
-        if (
-            config('filesystems.disks.public_uploads') &&
-            \Illuminate\Support\Facades\Storage::disk('public_uploads')
-                ->exists(ltrim(preg_replace('#^uploads/#', '', $path), '/'))
-        ) {
-            return asset('uploads/' . ltrim($path, '/'));
-        }
-
-        // Default fallback
-        return asset('public/uploads/' . $path);
-    }
-
-    return static_asset("assets/img/placeholder.jpg");
+    return file_asset_url($this->banner_image, true) ?? static_asset("assets/img/placeholder.jpg");
 }
 
     /**
