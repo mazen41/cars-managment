@@ -201,73 +201,87 @@ class CarInspector extends Model
         return $this->user->name ?? "N/A";
     }
 
-    /**
-     * Get the inspector's profile image URL.
-     */
-    public function getImageUrlAttribute()
-    {
-        if ($this->image) {
-            if (is_numeric($this->image)) {
-                return uploaded_asset($this->image);
-            }
-            
-            $path = $this->image;
-            // Ensure path is relative to public/
-            if (str_starts_with($path, 'public/')) {
-                return asset($path);
-            }
-<<<<<<< HEAD
-            
-            if (str_starts_with($path, 'uploads/')) {
-                return asset('public/' . $path);
-            }
-
-            return asset('public/uploads/' . $path);
-=======
-            // Check if file exists in storage and return proper URL
-            if (\Illuminate\Support\Facades\Storage::disk('public_uploads')->exists(ltrim(preg_replace('#^uploads/#', '', $path), '/'))) {
-                return asset($path);
-            }
-            // Fallback: try direct public path
-            return asset($path);
->>>>>>> 60cbf96daffdf0f1a40b3edf2eae88c5fccd4d83
+   /**
+ * Get the inspector's profile image URL.
+ */
+public function getImageUrlAttribute()
+{
+    if ($this->image) {
+        if (is_numeric($this->image)) {
+            return uploaded_asset($this->image);
         }
-        return static_asset("assets/img/avatar-place.png");
+
+        $path = ltrim((string) $this->image, '/');
+
+        // Already public path
+        if (
+            str_starts_with($path, 'public/') ||
+            str_starts_with($path, 'storage/')
+        ) {
+            return asset($path);
+        }
+
+        // uploads/ path
+        if (str_starts_with($path, 'uploads/')) {
+            return asset($path);
+        }
+
+        // Check storage disk if configured
+        if (
+            config('filesystems.disks.public_uploads') &&
+            \Illuminate\Support\Facades\Storage::disk('public_uploads')
+                ->exists(ltrim(preg_replace('#^uploads/#', '', $path), '/'))
+        ) {
+            return asset('uploads/' . ltrim($path, '/'));
+        }
+
+        // Default fallback
+        return asset('public/uploads/' . $path);
     }
 
-    /**
-     * Get the inspector's banner image URL.
-     */
-    public function getBannerImageUrlAttribute()
-    {
-        if ($this->banner_image) {
-            if (is_numeric($this->banner_image)) {
-                return uploaded_asset($this->banner_image);
-            }
-            
-            $path = $this->banner_image;
-            // Ensure path is relative to public/
-            if (str_starts_with($path, 'public/')) {
-                return asset($path);
-            }
-<<<<<<< HEAD
-            
-            if (str_starts_with($path, 'uploads/')) {
-                return asset('public/' . $path);
-            }
+    return static_asset("assets/img/avatar-place.png");
+}
 
-            return asset('public/uploads/' . $path);
-=======
-            // Check if file exists in storage and return proper URL
-            if (\Illuminate\Support\Facades\Storage::disk('public_uploads')->exists(ltrim(preg_replace('#^uploads/#', '', $path), '/'))) {
-                return asset($path);
-            }
-            // Fallback: try direct public path
-            return asset($path);
->>>>>>> 60cbf96daffdf0f1a40b3edf2eae88c5fccd4d83
+/**
+ * Get the inspector's banner image URL.
+ */
+public function getBannerImageUrlAttribute()
+{
+    if ($this->banner_image) {
+        if (is_numeric($this->banner_image)) {
+            return uploaded_asset($this->banner_image);
         }
-        return static_asset("assets/img/placeholder.jpg");
+
+        $path = ltrim((string) $this->banner_image, '/');
+
+        // Already public path
+        if (
+            str_starts_with($path, 'public/') ||
+            str_starts_with($path, 'storage/')
+        ) {
+            return asset($path);
+        }
+
+        // uploads/ path
+        if (str_starts_with($path, 'uploads/')) {
+            return asset($path);
+        }
+
+        // Check storage disk if configured
+        if (
+            config('filesystems.disks.public_uploads') &&
+            \Illuminate\Support\Facades\Storage::disk('public_uploads')
+                ->exists(ltrim(preg_replace('#^uploads/#', '', $path), '/'))
+        ) {
+            return asset('uploads/' . ltrim($path, '/'));
+        }
+
+        // Default fallback
+        return asset('public/uploads/' . $path);
     }
+
+    return static_asset("assets/img/placeholder.jpg");
+}
 
     /**
      * Get the inspector's status display.
