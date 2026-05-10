@@ -3138,21 +3138,15 @@ if (!function_exists('pdf_binary_to_data_uri')) {
 }
 
 if (!function_exists('pdf_safe_image_src')) {
-    /**
-     * Resolve an image URL or storage-relative path into a Dompdf-friendly data URI where possible.
-     */
     function pdf_safe_image_src($rawUrlOrPath): string
     {
         if ($rawUrlOrPath === null || $rawUrlOrPath === '') {
             return '';
         }
-
         if (strpos($rawUrlOrPath, 'data:') === 0) {
             return $rawUrlOrPath;
         }
-
         $normalizedPath = normalize_public_storage_path((string) $rawUrlOrPath);
-
         if (!preg_match('#^https?://#i', $rawUrlOrPath)) {
             $candidates = [
                 storage_path('app/public/' . $normalizedPath),
@@ -3165,20 +3159,16 @@ if (!function_exists('pdf_safe_image_src')) {
                     return pdf_binary_to_data_uri($file);
                 }
             }
-
             return '';
         }
-
-        // Full URL produced by helpers (often includes /public/... or /storage/...)
+        // Full URL — try local path resolution first
         $pathOnly = preg_replace('#^https?://[^/]+/#i', '', (string) $rawUrlOrPath);
-
         if (preg_match('#^public/(.+)$#', $pathOnly, $m)) {
             $pub = public_path($m[1]);
             if (file_exists($pub) && is_readable($pub)) {
                 return pdf_binary_to_data_uri($pub);
             }
         }
-
         if (preg_match('#(?:^|/)storage/(.+)$#', $pathOnly, $m)) {
             $stor = storage_path('app/public/' . $m[1]);
             if (file_exists($stor) && is_readable($stor)) {
@@ -3186,7 +3176,24 @@ if (!function_exists('pdf_safe_image_src')) {
             }
         }
 
-        return $rawUrlOrPath;
+        // ✅ FIXED: local path resolution failed — fetch the URL and encode it
+        try {
+            $context = stream_context_create([
+                'http' => ['timeout' => 10, 'ignore_errors' => true],
+                'ssl'  => ['verify_peer' => false, 'verify_peer_name' => false],
+            ]);
+            $content = @file_get_contents($rawUrlOrPath, false, $context);
+            if ($content && strlen($content) > 0) {
+                $mime = (new \finfo(FILEINFO_MIME_TYPE))->buffer($content);
+                if (str_starts_with($mime, 'image/')) {
+                    return 'data:' . $mime . ';base64,' . base64_encode($content);
+                }
+            }
+        } catch (\Throwable $e) {
+            // fail silently
+        }
+
+        return '';
     }
 }
 
