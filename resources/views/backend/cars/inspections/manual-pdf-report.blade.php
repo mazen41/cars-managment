@@ -71,7 +71,7 @@
     <meta charset="utf-8">
     <title>تقرير الفحص</title>
     <style>
-        @page { margin: 100px 20px 100px 20px; }
+        @page { margin: 110px 20px 110px 20px; }
         body {
             font-family: "{{ $font_family }}", sans-serif;
             font-size: 12px;
@@ -84,27 +84,31 @@
         }
         .pdf-header {
             position: fixed;
-            top: -90px;
+            top: -110px;
             left: 0;
             right: 0;
-            height: 80px;
+            height: 100px;
             text-align: center;
         }
         .pdf-header img {
             width: 100%;
-            height: 80px;
+            height: 100px;
+            object-fit: cover;
+            display: block;
         }
         .pdf-footer {
             position: fixed;
-            bottom: -90px;
+            bottom: -110px;
             left: 0;
             right: 0;
-            height: 80px;
+            height: 100px;
             text-align: center;
         }
         .pdf-footer img {
             width: 100%;
-            height: 80px;
+            height: 100px;
+            object-fit: cover;
+            display: block;
         }
         h2, h3 {
             color: #333;
