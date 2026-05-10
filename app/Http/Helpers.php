@@ -1287,6 +1287,11 @@ if (!function_exists('my_asset')) {
             return Storage::disk(config('filesystems.default'))->url($path);
         }
 
+        $normalized = normalize_public_storage_path((string) $path);
+        if (str_starts_with($normalized, 'uploads/')) {
+            return app('url')->asset($normalized, $secure);
+        }
+
         return app('url')->asset('public/' . $path, $secure);
     }
 }
@@ -3027,6 +3032,10 @@ if (!function_exists('normalize_public_storage_path')) {
 
         $normalized = preg_replace('#^(public/|storage/)+#', '', $normalized);
 
+        if (str_starts_with($normalized, 'uploads/')) {
+            return ltrim($normalized, '/');
+        }
+
         return ltrim($normalized ?? '', '/');
     }
 }
@@ -3040,7 +3049,7 @@ if (!function_exists('public_storage_url')) {
             return null;
         }
 
-        return asset('storage/' . $normalized);
+        return asset('uploads/' . preg_replace('#^uploads/#', '', $normalized));
     }
 }
 

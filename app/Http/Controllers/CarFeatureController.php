@@ -259,7 +259,7 @@ class CarFeatureController extends Controller
             foreach ($features as $feature) {
                 // Delete image from storage
                 if ($feature->image) {
-                    Storage::disk('public')->delete($feature->image);
+                    Storage::disk('public_uploads')->delete($feature->image);
                 }
 
                 // Delete translations

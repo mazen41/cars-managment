@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V2;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use App\Models\Upload;
 use Response;
 use Auth;
@@ -111,7 +112,11 @@ class AizUploadController extends Controller
                     }
                 }
 
-                $path = $request->file('aiz_file')->store('uploads/all', 'local');
+                if (!File::exists(public_path('uploads'))) {
+                    File::makeDirectory(public_path('uploads'), 0755, true);
+                }
+
+                $path = $request->file('aiz_file')->store('all', 'public_uploads');
                 $size = $request->file('aiz_file')->getSize();
 
                 // Return MIME type ala mimetype extension
