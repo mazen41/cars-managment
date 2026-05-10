@@ -76,7 +76,7 @@ class CarFeature extends Model
      */
     public function getImageUrlAttribute()
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        return $this->image ? public_storage_url($this->image) : null;
     }
 
     /**

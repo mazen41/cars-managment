@@ -40,7 +40,7 @@ class FileUploadService
 
         try {
             // Store the file
-            $storedPath = $file->storeAs($path, $filename, 'public');
+            $storedPath = $file->storeAs($path, $filename, 'public_uploads');
 
             // Process image if needed
             if ($this->isImage($file) && $context === 'inspection_photos') {
@@ -52,7 +52,7 @@ class FileUploadService
             return [
                 'filename' => $filename,
                 'path' => $storedPath,
-                'url' => Storage::url($storedPath),
+                'url' => asset('uploads/' . ltrim($storedPath, '/')),
                 'size' => $file->getSize(),
                 'mime_type' => $file->getMimeType(),
                 'original_name' => $file->getClientOriginalName(),
