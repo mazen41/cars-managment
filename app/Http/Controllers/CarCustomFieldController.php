@@ -426,7 +426,7 @@ class CarCustomFieldController extends Controller
             foreach ($customFields as $field) {
                 // Delete icon from storage
                 if ($field->icon) {
-                    Storage::disk('public')->delete($field->icon);
+                    Storage::disk('public_uploads')->delete($field->icon);
                 }
 
                 // Delete options and their translations

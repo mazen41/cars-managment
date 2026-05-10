@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Seller;
 
 use App\Models\BusinessSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use App\Models\Shop;
 use App\Models\User;
 use App\Notifications\ShopVerificationNotification;
@@ -199,7 +200,7 @@ class ShopController extends Controller
             } elseif ($element->type == 'file') {
                 $item['type'] = 'file';
                 $item['label'] = $element->label;
-                $item['value'] = $request['element_' . $i]->store('uploads/verification_form');
+                $item['value'] = $request['element_' . $i]->store('verification_form', 'public_uploads');
             }
             array_push($data, $item);
             $i++;

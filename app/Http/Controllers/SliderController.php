@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use App\Models\Slider;
 
 class SliderController extends Controller
@@ -40,7 +41,7 @@ class SliderController extends Controller
             foreach ($request->photos as $key => $photo) {
                 $slider = new Slider;
                 $slider->link = $request->url;
-                $slider->photo = $photo->store('uploads/sliders');
+                $slider->photo = $photo->store('sliders', 'public_uploads');
                 $slider->save();
             }
             flash(translate('Slider has been inserted successfully'))->success();
