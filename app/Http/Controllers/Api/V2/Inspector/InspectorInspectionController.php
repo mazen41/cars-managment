@@ -795,6 +795,10 @@ class InspectorInspectionController extends BaseInspectorController
             'direction'      => $options['direction'],
             'text_align'     => $options['text_align'],
             'not_text_align' => $options['not_text_align'],
+        ])->setOptions([
+            'isRemoteEnabled' => true,
+            'isHtml5ParserEnabled' => true,
+            'chroot' => base_path(),
         ]);
 
         // ✅ Restore original PHP limits after PDF is built
