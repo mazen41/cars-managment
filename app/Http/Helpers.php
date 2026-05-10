@@ -1266,10 +1266,50 @@ if (!function_exists('app_timezone')) {
 if (!function_exists('uploaded_asset')) {
     function uploaded_asset($id)
     {
-        if (($asset = Upload::find($id)) != null) {
-            return $asset->external_link == null ? my_asset($asset->file_name) : $asset->external_link;
+        $resolved = file_asset_url($id);
+        if ($resolved !== null) {
+            return $resolved;
         }
         return static_asset('assets/img/placeholder.jpg');
+    }
+}
+
+if (!function_exists('file_asset_url')) {
+    /**
+     * Resolve a public URL for an upload identifier/path/url.
+     *
+     * @param mixed $value Upload ID, relative path, or absolute URL.
+     * @param bool $allowNull If true, returns null when value cannot be resolved.
+     * @return string|null
+     */
+    function file_asset_url($value, bool $allowNull = true): ?string
+    {
+        if ($value === null || $value === '') {
+            return $allowNull ? null : static_asset('assets/img/placeholder.jpg');
+        }
+
+        if (is_numeric($value)) {
+            $asset = Upload::find((int) $value);
+            if ($asset) {
+                if (!empty($asset->external_link)) {
+                    return $asset->external_link;
+                }
+                return my_asset($asset->file_name);
+            }
+
+            return $allowNull ? null : static_asset('assets/img/placeholder.jpg');
+        }
+
+        $path = trim((string) $value);
+        if ($path === '') {
+            return $allowNull ? null : static_asset('assets/img/placeholder.jpg');
+        }
+
+        if (preg_match('#^https?://#i', $path)) {
+            return $path;
+        }
+
+        return my_asset($path);
     }
 }
 
@@ -1289,6 +1329,23 @@ if (!function_exists('my_asset')) {
 
     $path = ltrim((string) $path, '/');
 
+        // Avoid duplicated uploads segment
+        if (str_starts_with($path, 'uploads/uploads/')) {
+            $path = 'uploads/' . preg_replace('#^uploads/uploads/#', '', $path);
+        }
+
+        // Ensure local URLs are always generated from /public to support
+        // installations served from a sub-directory (e.g. localhost/app/public)
+        if (str_starts_with($path, 'public/')) {
+            $path = preg_replace('#^public/#', '', $path);
+        }
+
+        if (str_starts_with($path, 'storage/')) {
+            $path = preg_replace('#^storage/#', '', $path);
+            return app('url')->asset('storage/' . ltrim($path, '/'), $secure);
+        }
+
+        return app('url')->asset('public/' . ltrim($path, '/'), $secure);
     // Normalize storage/public paths if helper exists
     if (function_exists('normalize_public_storage_path')) {
         $path = normalize_public_storage_path($path);
@@ -1316,6 +1373,24 @@ if (!function_exists('static_asset')) {
      * @return string
      */
     function static_asset($path, $secure = null)
+    {
+        $path = ltrim((string) $path, '/');
+
+        // Prevent duplicate segments
+        if (str_starts_with($path, 'uploads/uploads/')) {
+            $path = 'uploads/' . preg_replace('#^uploads/uploads/#', '', $path);
+        }
+
+        if (str_starts_with($path, 'public/')) {
+            $path = preg_replace('#^public/#', '', $path);
+        }
+
+        if (str_starts_with($path, 'storage/')) {
+            $path = preg_replace('#^storage/#', '', $path);
+            return app('url')->asset('storage/' . ltrim($path, '/'), $secure);
+        }
+
+        return app('url')->asset('public/' . ltrim($path, '/'), $secure);
 {
     $path = ltrim((string) $path, '/');
 
@@ -3064,7 +3139,7 @@ if (!function_exists('public_storage_url')) {
             return null;
         }
 
-        return asset('uploads/' . preg_replace('#^uploads/#', '', $normalized));
+        return asset('public/uploads/' . preg_replace('#^uploads/#', '', $normalized));
     }
 }
 
