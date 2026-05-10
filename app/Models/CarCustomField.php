@@ -110,7 +110,7 @@ class CarCustomField extends Model
      */
     public function getIconUrlAttribute()
     {
-        return $this->icon ? asset('storage/' . $this->icon) : null;
+        return $this->icon ? public_storage_url($this->icon) : null;
     }
 
     /**
