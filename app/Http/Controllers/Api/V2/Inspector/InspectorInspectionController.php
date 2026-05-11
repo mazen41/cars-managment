@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 use App\Services\ImageUploadService;
-use PDF;
+use Mpdf\Mpdf;
 
 class InspectorInspectionController extends BaseInspectorController
 {
@@ -788,18 +788,28 @@ class InspectorInspectionController extends BaseInspectorController
                 'not_text_align' => 'left',
             ];
 
-        $pdf = PDF::loadView('backend.cars.inspections.pdf-report', [
+        $html = view('backend.cars.inspections.pdf-report', [
             'carInspection'  => $inspection,
             'sectionData'    => $this->buildSectionData($inspection),
             'font_family'    => $options['font_family'],
             'direction'      => $options['direction'],
             'text_align'     => $options['text_align'],
             'not_text_align' => $options['not_text_align'],
-        ])->setOptions([
-            'isRemoteEnabled' => true,
-            'isHtml5ParserEnabled' => true,
-            'chroot' => base_path(),
+        ])->render();
+
+        $mpdf = new Mpdf([
+            'mode'             => 'utf-8',
+            'format'           => 'A4',
+            'margin_top'       => 49,
+            'margin_bottom'    => 19,
+            'margin_left'      => 7,
+            'margin_right'     => 7,
+            'direction'        => 'rtl',
+            'autoScriptToLang' => true,
+            'autoLangToFont'   => true,
         ]);
+
+        $mpdf->WriteHTML($html);
 
         // ✅ Restore original PHP limits after PDF is built
         ini_set('pcre.backtrack_limit', $originalBacktrackLimit);
@@ -807,16 +817,9 @@ class InspectorInspectionController extends BaseInspectorController
 
         $filename = 'inspection-report-' . $inspection->inspection_number . '.pdf';
 
-        return response()->streamDownload(
-            function () use ($pdf) {
-                echo $pdf->output();
-            },
-            $filename,
-            [
-                'Content-Type'        => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            ]
-        );
+        return response($mpdf->Output('', 'S'))
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
 
     } catch (\Throwable $e) {
         return response()->json([
