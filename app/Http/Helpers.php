@@ -1340,12 +1340,14 @@ if (!function_exists('my_asset')) {
             $path = preg_replace('#^public/#', '', $path);
         }
 
+        $baseUrl = config('app.url');
+
         if (str_starts_with($path, 'storage/')) {
             $path = preg_replace('#^storage/#', '', $path);
-            return app('url')->asset('storage/' . ltrim($path, '/'), $secure);
+            return rtrim($baseUrl, '/') . '/storage/' . ltrim($path, '/');
         }
 
-        return app('url')->asset('public/' . ltrim($path, '/'), $secure);
+        return rtrim($baseUrl, '/') . '/public/' . ltrim($path, '/');
     }
 }
 
@@ -3094,10 +3096,6 @@ if (!function_exists('normalize_public_storage_path')) {
 
         $normalized = preg_replace('#^(public/|storage/)+#', '', $normalized);
 
-        if (str_starts_with($normalized, 'uploads/')) {
-            return ltrim($normalized, '/');
-        }
-
         return ltrim($normalized ?? '', '/');
     }
 }
@@ -3111,21 +3109,26 @@ if (!function_exists('public_storage_url')) {
             return null;
         }
 
-        return asset('public/' . ltrim($normalized, '/'));
+        // If it's already an absolute URL, return as is
+        if (preg_match('#^(https?:)?//#i', $path)) {
+            return $path;
+        }
+
+        $baseUrl = config('app.url');
+
+        // Always ensure 'public/uploads/' prefix for inspection and profile photos
+        // to match the requested format: https://samh.store/public/uploads/...
+        if (str_starts_with($normalized, 'uploads/')) {
+            return rtrim($baseUrl, '/') . '/public/' . ltrim($normalized, '/');
+        }
+
+        return rtrim($baseUrl, '/') . '/public/uploads/' . ltrim($normalized, '/');
     }
 }
 
 if (!function_exists('manual_examination_photo_url')) {
     function manual_examination_photo_url($manualExamination, ?string $path): ?string
     {
-        if (empty($path)) {
-            return null;
-        }
-
-        if (preg_match('#^(https?:)?//#i', $path) || str_starts_with($path, 'data:')) {
-            return $path;
-        }
-
         return public_storage_url($path);
     }
 }
@@ -3133,34 +3136,11 @@ if (!function_exists('manual_examination_photo_url')) {
 if (!function_exists('manual_examination_api_photo_url')) {
     /**
      * Generate a publicly reachable URL for manual examination photos for the inspector app.
-     *
-     * Important: this intentionally avoids relying on `/storage/...` (symlink/CDN/webserver configs),
-     * and instead uses the dedicated photo streaming endpoint which reads from storage directly.
+     * Updated to return full public URLs instead of encoded streaming paths.
      */
     function manual_examination_api_photo_url($manualExamination, ?string $path): ?string
     {
-        if (empty($path)) {
-            return null;
-        }
-
-        if (preg_match('#^(https?:)?//#i', $path) || str_starts_with($path, 'data:')) {
-            return $path;
-        }
-
-        $encoded = encode_inspection_photo_path($path);
-        if (empty($encoded)) {
-            return null;
-        }
-
-        $id = is_object($manualExamination) ? ($manualExamination->id ?? null) : null;
-        if (empty($id)) {
-            return public_storage_url($path);
-        }
-
-        return route('public.manual-examinations.photo', [
-            'manualExamination' => $id,
-            'encodedPath' => $encoded,
-        ]);
+        return manual_examination_photo_url($manualExamination, $path);
     }
 }
 
@@ -3241,8 +3221,15 @@ if (!function_exists('pdf_safe_image_src')) {
             return '';
         }
 
-        // Full URL produced by helpers (often includes /public/... or /storage/...)
+        // Strip the base URL including any subdirectory (e.g. /samh.store/)
+        $baseUrl = config('app.url');
+        $baseUrlPath = trim(parse_url($baseUrl, PHP_URL_PATH) ?? '', '/');
+
         $pathOnly = preg_replace('#^https?://[^/]+/#i', '', (string) $rawUrlOrPath);
+
+        if ($baseUrlPath !== '') {
+            $pathOnly = ltrim(preg_replace('#^' . preg_quote($baseUrlPath, '#') . '#i', '', $pathOnly), '/');
+        }
 
         if (preg_match('#^public/(.+)$#', $pathOnly, $m)) {
             $pub = public_path($m[1]);

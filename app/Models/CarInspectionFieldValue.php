@@ -303,11 +303,21 @@ class CarInspectionFieldValue extends Model
 
         return collect($this->file_attachments)
             ->map(function ($attachment) {
+                $attachment = (array) $attachment;
+                $url = $attachment["url"] ?? null;
+                $path = $attachment["path"] ?? null;
+
+                // Ensure we have a full URL
+                if (!$url || !preg_match('#^https?://#i', $url)) {
+                    $url = public_storage_url($url ?: $path);
+                }
+
                 return [
-                    "url" => $attachment["url"],
+                    "url" => $url,
                     "original_name" => $attachment["original_name"] ?? null,
                     "uploaded_at" => $attachment["uploaded_at"] ?? null,
                     "size" => $attachment["size"] ?? null,
+                    "path" => $path ?? $attachment["url"] ?? null,
                 ];
             })
             ->toArray();

@@ -718,7 +718,7 @@ class InspectorInspectionController extends BaseInspectorController
                                 'notes' => $fieldValue?->notes,
                                 'is_flagged' => $fieldValue?->is_flagged ?? false,
                                 'flag_reason' => $fieldValue?->flag_reason,
-                                'photos' => $fieldValue?->file_attachments ?? []
+                                'photos' => $fieldValue?->getAttachmentUrls() ?? []
                             ];
                         })
                     ];
@@ -986,7 +986,7 @@ class InspectorInspectionController extends BaseInspectorController
                         'score' => $fieldValue?->score,
                         'notes' => $fieldValue?->notes,
                         'is_flagged' => $fieldValue?->is_flagged ?? false,
-                        'photos' => $fieldValue ? $fieldValue->file_attachments : []
+                        'photos' => $fieldValue ? $fieldValue->getAttachmentUrls() : []
                     ];
                 })
             ];

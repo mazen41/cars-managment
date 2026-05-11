@@ -105,9 +105,7 @@ class InspectionResource extends JsonResource
                         'score' => $fieldValue->score,
                         'notes' => $fieldValue->notes,
                         'is_flagged' => $fieldValue->is_flagged,
-                        'photos' => $fieldValue->photos ? collect($fieldValue->photos)->map(function ($photo) {
-                            return uploaded_asset($photo);
-                        }) : [],
+                        'photos' => $fieldValue->getAttachmentUrls(),
                         'field' => [
                             'id' => $fieldValue->field->id,
                             'name' => $fieldValue->field->name,

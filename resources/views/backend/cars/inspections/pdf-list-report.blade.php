@@ -143,7 +143,7 @@
             foreach ($manualSlotLabels as $column => $label) {
                 $stored = $carInspection->{$column} ?? null;
                 if (!empty($stored)) {
-                    $images->push(['url' => $stored, 'name' => $label]);
+                    $images->push(['url' => public_storage_url($stored), 'name' => $label]);
                 }
             }
 
@@ -153,7 +153,7 @@
                 $sectionLabel = $sectionModel->name ?? translate('Inspection section');
                 foreach ((array) $items as $item) {
                     if (!empty($item['path'])) {
-                        $images->push(['url' => $item['path'], 'name' => $sectionLabel]);
+                        $images->push(['url' => public_storage_url($item['path']), 'name' => $sectionLabel]);
                     }
                 }
             }
@@ -162,7 +162,7 @@
                 foreach (($fieldValue->file_attachments ?? []) as $attachment) {
                     $attachmentUrl = $attachment['url'] ?? ($attachment['path'] ?? null);
                     if (!empty($attachmentUrl)) {
-                        $images->push(['url' => $attachmentUrl, 'name' => $fieldValue->field?->name ?? translate('Inspection image')]);
+                        $images->push(['url' => public_storage_url($attachmentUrl), 'name' => $fieldValue->field?->name ?? translate('Inspection image')]);
                     }
                 }
             }

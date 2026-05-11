@@ -46,7 +46,7 @@
         foreach ((array) $items as $item) {
             if (!empty($item['path'])) {
                 $vehicleImages->push([
-                    'src'   => manual_examination_photo_url($carInspection, $item['path']),
+                    'src'   => public_storage_url($item['path']),
                     'label' => ($sectionModel->name ?? 'صور القسم'),
                 ]);
             }
@@ -58,7 +58,7 @@
             $path = $attachment['url'] ?? $attachment['path'] ?? null;
             if ($path) {
                 $vehicleImages->push([
-                    'src'   => manual_examination_photo_url($carInspection, $path),
+                    'src'   => public_storage_url($path),
                     'label' => $fieldValue->field?->name ?? 'مرفق حقل فحص',
                 ]);
             }

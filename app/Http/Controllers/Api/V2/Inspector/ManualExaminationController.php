@@ -652,17 +652,7 @@ class ManualExaminationController extends BaseInspectorController
                         'notes' => $fieldValue?->notes,
                         'is_flagged' => $fieldValue?->is_flagged ?? false,
                         'flag_reason' => $fieldValue?->flag_reason,
-                        'photos' => collect($fieldValue?->file_attachments ?? [])
-                            ->map(function ($attachment) use ($inspection) {
-                                $attachment = (array) $attachment;
-                                $path = $attachment['path'] ?? null;
-
-                                return array_merge($attachment, [
-                                    'url' => $attachment['url'] ?? ($path ? manual_examination_api_photo_url($inspection, $path) : null),
-                                ]);
-                            })
-                            ->values()
-                            ->all(),
+                        'photos' => $fieldValue ? $fieldValue->getAttachmentUrls() : [],
                     ];
                 })->values(),
             ];
