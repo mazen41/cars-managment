@@ -55,6 +55,9 @@ Route::group(
 
 Route::group(["prefix" => "v2", "middleware" => ["app_language"]], function () {
 
+    // Public manual examination report endpoint (used by web/QR pages)
+    Route::get('public/manual-examinations/{manualExamination}', [\App\Http\Controllers\Api\V2\Inspector\ManualExaminationController::class, 'show']);
+
     Route::apiResource("carts", CartController::class)
         ->only("destroy")
         ->names([
