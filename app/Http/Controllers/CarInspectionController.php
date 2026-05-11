@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
-use PDF;
+use Mpdf\Mpdf;
 
 class CarInspectionController extends Controller
 {
@@ -1324,31 +1324,34 @@ class CarInspectionController extends Controller
     }
 
     $options = get_pdf_options();
-    $pdf = PDF::loadView('backend.cars.inspections.pdf-report', [
+    $html = view('backend.cars.inspections.pdf-report', [
         'carInspection'  => $carInspection,
         'sectionData'    => $sectionData,
         'font_family'    => $options['font_family'],
         'direction'      => $options['direction'],
         'text_align'     => $options['text_align'],
         'not_text_align' => $options['not_text_align'],
-    ])->setOptions([
-        'isRemoteEnabled' => true,
-        'isHtml5ParserEnabled' => true,
-        'chroot' => base_path(),
+    ])->render();
+
+    $mpdf = new Mpdf([
+        'mode'             => 'utf-8',
+        'format'           => 'A4',
+        'margin_top'       => 49,
+        'margin_bottom'    => 19,
+        'margin_left'      => 7,
+        'margin_right'     => 7,
+        'direction'        => 'rtl',
+        'autoScriptToLang' => true,
+        'autoLangToFont'   => true,
     ]);
+
+    $mpdf->WriteHTML($html);
 
     $filename = 'inspection-report-' . $carInspection->inspection_number . '.pdf';
 
-    return response()->streamDownload(
-        function () use ($pdf) {
-            echo $pdf->output();
-        },
-        $filename,
-        [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]
-    );
+    return response($mpdf->Output('', 'S'))
+        ->header('Content-Type', 'application/pdf')
+        ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
 }
 
     /**
