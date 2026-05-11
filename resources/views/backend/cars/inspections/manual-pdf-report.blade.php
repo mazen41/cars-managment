@@ -36,7 +36,7 @@
 
     foreach ($manualPhotoSlots as $column => $label) {
         if (!empty($carInspection->{$column})) {
-            $vehicleImages->push(['src' => $carInspection->{$column}, 'label' => $label]);
+            $vehicleImages->push(['src' => manual_examination_photo_url($carInspection, $carInspection->{$column}), 'label' => $label]);
         }
     }
 
@@ -46,7 +46,7 @@
         foreach ((array) $items as $item) {
             if (!empty($item['path'])) {
                 $vehicleImages->push([
-                    'src'   => $item['path'],
+                    'src'   => manual_examination_photo_url($carInspection, $item['path']),
                     'label' => ($sectionModel->name ?? 'صور القسم'),
                 ]);
             }
@@ -58,7 +58,7 @@
             $path = $attachment['url'] ?? $attachment['path'] ?? null;
             if ($path) {
                 $vehicleImages->push([
-                    'src'   => $path,
+                    'src'   => manual_examination_photo_url($carInspection, $path),
                     'label' => $fieldValue->field?->name ?? 'مرفق حقل فحص',
                 ]);
             }

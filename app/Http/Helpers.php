@@ -3111,7 +3111,7 @@ if (!function_exists('public_storage_url')) {
             return null;
         }
 
-        return asset('public/uploads/' . preg_replace('#^uploads/#', '', $normalized));
+        return asset('public/' . ltrim($normalized, '/'));
     }
 }
 
@@ -3255,6 +3255,13 @@ if (!function_exists('pdf_safe_image_src')) {
             $stor = storage_path('app/public/' . $m[1]);
             if (file_exists($stor) && is_readable($stor)) {
                 return pdf_binary_to_data_uri($stor);
+            }
+        }
+
+        if (preg_match('#(?:^|/)uploads/(.+)$#', $pathOnly, $m)) {
+            $upload = public_path('uploads/' . $m[1]);
+            if (file_exists($upload) && is_readable($upload)) {
+                return pdf_binary_to_data_uri($upload);
             }
         }
 
