@@ -565,6 +565,41 @@ class ManualExaminationController extends BaseInspectorController
             ])->values() ?? [],
         ]);
 
+        $manualSlotLabels = [
+            'photo_front' => 'Front view',
+            'photo_back' => 'Rear view',
+            'photo_left' => 'Left side',
+            'photo_right' => 'Right side',
+            'photo_interior_front' => 'Interior front',
+            'photo_interior_back' => 'Interior rear',
+            'photo_engine' => 'Engine',
+            'photo_trunk' => 'Trunk',
+            'photo_odometer' => 'Odometer',
+            'photo_dashboard' => 'Dashboard',
+            'photo_vin_plate' => 'VIN plate',
+            'photo_tires' => 'Tires',
+            'photo_undercarriage' => 'Undercarriage',
+        ];
+
+        $data['photos'] = collect($manualSlotLabels)
+            ->map(function ($label, $column) use ($inspection) {
+                $path = $inspection->{$column} ?? null;
+
+                if (empty($path)) {
+                    return null;
+                }
+
+                return [
+                    'type' => $column,
+                    'name' => $label,
+                    'path' => $path,
+                    'url' => manual_examination_api_photo_url($inspection, $path),
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+
         $data['inspection_type'] = [
             'id' => $inspection->inspectionType?->id,
             'name' => $inspection->inspectionType?->name,
