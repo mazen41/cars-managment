@@ -1347,7 +1347,11 @@ if (!function_exists('my_asset')) {
             return rtrim($baseUrl, '/') . '/storage/' . ltrim($path, '/');
         }
 
-        return rtrim($baseUrl, '/') . '/public/' . ltrim($path, '/');
+        if (str_starts_with($path, 'uploads/')) {
+            return rtrim($baseUrl, '/') . '/public/' . ltrim($path, '/');
+        }
+
+        return rtrim($baseUrl, '/') . '/public/uploads/' . ltrim($path, '/');
     }
 }
 
@@ -1372,12 +1376,14 @@ if (!function_exists('static_asset')) {
             $path = preg_replace('#^public/#', '', $path);
         }
 
+        $baseUrl = config('app.url');
+
         if (str_starts_with($path, 'storage/')) {
             $path = preg_replace('#^storage/#', '', $path);
-            return app('url')->asset('storage/' . ltrim($path, '/'), $secure);
+            return rtrim($baseUrl, '/') . '/storage/' . ltrim($path, '/');
         }
 
-        return app('url')->asset('public/' . ltrim($path, '/'), $secure);
+        return rtrim($baseUrl, '/') . '/public/' . ltrim($path, '/');
     }
 }
 
