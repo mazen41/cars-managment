@@ -155,9 +155,23 @@ class AizUploadController extends Controller
                 if ($is_pdf_image) {
                     // Both header and footer images go to pdf-images directory
                     $directory = 'pdf-images';
-                    if (!File::exists(public_path('uploads/' . $directory))) {
-                        File::makeDirectory(public_path('uploads/' . $directory), 0755, true);
+                    $uploadDir = public_path('uploads/' . $directory);
+                    
+                    // Ensure directory exists with proper error handling
+                    try {
+                        if (!File::exists($uploadDir)) {
+                            File::makeDirectory($uploadDir, 0755, true);
+                        }
+                        // Verify directory was created and is writable
+                        if (!File::exists($uploadDir) || !is_writable($uploadDir)) {
+                            throw new \Exception("Failed to create or write to directory: {$uploadDir}");
+                        }
+                    } catch (\Exception $e) {
+                        // Log error and return empty response to prevent upload failure
+                        \Log::error("PDF upload directory creation failed: " . $e->getMessage());
+                        return '{}';
                     }
+                    
                     $path = $request->file('aiz_file')->store($directory, 'public_uploads');
                 } else {
                     // Regular uploads go to all directory

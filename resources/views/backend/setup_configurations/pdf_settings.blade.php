@@ -24,8 +24,23 @@
                                     <input type="hidden" name="pdf_header_image" value="{{ get_setting('pdf_header_image') }}" class="selected-files">
                                 </div>
                                 <div class="file-preview box sm">
-                                    @if(get_setting('pdf_header_image'))
-                                        <img src="{{ uploaded_asset(get_setting('pdf_header_image')) }}" alt="Header Image" style="max-width: 200px; max-height: 100px;">
+                                    @php
+                                        $headerImageSetting = get_setting('pdf_header_image');
+                                        $headerImageUrl = null;
+                                        if (!empty($headerImageSetting)) {
+                                            $headerImageUrl = uploaded_asset($headerImageSetting);
+                                        }
+                                    @endphp
+                                    @if($headerImageUrl)
+                                        <img src="{{ $headerImageUrl }}" alt="Header Image" style="max-width: 200px; max-height: 100px;" onerror="this.style.display='none'; console.error('Header image failed to load: {{ $headerImageUrl }}');">
+                                    @elseif(!empty($headerImageSetting))
+                                        <div class="alert alert-warning">
+                                            <small>Image path found but file not accessible: {{ $headerImageSetting }}</small>
+                                        </div>
+                                    @else
+                                        <div class="text-muted">
+                                            <small>No header image uploaded</small>
+                                        </div>
                                     @endif
                                 </div>
                                 <small class="text-muted">{{ translate('Image that will appear in the header of all PDF reports') }}</small>
@@ -44,8 +59,23 @@
                                     <input type="hidden" name="pdf_footer_image" value="{{ get_setting('pdf_footer_image') }}" class="selected-files">
                                 </div>
                                 <div class="file-preview box sm">
-                                    @if(get_setting('pdf_footer_image'))
-                                        <img src="{{ uploaded_asset(get_setting('pdf_footer_image')) }}" alt="Footer Image" style="max-width: 200px; max-height: 100px;">
+                                    @php
+                                        $footerImageSetting = get_setting('pdf_footer_image');
+                                        $footerImageUrl = null;
+                                        if (!empty($footerImageSetting)) {
+                                            $footerImageUrl = uploaded_asset($footerImageSetting);
+                                        }
+                                    @endphp
+                                    @if($footerImageUrl)
+                                        <img src="{{ $footerImageUrl }}" alt="Footer Image" style="max-width: 200px; max-height: 100px;" onerror="this.style.display='none'; console.error('Footer image failed to load: {{ $footerImageUrl }}');">
+                                    @elseif(!empty($footerImageSetting))
+                                        <div class="alert alert-warning">
+                                            <small>Image path found but file not accessible: {{ $footerImageSetting }}</small>
+                                        </div>
+                                    @else
+                                        <div class="text-muted">
+                                            <small>No footer image uploaded</small>
+                                        </div>
                                     @endif
                                 </div>
                                 <small class="text-muted">{{ translate('Image that will appear in the footer of all PDF reports') }}</small>

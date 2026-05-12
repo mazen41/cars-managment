@@ -1348,10 +1348,10 @@ if (!function_exists('my_asset')) {
         }
 
         if (str_starts_with($path, 'uploads/')) {
-            return rtrim($baseUrl, '/') . '/public/' . ltrim($path, '/');
+            return rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
         }
 
-        return rtrim($baseUrl, '/') . '/public/uploads/' . ltrim($path, '/');
+        return rtrim($baseUrl, '/') . '/uploads/' . ltrim($path, '/');
     }
 }
 
