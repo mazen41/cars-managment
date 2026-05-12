@@ -15,7 +15,7 @@
                         <div class="form-group row">
                             <label class="col-sm-3 col-from-label">{{translate('Header Image')}}</label>
                             <div class="col-sm-9">
-                                <div class="input-group" data-toggle="aizuploader" data-type="image">
+                                <div class="input-group" data-toggle="aizuploader" data-type="image" data-upload-dir="pdf-images">
                                     <div class="input-group-prepend">
                                         <div class="input-group-text bg-soft-secondary">{{ translate('Browse') }}</div>
                                     </div>
@@ -28,7 +28,7 @@
                                         $headerImageSetting = get_setting('pdf_header_image');
                                         $headerImageUrl = null;
                                         if (!empty($headerImageSetting)) {
-                                            $headerImageUrl = uploaded_asset($headerImageSetting);
+                                            $headerImageUrl = pdf_setting_image_url($headerImageSetting);
                                         }
                                     @endphp
                                     @if($headerImageUrl)
@@ -50,7 +50,7 @@
                         <div class="form-group row">
                             <label class="col-sm-3 col-from-label">{{translate('Footer Image')}}</label>
                             <div class="col-sm-9">
-                                <div class="input-group" data-toggle="aizuploader" data-type="image">
+                                <div class="input-group" data-toggle="aizuploader" data-type="image" data-upload-dir="pdf-images">
                                     <div class="input-group-prepend">
                                         <div class="input-group-text bg-soft-secondary">{{ translate('Browse') }}</div>
                                     </div>
@@ -63,7 +63,7 @@
                                         $footerImageSetting = get_setting('pdf_footer_image');
                                         $footerImageUrl = null;
                                         if (!empty($footerImageSetting)) {
-                                            $footerImageUrl = uploaded_asset($footerImageSetting);
+                                            $footerImageUrl = pdf_setting_image_url($footerImageSetting);
                                         }
                                     @endphp
                                     @if($footerImageUrl)

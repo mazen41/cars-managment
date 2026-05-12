@@ -11,8 +11,8 @@
     $headerImageSetting = get_setting('pdf_header_image');
     $footerImageSetting = get_setting('pdf_footer_image');
     
-    $headerImage = !empty($headerImageSetting) ? pdf_safe_image_src(uploaded_asset($headerImageSetting)) : null;
-    $footerImage = !empty($footerImageSetting) ? pdf_safe_image_src(uploaded_asset($footerImageSetting)) : null;
+    $headerImage = !empty($headerImageSetting) ? pdf_safe_image_src(pdf_setting_image_url($headerImageSetting)) : null;
+    $footerImage = !empty($footerImageSetting) ? pdf_safe_image_src(pdf_setting_image_url($footerImageSetting)) : null;
 
     $vehicleImages = collect();
     if (!empty($car?->main_photo)) {
@@ -161,12 +161,7 @@
     <div class="pdf-frame">
     <table style="border: 0; margin-bottom: 0;">
         <tr>
-            <td style="border: 0; width: 20%; text-align: right; vertical-align: middle;">
-                @php $logoImage = pdf_safe_image_src('assets/img/logo.png'); @endphp
-                @if($logoImage)
-                    <img src="{{ $logoImage }}" alt="Logo" style="max-width: 100px; max-height: 80px;">
-                @endif
-            </td>
+            <td style="border: 0; width: 20%;"></td>
             <td style="border: 0; width: 60%; vertical-align: middle; text-align: center;">
                 <h1 style="margin: 0; color: #000;">تقرير الفحص الفني للمركبة</h1>
                 <p style="margin: 5px 0 0 0;">رقم التقرير: {{ $carInspection->inspection_number }}</p>
