@@ -343,15 +343,14 @@ class AizUploadController extends Controller
         $files = Upload::whereIn('id', $ids)->get();
         $new_file_array = [];
         foreach ($files as $file) {
-            $file['file_name'] = my_asset($file->file_name);
+            // Don't convert to full URL here - let the frontend handle it
+            // Only use external link if it exists
             if ($file->external_link) {
                 $file['file_name'] = $file->external_link;
             }
             $new_file_array[] = $file;
         }
-        // dd($new_file_array);
         return $new_file_array;
-        // return $files;
     }
 
     public function all_file()
