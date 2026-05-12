@@ -138,41 +138,33 @@ class AizUploadController extends Controller
                     file_put_contents($request->file('aiz_file'), $cleanSVG);
                 }
 
-                // Check if this is a PDF-related upload - both header and footer go to pdf-images
+                // PDF settings uploads explicitly request this directory from the uploader UI.
+                // The public_uploads disk is rooted at public/uploads, so storing in
+                // pdf-images writes to public/uploads/pdf-images.
+                $requestedDirectory = trim((string) $request->input('upload_directory', ''));
                 $types = $request->input('types', []);
-                $has_pdf_header = $request->has('pdf_header_image');
-                $has_pdf_footer = $request->has('pdf_footer_image');
-                
-                // Check if it's PDF header upload
-                $is_pdf_header = (is_array($types) && in_array('pdf_header_image', $types)) || $has_pdf_header;
-                
-                // Check if it's PDF footer upload  
-                $is_pdf_footer = (is_array($types) && in_array('pdf_footer_image', $types)) || $has_pdf_footer;
-                
-                // Both header and footer images go to pdf-images directory
-                $is_pdf_image = $is_pdf_header || $is_pdf_footer;
-                
+                $is_pdf_image = $requestedDirectory === 'pdf-images'
+                    || (is_array($types) && (in_array('pdf_header_image', $types, true) || in_array('pdf_footer_image', $types, true)))
+                    || $request->has('pdf_header_image')
+                    || $request->has('pdf_footer_image');
+
                 if ($is_pdf_image) {
-                    // Both header and footer images go to pdf-images directory
                     $directory = 'pdf-images';
                     $uploadDir = public_path('uploads/' . $directory);
-                    
-                    // Ensure directory exists with proper error handling
+
                     try {
                         if (!File::exists($uploadDir)) {
                             File::makeDirectory($uploadDir, 0755, true);
                         }
-                        // Verify directory was created and is writable
                         if (!File::exists($uploadDir) || !is_writable($uploadDir)) {
                             throw new \Exception("Failed to create or write to directory: {$uploadDir}");
                         }
                     } catch (\Exception $e) {
-                        // Log error and return empty response to prevent upload failure
                         \Log::error("PDF upload directory creation failed: " . $e->getMessage());
                         return '{}';
                     }
-                    
-                    $path = $request->file('aiz_file')->store($directory, 'public_uploads');
+
+                    $path = 'uploads/' . $request->file('aiz_file')->store($directory, 'public_uploads');
                 } else {
                     // Regular uploads go to all directory
                     if (!File::exists(public_path('uploads'))) {
@@ -343,17 +335,35 @@ class AizUploadController extends Controller
 
     public function get_preview_files(Request $request)
     {
-        $ids = explode(',', $request->ids);
-        $files = Upload::whereIn('id', $ids)->get();
+        $requestedFiles = array_values(array_filter(explode(',', (string) $request->ids), fn ($id) => trim((string) $id) !== ''));
+        $uploadIds = array_values(array_filter($requestedFiles, fn ($id) => is_numeric($id)));
+        $files = $uploadIds ? Upload::whereIn('id', $uploadIds)->get()->keyBy('id') : collect();
         $new_file_array = [];
-        foreach ($files as $file) {
-            // Don't convert to full URL here - let the frontend handle it
-            // Only use external link if it exists
-            if ($file->external_link) {
-                $file['file_name'] = $file->external_link;
+
+        foreach ($requestedFiles as $requestedFile) {
+            if (is_numeric($requestedFile) && $files->has((int) $requestedFile)) {
+                $file = $files->get((int) $requestedFile);
+                $file['file_name'] = $file->external_link ?: my_asset($file->file_name);
+                $new_file_array[] = $file;
+                continue;
             }
-            $new_file_array[] = $file;
+
+            $path = ltrim(str_replace('\\', '/', trim((string) $requestedFile)), '/');
+            if ($path === '') {
+                continue;
+            }
+
+            $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            $new_file_array[] = [
+                'id' => $path,
+                'file_original_name' => pathinfo($path, PATHINFO_FILENAME) ?: basename($path),
+                'extension' => $extension,
+                'file_name' => my_asset($path),
+                'type' => in_array($extension, ['jpg', 'jpeg', 'png', 'svg', 'webp', 'gif'], true) ? 'image' : 'document',
+                'file_size' => file_exists(public_path($path)) ? filesize(public_path($path)) : 0,
+            ];
         }
+
         return $new_file_array;
     }
 

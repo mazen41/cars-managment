@@ -15,7 +15,7 @@
                         <div class="form-group row">
                             <label class="col-sm-3 col-from-label">{{translate('Header Image')}}</label>
                             <div class="col-sm-9">
-                                <div class="input-group" data-toggle="aizuploader" data-type="image">
+                                <div class="input-group" data-toggle="aizuploader" data-type="image" data-upload-dir="pdf-images">
                                     <div class="input-group-prepend">
                                         <div class="input-group-text bg-soft-secondary">{{ translate('Browse') }}</div>
                                     </div>
@@ -50,7 +50,7 @@
                         <div class="form-group row">
                             <label class="col-sm-3 col-from-label">{{translate('Footer Image')}}</label>
                             <div class="col-sm-9">
-                                <div class="input-group" data-toggle="aizuploader" data-type="image">
+                                <div class="input-group" data-toggle="aizuploader" data-type="image" data-upload-dir="pdf-images">
                                     <div class="input-group-prepend">
                                         <div class="input-group-text bg-soft-secondary">{{ translate('Browse') }}</div>
                                     </div>
