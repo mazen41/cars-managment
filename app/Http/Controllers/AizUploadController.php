@@ -262,6 +262,13 @@ class AizUploadController extends Controller
                 $upload->type = $type[$upload->extension];
                 $upload->file_size = $size;
                 $upload->save();
+
+                return response()->json([
+                    'id' => $upload->id,
+                    'file_name' => $upload->file_name,
+                    'url' => my_asset($upload->file_name),
+                    'type' => $upload->type,
+                ]);
             }
             return '{}';
         }
