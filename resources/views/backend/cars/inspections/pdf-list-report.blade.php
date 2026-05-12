@@ -190,12 +190,7 @@
 
         <table style="border: 0; margin-bottom: 0;">
             <tr>
-                <td style="border: 0; width: 20%; text-align: right; vertical-align: middle;">
-                    @php $logoImage = pdf_safe_image_src('assets/img/logo.png'); @endphp
-                    @if($logoImage)
-                        <img src="{{ $logoImage }}" alt="Logo" style="max-width: 100px; max-height: 80px;">
-                    @endif
-                </td>
+                <td style="border: 0; width: 20%;"></td>
                 <td style="border: 0; width: 60%; vertical-align: middle; text-align: center;">
                     <h1 style="margin: 0; color: #000;">تقرير الفحص الفني للمركبة</h1>
                     <p style="margin: 5px 0 0 0;">رقم التقرير: {{ $carInspection->inspection_number }}</p>
