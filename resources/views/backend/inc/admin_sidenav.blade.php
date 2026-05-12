@@ -1605,6 +1605,13 @@
                                     </a>
                                 </li>
                             @endcan
+                            @can('general_settings')
+                                <li class="aiz-side-nav-item">
+                                    <a href="{{route('pdf_settings.index')}}" class="aiz-side-nav-link {{ areActiveRoutes(['pdf_settings.index'])}}">
+                                        <span class="aiz-side-nav-text">{{translate('PDF Settings')}}</span>
+                                    </a>
+                                </li>
+                            @endcan
 
 
                             @can('smtp_settings')
