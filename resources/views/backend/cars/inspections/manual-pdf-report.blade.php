@@ -291,7 +291,7 @@
         if (!empty($disclaimer)):
     @endphp
         <div style="margin-top: 30px; padding: 15px; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px;">
-            <h3 style="background-color: #3B82F6; color: #ffffff; margin: 0 0 10px 0; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 14px;">{{ translate('Disclaimer') }}</h3>
+            <h3 style="background-color: #3B82F6; color: #ffffff; margin: 0 0 10px 0; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 14px;">إخلاء مسؤولية</h3>
             <p style="margin: 0; line-height: 1.5; white-space: pre-wrap;">{!! $disclaimer !!}</p>
         </div>
     @endif
