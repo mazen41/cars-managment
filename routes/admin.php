@@ -261,7 +261,6 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin', 'prevent-ba
     Route::resource('profile', ProfileController::class);
 
     // PDF Settings
-    Route::get('/pdf-settings', [BusinessSettingsController::class, 'pdf_settings'])->name('pdf_settings.index');
 
     // Business Settings
     Route::controller(BusinessSettingsController::class)->group(function () {
@@ -280,6 +279,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin', 'prevent-ba
         Route::get('/google-recaptcha', 'google_recaptcha')->name('google_recaptcha.index');
         Route::get('/google-map', 'google_map')->name('google-map.index');
         Route::get('/google-firebase', 'google_firebase')->name('google-firebase.index');
+        Route::get('/pdf-settings',  'pdf_settings')->name('pdf_settings.index');
 
         //change jaib password
         Route::post('/jaib-change-password', 'change_jaib_password')->name('jaib.change-password');

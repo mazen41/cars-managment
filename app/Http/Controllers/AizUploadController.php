@@ -148,8 +148,8 @@ class AizUploadController extends Controller
                 // Return MIME type ala mimetype extension
                 $finfo = finfo_open(FILEINFO_MIME_TYPE);
 
-                // Get the MIME type of the file
-                $file_mime = finfo_file($finfo, base_path('public/') . $path);
+                // Get the MIME type of the file using the uploaded file's real path
+                $file_mime = finfo_file($finfo, $request->file('aiz_file')->getRealPath());
                 
                 if ($type[$extension] == 'image' && get_setting('disable_image_optimization') != 1) {
                     try {
