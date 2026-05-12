@@ -7,12 +7,12 @@
     $verificationUrl = $verificationUrl ?? manual_examination_report_public_url($carInspection);
     $qrDataUri = $qrDataUri ?? manual_examination_pdf_qr_data_uri((string) $verificationUrl);
 
-    // Use dynamic PDF settings from database
+    // Use dynamic PDF settings from database - no fallbacks
     $headerImageSetting = get_setting('pdf_header_image');
     $footerImageSetting = get_setting('pdf_footer_image');
     
-    $headerImage = !empty($headerImageSetting) ? pdf_safe_image_src(uploaded_asset($headerImageSetting)) : pdf_safe_image_src('assets/img/one.jpeg');
-    $footerImage = !empty($footerImageSetting) ? pdf_safe_image_src(uploaded_asset($footerImageSetting)) : pdf_safe_image_src('assets/img/two.jpeg');
+    $headerImage = !empty($headerImageSetting) ? pdf_safe_image_src(uploaded_asset($headerImageSetting)) : null;
+    $footerImage = !empty($footerImageSetting) ? pdf_safe_image_src(uploaded_asset($footerImageSetting)) : null;
 
     $vehicleImages = collect();
     if (!empty($car?->main_photo)) {

@@ -139,7 +139,8 @@ class AizUploadController extends Controller
                 }
 
                 // Check if this is a PDF-related upload
-                $is_pdf_image = in_array($request->input('types.0', ''), ['pdf_header_image', 'pdf_footer_image']);
+                $types = $request->input('types', []);
+                $is_pdf_image = is_array($types) && in_array('pdf_header_image', $types) || in_array('pdf_footer_image', $types);
                 
                 if ($is_pdf_image) {
                     // Store PDF images in dedicated directory
