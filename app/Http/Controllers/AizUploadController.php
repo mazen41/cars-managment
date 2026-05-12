@@ -138,9 +138,25 @@ class AizUploadController extends Controller
                     file_put_contents($request->file('aiz_file'), $cleanSVG);
                 }
 
-                // Check if this is a PDF-related upload
+                // Check if this is a PDF-related upload - check multiple possible ways
                 $types = $request->input('types', []);
-                $is_pdf_image = is_array($types) && (in_array('pdf_header_image', $types) || in_array('pdf_footer_image', $types));
+                $has_pdf_header = $request->has('pdf_header_image');
+                $has_pdf_footer = $request->has('pdf_footer_image');
+                
+                // Debug logging
+                \Log::info('Upload Request Data:', [
+                    'types' => $types,
+                    'has_pdf_header' => $has_pdf_header,
+                    'has_pdf_footer' => $has_pdf_footer,
+                    'all_request_data' => $request->all()
+                ]);
+                
+                // Use multiple detection methods
+                $is_pdf_image = (is_array($types) && (in_array('pdf_header_image', $types) || in_array('pdf_footer_image', $types))) 
+                               || $has_pdf_header 
+                               || $has_pdf_footer;
+                
+                \Log::info('Final PDF Image Detection:', ['is_pdf_image' => $is_pdf_image]);
                 
                 if ($is_pdf_image) {
                     // Store PDF images in dedicated directory
