@@ -138,7 +138,7 @@ class AizUploadController extends Controller
                     file_put_contents($request->file('aiz_file'), $cleanSVG);
                 }
 
-                // Check if this is a PDF-related upload - check multiple possible ways
+                // Check if this is a PDF-related upload - handle header and footer differently
                 $types = $request->input('types', []);
                 $has_pdf_header = $request->has('pdf_header_image');
                 $has_pdf_footer = $request->has('pdf_footer_image');
@@ -151,22 +151,26 @@ class AizUploadController extends Controller
                     'all_request_data' => $request->all()
                 ]);
                 
-                // Use multiple detection methods
-                $is_pdf_image = (is_array($types) && (in_array('pdf_header_image', $types) || in_array('pdf_footer_image', $types))) 
-                               || $has_pdf_header 
-                               || $has_pdf_footer;
+                // Check if it's PDF header upload
+                $is_pdf_header = (is_array($types) && in_array('pdf_header_image', $types)) || $has_pdf_header;
                 
-                \Log::info('Final PDF Image Detection:', ['is_pdf_image' => $is_pdf_image]);
+                // Check if it's PDF footer upload  
+                $is_pdf_footer = (is_array($types) && in_array('pdf_footer_image', $types)) || $has_pdf_footer;
                 
-                if ($is_pdf_image) {
-                    // Store PDF images in dedicated directory
+                \Log::info('PDF Upload Detection:', [
+                    'is_pdf_header' => $is_pdf_header,
+                    'is_pdf_footer' => $is_pdf_footer
+                ]);
+                
+                if ($is_pdf_header) {
+                    // Header images go to pdf-images directory
                     $directory = 'pdf-images';
                     if (!File::exists(public_path('uploads/' . $directory))) {
                         File::makeDirectory(public_path('uploads/' . $directory), 0755, true);
                     }
                     $path = $request->file('aiz_file')->store($directory, 'public_uploads');
                 } else {
-                    // Regular uploads
+                    // Footer images and regular uploads go to all directory
                     if (!File::exists(public_path('uploads'))) {
                         File::makeDirectory(public_path('uploads'), 0755, true);
                     }
