@@ -188,6 +188,11 @@
                                 </a>
                             </li>
                         @endcan
+                        <li class="aiz-side-nav-item">
+                            <a href="{{ route('pdf_settings.index') }}" class="aiz-side-nav-link {{ areActiveRoutes(['pdf_settings.index'])}}">
+                                <span class="aiz-side-nav-text">{{ translate('PDF Settings') }}</span>
+                            </a>
+                        </li>
                         </ul>
                     </li>
                 @endcanany
