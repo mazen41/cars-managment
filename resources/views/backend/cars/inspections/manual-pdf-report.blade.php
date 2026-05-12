@@ -7,8 +7,12 @@
     $verificationUrl = $verificationUrl ?? manual_examination_report_public_url($carInspection);
     $qrDataUri = $qrDataUri ?? manual_examination_pdf_qr_data_uri((string) $verificationUrl);
 
-    $headerImage = pdf_safe_image_src('assets/img/one.jpeg');
-    $footerImage = pdf_safe_image_src('assets/img/two.jpeg');
+    // Use dynamic PDF settings from database
+    $headerImageSetting = get_setting('pdf_header_image');
+    $footerImageSetting = get_setting('pdf_footer_image');
+    
+    $headerImage = !empty($headerImageSetting) ? pdf_safe_image_src(uploaded_asset($headerImageSetting)) : pdf_safe_image_src('assets/img/one.jpeg');
+    $footerImage = !empty($footerImageSetting) ? pdf_safe_image_src(uploaded_asset($footerImageSetting)) : pdf_safe_image_src('assets/img/two.jpeg');
 
     $vehicleImages = collect();
     if (!empty($car?->main_photo)) {
@@ -89,6 +93,14 @@
             margin: 0;
             padding: 0;
         }
+        .pdf-frame {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px;
+            background: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
         .pdf-header-img {
             width: 196mm;
             height: 44.6mm;
@@ -100,10 +112,12 @@
             display: block;
         }
         h2, h3 {
-            color: #333;
+            background-color: #3B82F6;
+            color: #ffffff;
             margin: 15px 0 5px 0;
-            padding-bottom: 3px;
-            border-bottom: 1px solid #ccc;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: bold;
         }
         table {
             width: 100%;
@@ -144,6 +158,7 @@
         @endif
     </htmlpagefooter>
 
+    <div class="pdf-frame">
     <table style="border: 0; margin-bottom: 0;">
         <tr>
             <td style="border: 0; width: 20%; text-align: right; vertical-align: middle;">
@@ -159,6 +174,7 @@
             <td style="border: 0; width: 20%; text-align: left; vertical-align: middle;">
                 @if(!empty($qrDataUri))
                     <img src="{{ $qrDataUri }}" alt="QR" style="width: 80px; height: 80px;">
+                    <div style="text-align: center; font-size: 10px; margin-top: 4px;">رابط الفحص</div>
                 @endif
             </td>
         </tr>
@@ -269,6 +285,18 @@
             @endforeach
         </table>
     @endif
+
+    @php
+        $disclaimer = get_setting('pdf_disclaimer');
+        if (!empty($disclaimer)):
+    @endphp
+        <div style="margin-top: 30px; padding: 15px; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px;">
+            <h3 style="background-color: #3B82F6; color: #ffffff; margin: 0 0 10px 0; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 14px;">{{ translate('Disclaimer') }}</h3>
+            <p style="margin: 0; line-height: 1.5; white-space: pre-wrap;">{!! $disclaimer !!}</p>
+        </div>
+    @endif
+
+    </div>
 
 </body>
 </html>

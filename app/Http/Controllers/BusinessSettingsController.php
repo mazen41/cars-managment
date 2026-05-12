@@ -46,6 +46,12 @@ class BusinessSettingsController extends Controller
         return view('backend.setup_configurations.general_settings');
     }
 
+    public function pdf_settings(Request $request)
+    {
+
+        return view('backend.setup_configurations.pdf_settings');
+    }
+
     public function activation(Request $request)
     {
 
