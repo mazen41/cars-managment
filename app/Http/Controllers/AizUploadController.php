@@ -138,11 +138,23 @@ class AizUploadController extends Controller
                     file_put_contents($request->file('aiz_file'), $cleanSVG);
                 }
 
-                if (!File::exists(public_path('uploads'))) {
-                    File::makeDirectory(public_path('uploads'), 0755, true);
+                // Check if this is a PDF-related upload
+                $is_pdf_image = in_array($request->input('types.0', ''), ['pdf_header_image', 'pdf_footer_image']);
+                
+                if ($is_pdf_image) {
+                    // Store PDF images in dedicated directory
+                    $directory = 'pdf-images';
+                    if (!File::exists(public_path('uploads/' . $directory))) {
+                        File::makeDirectory(public_path('uploads/' . $directory), 0755, true);
+                    }
+                    $path = $request->file('aiz_file')->store($directory, 'public_uploads');
+                } else {
+                    // Regular uploads
+                    if (!File::exists(public_path('uploads'))) {
+                        File::makeDirectory(public_path('uploads'), 0755, true);
+                    }
+                    $path = $request->file('aiz_file')->store('all', 'public_uploads');
                 }
-
-                $path = $request->file('aiz_file')->store('all', 'public_uploads');
                 $size = $request->file('aiz_file')->getSize();
 
                 // Return MIME type ala mimetype extension
@@ -165,7 +177,8 @@ class AizUploadController extends Controller
                                 $constraint->aspectRatio();
                             });
                         }
-                        $img->save(base_path('public/') . $path);
+                        $local_path = public_path($path);
+                        $img->save($local_path);
                         clearstatcache();
                         $size = $img->filesize();
                     } catch (\Exception $e) {
@@ -207,10 +220,10 @@ class AizUploadController extends Controller
                 // }
 
                 if (env('FILESYSTEM_DRIVER') != 'local') {
-
+                    $real_path = $request->file('aiz_file')->getRealPath();
                     Storage::disk(env('FILESYSTEM_DRIVER'))->put(
                         $path,
-                        file_get_contents(base_path('public/') . $path),
+                        file_get_contents($real_path),
                         [
                             'visibility' => 'public',
                             'ContentType' =>  $extension == 'svg' ? 'image/svg+xml' : $file_mime
@@ -218,7 +231,11 @@ class AizUploadController extends Controller
                     );
                     // dd($storage);
                     if ($arr[0] != 'updates') {
-                        unlink(base_path('public/') . $path);
+                        // Only unlink if the file exists locally
+                        $local_path = public_path($path);
+                        if (file_exists($local_path)) {
+                            unlink($local_path);
+                        }
                     }
                 }
 
