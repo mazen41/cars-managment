@@ -28,7 +28,7 @@
                                         $headerImageSetting = get_setting('pdf_header_image');
                                         $headerImageUrl = null;
                                         if (!empty($headerImageSetting)) {
-                                            $headerImageUrl = uploaded_asset($headerImageSetting);
+                                            $headerImageUrl = pdf_setting_image_url($headerImageSetting);
                                         }
                                     @endphp
                                     @if($headerImageUrl)
@@ -63,7 +63,7 @@
                                         $footerImageSetting = get_setting('pdf_footer_image');
                                         $footerImageUrl = null;
                                         if (!empty($footerImageSetting)) {
-                                            $footerImageUrl = uploaded_asset($footerImageSetting);
+                                            $footerImageUrl = pdf_setting_image_url($footerImageSetting);
                                         }
                                     @endphp
                                     @if($footerImageUrl)

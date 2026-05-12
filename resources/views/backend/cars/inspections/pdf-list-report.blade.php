@@ -103,8 +103,8 @@
         $headerImageSetting = get_setting('pdf_header_image');
         $footerImageSetting = get_setting('pdf_footer_image');
         
-        $headerImage = !empty($headerImageSetting) ? pdf_safe_image_src(uploaded_asset($headerImageSetting)) : null;
-        $footerImage = !empty($footerImageSetting) ? pdf_safe_image_src(uploaded_asset($footerImageSetting)) : null;
+        $headerImage = !empty($headerImageSetting) ? pdf_safe_image_src(pdf_setting_image_url($headerImageSetting)) : null;
+        $footerImage = !empty($footerImageSetting) ? pdf_safe_image_src(pdf_setting_image_url($footerImageSetting)) : null;
     @endphp
 
     <div class="pdf-header">

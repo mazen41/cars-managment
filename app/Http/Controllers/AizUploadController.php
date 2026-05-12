@@ -266,6 +266,7 @@ class AizUploadController extends Controller
                 return response()->json([
                     'id' => $upload->id,
                     'file_name' => $upload->file_name,
+                    'url' => pdf_setting_image_url($upload->file_name) ?: my_asset($upload->file_name),
                     'url' => my_asset($upload->file_name),
                     'type' => $upload->type,
                 ]);
@@ -350,6 +351,7 @@ class AizUploadController extends Controller
         foreach ($requestedFiles as $requestedFile) {
             if (is_numeric($requestedFile) && $files->has((int) $requestedFile)) {
                 $file = $files->get((int) $requestedFile);
+                $file['file_name'] = $file->external_link ?: (pdf_setting_image_url($file->file_name) ?: my_asset($file->file_name));
                 $file['file_name'] = $file->external_link ?: my_asset($file->file_name);
                 $new_file_array[] = $file;
                 continue;
@@ -365,6 +367,7 @@ class AizUploadController extends Controller
                 'id' => $path,
                 'file_original_name' => pathinfo($path, PATHINFO_FILENAME) ?: basename($path),
                 'extension' => $extension,
+                'file_name' => pdf_setting_image_url($path) ?: my_asset($path),
                 'file_name' => my_asset($path),
                 'type' => in_array($extension, ['jpg', 'jpeg', 'png', 'svg', 'webp', 'gif'], true) ? 'image' : 'document',
                 'file_size' => file_exists(public_path($path)) ? filesize(public_path($path)) : 0,
