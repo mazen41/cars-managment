@@ -14,6 +14,7 @@ use App\Models\ApiKeys;
 use Artisan;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\URL;
+use App\Models\Upload;
 use Str;
 
 class BusinessSettingsController extends Controller
@@ -417,22 +418,16 @@ class BusinessSettingsController extends Controller
                     $business_settings = BusinessSetting::where('type', $type)->first();
                 }
 
+                $value = $this->businessSettingValueFromRequest($request, $type);
+
                 if ($business_settings != null) {
-                    if (gettype($request[$type]) == 'array') {
-                        $business_settings->value = json_encode($request[$type]);
-                    } else {
-                        $business_settings->value = $request[$type];
-                    }
+                    $business_settings->value = $value;
                     $business_settings->lang = $lang;
                     $business_settings->save();
                 } else {
                     $business_settings = new BusinessSetting;
                     $business_settings->type = $type;
-                    if (gettype($request[$type]) == 'array') {
-                        $business_settings->value = json_encode($request[$type]);
-                    } else {
-                        $business_settings->value = $request[$type];
-                    }
+                    $business_settings->value = $value;
                     $business_settings->lang = $lang;
                     $business_settings->save();
                 }
@@ -448,6 +443,65 @@ class BusinessSettingsController extends Controller
         }
         return redirect()->back();
     }
+
+    private function businessSettingValueFromRequest(Request $request, string $type)
+    {
+        if (in_array($type, ['pdf_header_image', 'pdf_footer_image'], true)) {
+            return $this->pdfImageSettingValue($request, $type);
+        }
+
+        $value = $request[$type];
+
+        return gettype($value) == 'array' ? json_encode($value) : $value;
+    }
+
+    private function pdfImageSettingValue(Request $request, string $type): string
+    {
+        $fileInput = $type . '_file';
+
+        if ($request->hasFile($fileInput)) {
+            $directory = public_path('uploads/pdf-images');
+            if (!is_dir($directory)) {
+                mkdir($directory, 0755, true);
+            }
+
+            $file = $request->file($fileInput);
+            $filename = $type . '_' . time() . '_' . Str::random(10) . '.' . strtolower($file->getClientOriginalExtension());
+            $file->move($directory, $filename);
+
+            return 'uploads/pdf-images/' . $filename;
+        }
+
+        return $this->normalizePdfImageSettingValue($request->input($type, ''));
+    }
+
+    private function normalizePdfImageSettingValue($value): string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return '';
+        }
+
+        if (is_numeric($value)) {
+            $upload = Upload::find((int) $value);
+            $value = $upload?->file_name ?: $value;
+        }
+
+        if (preg_match('#^https?://#i', $value)) {
+            $value = parse_url($value, PHP_URL_PATH) ?: '';
+        }
+
+        $value = ltrim(str_replace('\\', '/', $value), '/');
+        $value = preg_replace('#^(public/|storage/)+#', '', $value) ?: '';
+
+        if (str_starts_with($value, 'uploads/')) {
+            return $value;
+        }
+
+        return 'uploads/' . ltrim($value, '/');
+    }
+
 
     public function updateActivationSettings(Request $request)
     {

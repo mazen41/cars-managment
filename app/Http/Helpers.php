@@ -3132,6 +3132,49 @@ if (!function_exists('public_storage_url')) {
     }
 }
 
+
+if (!function_exists('pdf_setting_image_url')) {
+    function pdf_setting_image_url($value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            $upload = Upload::find((int) $value);
+            if (!$upload) {
+                return null;
+            }
+            $value = $upload->external_link ?: $upload->file_name;
+        }
+
+        $path = trim((string) $value);
+        if ($path === '') {
+            return null;
+        }
+
+        if (preg_match('#^https?://#i', $path)) {
+            $urlPath = parse_url($path, PHP_URL_PATH);
+            if ($urlPath === null || !str_contains($urlPath, 'uploads/')) {
+                return $path;
+            }
+            $path = $urlPath;
+        }
+
+        $normalized = normalize_public_storage_path($path);
+        if ($normalized === '') {
+            return null;
+        }
+
+        $baseUrl = config('app.url');
+        if (str_starts_with($normalized, 'uploads/')) {
+            return rtrim($baseUrl, '/') . '/public/' . ltrim($normalized, '/');
+        }
+
+        return rtrim($baseUrl, '/') . '/public/uploads/' . ltrim($normalized, '/');
+    }
+}
+
 if (!function_exists('manual_examination_photo_url')) {
     function manual_examination_photo_url($manualExamination, ?string $path): ?string
     {

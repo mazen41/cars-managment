@@ -25,6 +25,8 @@ $.fn.toggleAttr = function (attr, attr1, attr2) {
             type: "all",
             next_page_url: null,
             prev_page_url: null,
+            uploadDirectory: "",
+            targetInput: null,
         },
         removeInputValue: function (id, array, elem) {
             var selected = array.filter(function (item) {
@@ -41,14 +43,14 @@ $.fn.toggleAttr = function (attr, attr1, attr2) {
         },
         removeAttachment: function () {
             $(document).on("click", ".remove-attachment", function () {
-                var value = $(this).closest(".file-preview-item").data("id");
+                var value = String($(this).closest(".file-preview-item").data("id"));
                 var selected = $(this)
                     .closest(".file-preview")
                     .prev('[data-toggle="aizuploader"]')
                     .find(".selected-files")
                     .val()
                     .split(",")
-                    .map(Number);
+                    .map(function (item) { return String(item); });
 
                 AIZ.uploader.removeInputValue(
                     value,
@@ -649,19 +651,22 @@ $.fn.toggleAttr = function (attr, attr1, attr2) {
             // $("body").append('<div class="aiz-uploader-backdrop"></div>');
 
             var elem = $(elem);
+            AIZ.uploader.data.targetInput = elem;
             var multiple = multiple;
             var type = type;
             var oldSelectedFiles = selectd;
             if (oldSelectedFiles !== "") {
                 AIZ.uploader.data.selectedFiles = oldSelectedFiles
                     .split(",")
-                    .map(Number);
+                    .filter(function (item) { return item !== ""; })
+                    .map(function (item) { return $.isNumeric(item) ? Number(item) : item; });
             } else {
                 AIZ.uploader.data.selectedFiles = [];
             }
             if ("undefined" !== typeof type && type.length > 0) {
                 AIZ.uploader.data.type = type;
             }
+            AIZ.uploader.data.uploadDirectory = elem.data("upload-dir") || "";
 
             if (multiple) {
                 AIZ.uploader.data.multiple = true;
@@ -1219,15 +1224,43 @@ $.fn.toggleAttr = function (attr, attr1, attr2) {
                         },
                     },
                 });
+                uppy.on("file-added", function (file) {
+                    uppy.setFileMeta(file.id, {
+                        upload_directory: AIZ.uploader.data.uploadDirectory || "",
+                    });
+                });
                 uppy.use(Uppy.XHRUpload, {
                     endpoint: AIZ.data.appUrl + "/aiz-uploader/upload",
                     fieldName: "aiz_file",
                     formData: true,
+                    metaFields: ["upload_directory"],
                     headers: {
                         "X-CSRF-TOKEN": AIZ.data.csrf,
                     },
                 });
-                uppy.on("upload-success", function () {
+                uppy.on("upload-success", function (file, response) {
+                    var responseBody = response && response.body ? response.body : null;
+                    if (typeof responseBody === "string") {
+                        try {
+                            responseBody = JSON.parse(responseBody);
+                        } catch (e) {
+                            responseBody = null;
+                        }
+                    }
+                    var uploadedFileId = responseBody ? responseBody.id : null;
+                    if (uploadedFileId) {
+                        if (!AIZ.uploader.data.multiple) {
+                            AIZ.uploader.data.selectedFiles = [];
+                            AIZ.uploader.data.selectedFilesObject = [];
+                        }
+                        if (!AIZ.uploader.data.selectedFiles.includes(uploadedFileId)) {
+                            AIZ.uploader.data.selectedFiles.push(uploadedFileId);
+                        }
+                        AIZ.uploader.updateUploaderSelected();
+                        if (AIZ.uploader.data.uploadDirectory === "pdf-images" && AIZ.uploader.data.targetInput) {
+                            AIZ.uploader.inputSelectPreviewGenerate(AIZ.uploader.data.targetInput);
+                        }
+                    }
                     AIZ.uploader.getAllUploads(
                         AIZ.data.appUrl + "/aiz-uploader/get-uploaded-files"
                     );
