@@ -446,6 +446,33 @@ class BusinessSettingsController extends Controller
 
     private function businessSettingValueFromRequest(Request $request, string $type)
     {
+        if (in_array($type, ['pdf_header_image', 'pdf_footer_image'], true)) {
+            return $this->pdfImageSettingValue($request, $type);
+        }
+
+        $value = $request[$type];
+
+        return gettype($value) == 'array' ? json_encode($value) : $value;
+    }
+
+    private function pdfImageSettingValue(Request $request, string $type): string
+    {
+        $fileInput = $type . '_file';
+
+        if ($request->hasFile($fileInput)) {
+            $directory = public_path('uploads/pdf-images');
+            if (!is_dir($directory)) {
+                mkdir($directory, 0755, true);
+            }
+
+            $file = $request->file($fileInput);
+            $filename = $type . '_' . time() . '_' . Str::random(10) . '.' . strtolower($file->getClientOriginalExtension());
+            $file->move($directory, $filename);
+
+            return 'uploads/pdf-images/' . $filename;
+        }
+
+        return $this->normalizePdfImageSettingValue($request->input($type, ''));
         $value = $request[$type];
 
         if (in_array($type, ['pdf_header_image', 'pdf_footer_image'], true)) {
@@ -468,6 +495,10 @@ class BusinessSettingsController extends Controller
             $value = $upload?->file_name ?: $value;
         }
 
+        if (preg_match('#^https?://#i', $value)) {
+            $value = parse_url($value, PHP_URL_PATH) ?: '';
+        }
+
         $value = ltrim(str_replace('\\', '/', $value), '/');
         $value = preg_replace('#^(public/|storage/)+#', '', $value) ?: '';
 
@@ -477,6 +508,7 @@ class BusinessSettingsController extends Controller
 
         return 'uploads/' . ltrim($value, '/');
     }
+
 
     public function updateActivationSettings(Request $request)
     {

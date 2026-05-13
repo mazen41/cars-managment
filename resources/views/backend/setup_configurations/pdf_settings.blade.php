@@ -15,6 +15,10 @@
                         <div class="form-group row">
                             <label class="col-sm-3 col-from-label">{{translate('Header Image')}}</label>
                             <div class="col-sm-9">
+                                <input type="hidden" name="types[]" value="pdf_header_image">
+                                <input type="hidden" name="pdf_header_image" value="{{ get_setting('pdf_header_image') }}">
+                                <input type="file" name="pdf_header_image_file" class="form-control pdf-image-input" accept="image/*" data-preview="pdf-header-preview">
+                                <div class="file-preview box sm mt-2">
                                 <div class="input-group" data-toggle="aizuploader" data-type="image" data-upload-dir="pdf-images">
                                     <div class="input-group-prepend">
                                         <div class="input-group-text bg-soft-secondary">{{ translate('Browse') }}</div>
@@ -32,7 +36,7 @@
                                         }
                                     @endphp
                                     @if($headerImageUrl)
-                                        <img src="{{ $headerImageUrl }}" alt="Header Image" style="max-width: 200px; max-height: 100px;" onerror="this.style.display='none'; console.error('Header image failed to load: {{ $headerImageUrl }}');">
+                                        <img id="pdf-header-preview" src="{{ $headerImageUrl }}" alt="Header Image" style="max-width: 200px; max-height: 100px;" onerror="this.style.display='none'; console.error('Header image failed to load: {{ $headerImageUrl }}');">
                                     @elseif(!empty($headerImageSetting))
                                         <div class="alert alert-warning">
                                             <small>Image path found but file not accessible: {{ $headerImageSetting }}</small>
@@ -50,6 +54,10 @@
                         <div class="form-group row">
                             <label class="col-sm-3 col-from-label">{{translate('Footer Image')}}</label>
                             <div class="col-sm-9">
+                                <input type="hidden" name="types[]" value="pdf_footer_image">
+                                <input type="hidden" name="pdf_footer_image" value="{{ get_setting('pdf_footer_image') }}">
+                                <input type="file" name="pdf_footer_image_file" class="form-control pdf-image-input" accept="image/*" data-preview="pdf-footer-preview">
+                                <div class="file-preview box sm mt-2">
                                 <div class="input-group" data-toggle="aizuploader" data-type="image" data-upload-dir="pdf-images">
                                     <div class="input-group-prepend">
                                         <div class="input-group-text bg-soft-secondary">{{ translate('Browse') }}</div>
@@ -67,7 +75,7 @@
                                         }
                                     @endphp
                                     @if($footerImageUrl)
-                                        <img src="{{ $footerImageUrl }}" alt="Footer Image" style="max-width: 200px; max-height: 100px;" onerror="this.style.display='none'; console.error('Footer image failed to load: {{ $footerImageUrl }}');">
+                                        <img id="pdf-footer-preview" src="{{ $footerImageUrl }}" alt="Footer Image" style="max-width: 200px; max-height: 100px;" onerror="this.style.display='none'; console.error('Footer image failed to load: {{ $footerImageUrl }}');">
                                     @elseif(!empty($footerImageSetting))
                                         <div class="alert alert-warning">
                                             <small>Image path found but file not accessible: {{ $footerImageSetting }}</small>
@@ -100,4 +108,37 @@
         </div>
     </div>
 
+@endsection
+
+
+@section('script')
+    <script>
+        document.querySelectorAll('.pdf-image-input').forEach(function (input) {
+            input.addEventListener('change', function () {
+                if (!this.files || !this.files[0]) {
+                    return;
+                }
+
+                var previewId = this.getAttribute('data-preview');
+                var preview = document.getElementById(previewId);
+                var previewBox = this.parentElement.querySelector('.file-preview');
+                var imageUrl = URL.createObjectURL(this.files[0]);
+
+                if (!preview) {
+                    preview = document.createElement('img');
+                    preview.id = previewId;
+                    preview.alt = this.name === 'pdf_header_image_file' ? 'Header Image' : 'Footer Image';
+                    preview.style.maxWidth = '200px';
+                    preview.style.maxHeight = '100px';
+                    if (previewBox) {
+                        previewBox.innerHTML = '';
+                        previewBox.appendChild(preview);
+                    }
+                }
+
+                preview.src = imageUrl;
+                preview.style.display = 'inline-block';
+            });
+        });
+    </script>
 @endsection
