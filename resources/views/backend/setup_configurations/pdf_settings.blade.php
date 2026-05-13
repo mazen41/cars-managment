@@ -19,6 +19,15 @@
                                 <input type="hidden" name="pdf_header_image" value="{{ get_setting('pdf_header_image') }}">
                                 <input type="file" name="pdf_header_image_file" class="form-control pdf-image-input" accept="image/*" data-preview="pdf-header-preview">
                                 <div class="file-preview box sm mt-2">
+                                <div class="input-group" data-toggle="aizuploader" data-type="image" data-upload-dir="pdf-images">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-soft-secondary">{{ translate('Browse') }}</div>
+                                    </div>
+                                    <div class="form-control file-amount">{{ translate('Choose Files') }}</div>
+                                    <input type="hidden" name="types[]" value="pdf_header_image">
+                                    <input type="hidden" name="pdf_header_image" value="{{ get_setting('pdf_header_image') }}" class="selected-files">
+                                </div>
+                                <div class="file-preview box sm">
                                     @php
                                         $headerImageSetting = get_setting('pdf_header_image');
                                         $headerImageUrl = null;
@@ -49,6 +58,15 @@
                                 <input type="hidden" name="pdf_footer_image" value="{{ get_setting('pdf_footer_image') }}">
                                 <input type="file" name="pdf_footer_image_file" class="form-control pdf-image-input" accept="image/*" data-preview="pdf-footer-preview">
                                 <div class="file-preview box sm mt-2">
+                                <div class="input-group" data-toggle="aizuploader" data-type="image" data-upload-dir="pdf-images">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-soft-secondary">{{ translate('Browse') }}</div>
+                                    </div>
+                                    <div class="form-control file-amount">{{ translate('Choose Files') }}</div>
+                                    <input type="hidden" name="types[]" value="pdf_footer_image">
+                                    <input type="hidden" name="pdf_footer_image" value="{{ get_setting('pdf_footer_image') }}" class="selected-files">
+                                </div>
+                                <div class="file-preview box sm">
                                     @php
                                         $footerImageSetting = get_setting('pdf_footer_image');
                                         $footerImageUrl = null;

@@ -473,6 +473,13 @@ class BusinessSettingsController extends Controller
         }
 
         return $this->normalizePdfImageSettingValue($request->input($type, ''));
+        $value = $request[$type];
+
+        if (in_array($type, ['pdf_header_image', 'pdf_footer_image'], true)) {
+            return $this->normalizePdfImageSettingValue($value);
+        }
+
+        return gettype($value) == 'array' ? json_encode($value) : $value;
     }
 
     private function normalizePdfImageSettingValue($value): string
